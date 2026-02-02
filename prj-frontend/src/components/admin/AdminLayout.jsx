@@ -5,10 +5,12 @@ import SignOut from '../auth/signout';
 import { LayoutDashboard, Users, BookOpen, Settings, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 
 export const AdminLayout = () => {
-    const [isExpanded, setIsExpanded] = useState(true);
+    const [isHovered, setIsHovered] = useState(false);
     const { user, logOut } = useAuthStore((state) => state);
     const location = useLocation();
     const navigate = useNavigate();
+
+    const showSidebar = isHovered;
 
     const navItems = [
         { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -20,8 +22,10 @@ export const AdminLayout = () => {
         <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
             {/* Sidebar */}
             <aside
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
                 style={{
-                    width: isExpanded ? '260px' : '80px',
+                    width: showSidebar ? '260px' : '80px',
                     backgroundColor: 'black',
                     color: 'white',
                     display: 'flex',
@@ -32,48 +36,35 @@ export const AdminLayout = () => {
                     top: 0,
                     transition: 'width 0.3s ease',
                     zIndex: 50,
-                    overflow: 'hidden', // Hide overflow text when collapsed
+                    overflow: 'hidden',
                     borderRight: '1px solid #1f2937'
                 }}
             >
-                {/* Header / Toggle */}
+                {/* Header */}
                 <div style={{
                     padding: '1.5rem',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: isExpanded ? 'space-between' : 'center',
+                    justifyContent: 'center', // Always center since no toggle button
                     marginBottom: '2rem',
                     minHeight: '80px'
                 }}>
-                    {isExpanded && (
+                    {showSidebar ? (
                         <div>
                             <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>ADMIN</h1>
-                            <p style={{ color: '#9ca3af', fontSize: '0.75rem' }}>{user?.fullname || 'Administrator'}</p>
+                            <p style={{ color: '#9ca3af', fontSize: '1.0 rem' }}>{user?.fullname || 'Administrator'}</p>
+                        </div>
+                    ) : (
+                        <div style={{ width: '32px', height: '32px', backgroundColor: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 'bold' }}>
+                            A
                         </div>
                     )}
-                    <button
-                        onClick={() => setIsExpanded(!isExpanded)}
-                        style={{
-                            background: isExpanded ? '#16db41ff' : '#e20d0dff',
-                            border: 'none',
-                            borderRadius: '50%',
-                            width: '32px',
-                            height: '32px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            color: 'white'
-                        }}
-                    >
-                        {isExpanded ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-                    </button>
                 </div>
 
                 {/* Navigation */}
                 <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0 1rem' }}>
                     {navItems.map((item) => {
-                        const isActive = location.pathname === item.path; // Simple active check
+                        const isActive = location.pathname === item.path;
                         return (
                             <Link
                                 key={item.label}
@@ -86,7 +77,7 @@ export const AdminLayout = () => {
                                     borderRadius: '0.5rem',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: isExpanded ? 'flex-start' : 'center',
+                                    justifyContent: showSidebar ? 'flex-start' : 'center',
                                     gap: '0.75rem',
                                     transition: 'colors 0.2s',
                                     whiteSpace: 'nowrap'
@@ -94,7 +85,7 @@ export const AdminLayout = () => {
                                 className="hover:text-white hover:bg-gray-800"
                             >
                                 <item.icon size={20} />
-                                {isExpanded && <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{item.label}</span>}
+                                {showSidebar && <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{item.label}</span>}
                             </Link>
                         );
                     })}
@@ -107,10 +98,10 @@ export const AdminLayout = () => {
                             logOut();
                             navigate('/login');
                         }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: isExpanded ? 'flex-start' : 'center', gap: '0.75rem', color: '#ef4444', cursor: 'pointer' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: showSidebar ? 'flex-start' : 'center', gap: '0.75rem', color: '#ef4444', cursor: 'pointer' }}
                     >
                         <LogOut size={20} />
-                        {isExpanded && <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Sign Out</span>}
+                        {showSidebar && <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Sign Out</span>}
                     </div>
                 </div>
             </aside>
@@ -118,10 +109,10 @@ export const AdminLayout = () => {
             {/* Main Content Wrapper */}
             <main style={{
                 flex: 1,
-                marginLeft: isExpanded ? '260px' : '80px',
+                marginLeft: '80px', // Fixed margin
                 transition: 'margin-left 0.3s ease',
                 minHeight: '100vh',
-                width: '100%' // Ensure full width
+                width: '100%'
             }}>
                 <Outlet />
             </main>
