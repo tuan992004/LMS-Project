@@ -7,8 +7,8 @@ import { useAuthStore } from "../../stores/userAuthStore";
 
 
 const logInSchema = z.object({
-    username: z.string().min(3, "Username phải có ít nhất 3 ký tự"),
-    password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  username: z.string().min(3, "Username phải có ít nhất 3 ký tự"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
 });
 
 export const LoginForm = () => {
@@ -47,55 +47,135 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div
+      style={{
+        backgroundColor: "white",
+        borderRadius: "1rem",
+        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+        overflow: "hidden",
+        margin: "0 auto",
+        border: "1px solid #e5e7eb",
+        width: "100%",
+        maxWidth: "28rem",
+      }}
+    >
+      <div style={{ backgroundColor: "black", padding: "2rem", textAlign: "center" }}>
+        <h1
+          style={{
+            fontSize: "1.875rem",
+            fontWeight: "bold",
+            color: "white",
+            letterSpacing: "-0.025em",
+            margin: 0,
+          }}
+        >
+          The Academic Hood
+        </h1>
+        <p
+          style={{
+            color: "#9ca3af",
+            marginTop: "0.5rem",
+            fontSize: "0.875rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+          }}
+        >
+          Login to your account
+        </p>
+      </div>
 
-        <div className="bg-indigo-600 p-8 text-center">
-          <h1 className="text-3xl font-bold text-white">Lumina LMS</h1>
-          <p className="text-indigo-100">Login to your account</p>
+      <form onSubmit={handleSubmit(onSubmit)} style={{ padding: "2rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        <div>
+          <label
+            style={{
+              display: "block",
+              fontSize: "0.875rem",
+              fontWeight: "bold",
+              color: "#111827",
+              marginBottom: "0.25rem",
+            }}
+          >
+            Username
+          </label>
+          <input
+            type="text"
+            placeholder="Enter your username"
+            {...register("username")}
+            style={{
+              width: "100%",
+              backgroundColor: "white",
+              color: "black",
+              border: "2px solid #d1d5db",
+              borderRadius: "0.375rem",
+              padding: "0.75rem",
+              boxSizing: "border-box",
+            }}
+          />
+          {errors.username && (
+            <p style={{ color: "#dc2626", fontSize: "0.75rem", marginTop: "0.25rem", fontWeight: 500 }}>
+              {errors.username.message}
+            </p>
+          )}
         </div>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="p-8 space-y-4"
-        >
-          <div>
-            <input
-              type="text"
-              placeholder="Username"
-              {...register("username")}
-              className="w-full border rounded-lg p-3"
-            />
-            {errors.username && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.username.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <input
-              type="password"
-              placeholder="Password"
-              {...register("password")}
-              className="w-full border rounded-lg p-3"
-            />
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50"
+        <div>
+          <label
+            style={{
+              display: "block",
+              fontSize: "0.875rem",
+              fontWeight: "bold",
+              color: "#111827",
+              marginBottom: "0.25rem",
+            }}
           >
-            {isSubmitting ? "Logging in..." : "Login"}
-          </button>
-        </form>
-      </div>
+            Password
+          </label>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            {...register("password")}
+            style={{
+              width: "100%",
+              backgroundColor: "white",
+              color: "black",
+              border: "2px solid #d1d5db",
+              borderRadius: "0.375rem",
+              padding: "0.75rem",
+              boxSizing: "border-box",
+            }}
+          />
+          {errors.password && (
+            <p style={{ color: "#dc2626", fontSize: "0.75rem", marginTop: "0.25rem", fontWeight: 500 }}>
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          style={{
+            width: "100%",
+            backgroundColor: "black",
+            color: "white",
+            paddingTop: "0.75rem",
+            paddingBottom: "0.75rem",
+            borderRadius: "0.375rem",
+            fontWeight: "bold",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            fontSize: "0.875rem",
+            border: "none",
+            cursor: "pointer",
+            opacity: isSubmitting ? 0.5 : 1,
+            transition: "background-color 0.2s",
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#374151")}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "black")}
+        >
+          {isSubmitting ? "Logging in..." : "Login"}
+        </button>
+      </form>
     </div>
   );
 };
