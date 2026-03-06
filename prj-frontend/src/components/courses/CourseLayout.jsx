@@ -27,7 +27,7 @@ export const CourseLayout = () => {
   }, [courseid]);
 
   const handleAddLesson = () => {
-    navigate(`/admin/course/${courseid}/lesson/new`);
+    navigate(`/course/${courseid}/lesson/new`);
   };
 
   return (

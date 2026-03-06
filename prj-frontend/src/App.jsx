@@ -74,6 +74,7 @@ function App() {
 
           <Route element={<ProtectedRoute allowedRoles={["instructor", "admin"]} />}>
             <Route path="/course/:courseid/lesson/:lessonid" element={<LessonLayout />} />
+            <Route path="/course/:courseid/lesson/new" element={<LessonLayout />} />
           </Route>
           {/* Student */}
           <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
