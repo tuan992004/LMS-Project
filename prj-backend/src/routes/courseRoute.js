@@ -18,7 +18,7 @@ router.put('/lessons', authorize(['admin', 'instructor']), upload.any(), courseC
 router.get('/', authorize(['admin', 'instructor']), courseCtrl.getAllCourses);
 
 // Instructor tạo đề xuất khóa học mới
-router.post('/create', authorize(['admin']), courseCtrl.createCourse);
+router.post('/create', authorize(['admin', 'instructor']), courseCtrl.createCourse);
 router.delete('/:courseid', authorize(['admin','instructor']), courseCtrl.deleteCourse);
 
 // Admin duyệt/thay đổi trạng thái khóa học

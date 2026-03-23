@@ -4,11 +4,17 @@ const { generateLessonId } = require('../controllers/generateLessonId.js');
 const Course = {
     // --- KHÓA HỌC (COURSES) ---
     create: async (data) => {
-        const { courseid, title, description, instructor_id } = data;
+        const { courseid, title, description, instructor_id, status } = data;
+        const initialStatus = status || 'pending';
         return await db.execute(
-            "INSERT INTO courses (courseid, title, description, instructor_id) VALUES (?, ?, ?, ?)",
-            [courseid, title, description, instructor_id]
+            "INSERT INTO courses (courseid, title, description, instructor_id, status) VALUES (?, ?, ?, ?, ?)",
+            [courseid, title, description, instructor_id, initialStatus]
         );
+    },
+
+    findById: async (courseid) => {
+        const [rows] = await db.execute("SELECT * FROM courses WHERE courseid = ?", [courseid]);
+        return rows[0];
     },
 
     getAllForAdmin: async () => {

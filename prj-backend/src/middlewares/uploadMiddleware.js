@@ -2,25 +2,41 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Tạo thư mục nếu chưa tồn tại
-const uploadDir = 'public/uploads/';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, uploadDir);
+        let uploadPath = path.join(__dirname, '../../uploads');
+        
+        // Dynamically route file to correct folder based on API endpoint
+        if (req.originalUrl.includes('/submit')) {
+            uploadPath = path.join(__dirname, '../../uploads/submissions');
+        } else if (req.originalUrl.includes('/assignments')) {
+            uploadPath = path.join(__dirname, '../../uploads/assignments');
+        }
+        
+        // Ensure directory exists
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
-        // Đặt tên file: timestamp-tên-gốc
-        cb(null, Date.now() + '-' + file.originalname);
+        // Sanitize original filename and append timestamp to prevent collisions
+        const cleanName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '');
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + cleanName);
     }
 });
 
+const fileFilter = (req, file, cb) => {
+    // Optional: Log mimetype for debug
+    console.log("Receiving file upload:", file.mimetype, file.originalname);
+    cb(null, true); // Accept all files for now
+};
+
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 100 * 1024 * 1024 } // Giới hạn 100MB cho Video
+    fileFilter: fileFilter,
+    limits: { fileSize: 25 * 1024 * 1024 } // 25MB limit to support large PPTs / Docs
 });
 
 module.exports = upload;

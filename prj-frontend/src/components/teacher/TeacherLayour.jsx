@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/userAuthStore';
+import { NotificationBell } from '../shared/NotificationBell';
 import { LayoutDashboard, BookOpen, PlusCircle, Settings, LogOut } from 'lucide-react';
 
 export const TeacherLayout = () => {
@@ -13,9 +14,9 @@ export const TeacherLayout = () => {
 
     // Các mục điều hướng cho Giảng viên
     const navItems = [
-        { path: '/teacher/dashboard', label: 'Teacher Dashboard', icon: LayoutDashboard },
-        { path: '/admin/courses', label: 'My Courses', icon: BookOpen },
-        { path: '/admin/addcourse', label: 'Create Course', icon: PlusCircle },
+        { path: '/instructor', label: 'Teacher Dashboard', icon: LayoutDashboard },
+        { path: '/instructor/courses', label: 'My Courses', icon: BookOpen },
+        { path: '/instructor/addcourse', label: 'Create Course', icon: PlusCircle },
         { path: '/instructor/settings', label: 'Settings', icon: Settings },
     ];
 
@@ -27,7 +28,7 @@ export const TeacherLayout = () => {
                 onMouseLeave={() => setIsHovered(false)}
                 style={{
                     width: showSidebar ? '260px' : '80px',
-                    backgroundColor: '#111827', // Màu đen đậm slate
+                    backgroundColor: 'black',
                     color: 'white',
                     display: 'flex',
                     flexDirection: 'column',
@@ -52,11 +53,11 @@ export const TeacherLayout = () => {
                 }}>
                     {showSidebar ? (
                         <div style={{ textAlign: 'center' }}>
-                            <h1 style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '0.05em', whiteSpace: 'nowrap', color: '#60a5fa' }}>TEACHER PANEL</h1>
-                            <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '4px' }}>{user?.fullname || 'Instructor'}</p>
+                            <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>TEACHER</h1>
+                            <p style={{ color: '#9ca3af', fontSize: '1.0 rem', marginTop: '4px' }}>{user?.fullname || 'Instructor'}</p>
                         </div>
                     ) : (
-                        <div style={{ width: '32px', height: '32px', backgroundColor: '#60a5fa', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                        <div style={{ width: '32px', height: '32px', backgroundColor: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black', fontWeight: 'bold' }}>
                             T
                         </div>
                     )}
@@ -80,11 +81,12 @@ export const TeacherLayout = () => {
                                     alignItems: 'center',
                                     justifyContent: showSidebar ? 'flex-start' : 'center',
                                     gap: '0.75rem',
-                                    transition: 'all 0.2s',
+                                    transition: 'colors 0.2s',
                                     whiteSpace: 'nowrap'
                                 }}
+                                className="hover:text-white hover:bg-gray-800"
                             >
-                                <item.icon size={20} color={isActive ? '#60a5fa' : 'currentColor'} />
+                                <item.icon size={20} />
                                 {showSidebar && <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{item.label}</span>}
                             </Link>
                         );
@@ -119,13 +121,31 @@ export const TeacherLayout = () => {
             {/* Main Content Wrapper */}
             <main style={{
                 flex: 1,
-                marginLeft: '80px',
+                marginLeft: showSidebar ? '260px' : '80px',
                 transition: 'margin-left 0.3s ease',
                 minHeight: '100vh',
                 width: '100%',
-                backgroundColor: '#000000'
+                display: 'flex',
+                flexDirection: 'column'
             }}>
-                <div style={{ padding: '20px' }}>
+                {/* Top Notification Bar */}
+                <div style={{ 
+                    height: '4rem', 
+                    display: 'flex', 
+                    justifyContent: 'flex-end', 
+                    alignItems: 'center', 
+                    padding: '0 2rem', 
+                    borderBottom: '1px solid #e5e7eb', 
+                    backgroundColor: 'white',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 40
+                }}>
+                    <NotificationBell />
+                </div>
+                
+                {/* Page Content */}
+                <div style={{ flex: 1, overflowY: 'auto' }}>
                     <Outlet />
                 </div>
             </main>

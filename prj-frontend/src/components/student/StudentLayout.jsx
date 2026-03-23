@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/userAuthStore';
+import { NotificationBell } from '../shared/NotificationBell';
 import { LayoutDashboard, BookOpen, Settings, LogOut } from 'lucide-react';
 
 export const StudentLayout = () => {
@@ -111,9 +112,30 @@ export const StudentLayout = () => {
                 marginLeft: showSidebar ? '260px' : '80px',
                 transition: 'margin-left 0.3s ease',
                 minHeight: '100vh',
-                width: '100%'
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column'
             }}>
-                <Outlet />
+                {/* Top Notification Bar */}
+                <div style={{ 
+                    height: '4rem', 
+                    display: 'flex', 
+                    justifyContent: 'flex-end', 
+                    alignItems: 'center', 
+                    padding: '0 2rem', 
+                    borderBottom: '1px solid #e5e7eb', 
+                    backgroundColor: 'white',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 40
+                }}>
+                    <NotificationBell />
+                </div>
+                
+                {/* Page Content */}
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                    <Outlet />
+                </div>
             </main>
         </div>
     );

@@ -11,7 +11,7 @@ import { Toaster } from "sonner";
 import { RoleRedirect } from "./components/auth/RoleRedirect";
 import { useAuthStore } from "./stores/userAuthStore";
 import { AdminLayout } from "./components/admin/AdminLayout";
-import { AdminDashboard } from "./pages/admin/adminDashboard";
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import AddCoursePage from "./pages/admin/AddCoursePage";
 import { TeacherDashboard } from "./pages/teacher/teacherDashboard";
 import { TeacherLayout } from "./components/teacher/TeacherLayour";
@@ -22,6 +22,7 @@ import { LessonLayout } from "./components/courses/lessons/LessonLayout";
 import { StudentLayout } from "./components/student/StudentLayout";
 import { StudentCourses } from "./pages/student/StudentCourses";
 import { Settings } from "./pages/shared/Settings";
+import { AssignmentDetail } from "./pages/shared/AssignmentDetail";
 
 function App() {
   const { refresh, loading } = useAuthStore();
@@ -56,6 +57,7 @@ function App() {
 
               {/* 1. Trang quản lý danh sách bài giảng của 1 khóa học */}
               <Route path="admin/lessons/:courseid" element={<CourseLayout />} />
+              <Route path="admin/assignment/:assignment_id" element={<AssignmentDetail />} />
             </Route>
           </Route>
 
@@ -63,12 +65,15 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={["instructor"]} />}>
             <Route element={<TeacherLayout />}>
               <Route path="/instructor" element={<TeacherDashboard />} />
+              <Route path="/instructor/courses" element={<CourseManagement />} />
+              <Route path="/instructor/addcourse" element={<AddCoursePage />} />
               <Route path="/instructor/settings" element={<Settings />} />
               {/* Thêm Route quản lý khóa học và bài học cho Giảng viên */}
               <Route path="/instructor/course/:courseid" element={<CourseLayout />} />
               <Route path="/instructor/course/:courseid/lesson/:lessonid" element={<LessonLayout />} />
               {/* 1. Trang quản lý danh sách bài giảng của 1 khóa học */}
               <Route path="/instructor/lessons/:courseid" element={<CourseLayout />} />
+              <Route path="/instructor/course/:courseid/assignment/:assignment_id" element={<AssignmentDetail />} />
             </Route>
           </Route>
 
@@ -81,6 +86,8 @@ function App() {
             <Route element={<StudentLayout />}>
               <Route path="/student" element={<StudentDashboard />} />
               <Route path="/student/courses" element={<StudentCourses />} />
+              <Route path="/student/course/:courseid" element={<CourseLayout />} />
+              <Route path="/student/assignment/:assignment_id" element={<AssignmentDetail />} />
               <Route path="/student/settings" element={<Settings />} />
             </Route>
           </Route>

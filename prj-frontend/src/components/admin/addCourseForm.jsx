@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { courseService } from "../../service/courseService";
 import { toast } from "sonner";
+import { useAuthStore } from "../../stores/userAuthStore";
 
 export default function AddCourseForm() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -14,18 +16,20 @@ export default function AddCourseForm() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const cancelPath = user?.role === 'admin' ? '/admin/courses' : '/instructor/courses';
+  const successPath = user?.role === 'admin' ? '/admin/courses' : '/instructor/courses';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await courseService.createCourse(form);
       toast.success("Thêm khóa học mới thành công!");
-      navigate("/admin/courses");
+      navigate(successPath);
     } catch (error) {
       toast.error(error.response?.data?.message || "Lỗi khi tạo khóa học");
     }
-  }; // Đóng hàm handleSubmit tại đây
+  };
 
-  // Khối return này PHẢI nằm trong AddCourseForm
   return (
     <div style={{ maxWidth: '600px', margin: '2rem auto', padding: '2rem', backgroundColor: 'white', borderRadius: '1rem', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Tạo khóa học mới</h2>
@@ -56,7 +60,7 @@ export default function AddCourseForm() {
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button 
             type="button" 
-            onClick={() => navigate('/admin/courses')}
+            onClick={() => navigate(cancelPath)}
             style={{ ...btnStyle, backgroundColor: '#f3f4f6', color: '#1f2937' }}
           >
             Hủy
@@ -71,8 +75,8 @@ export default function AddCourseForm() {
       </form>
     </div>
   );
-} // Đóng component AddCourseForm ở cuối cùng
+}
 
 const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#374151' };
-const inputStyle = { width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #d1d5db', outline: 'none' };
+const inputStyle = { width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #d1d5db', outline: 'none', color: '#111827', backgroundColor: 'white' };
 const btnStyle = { padding: '0.75rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' };

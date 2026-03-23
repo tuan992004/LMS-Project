@@ -37,17 +37,34 @@ export const UserManagement = () => {
         fetchUsers();
     }, []);
 
-    // Delete User
-    const handleDeleteUser = async (userId) => {
-        if (!window.confirm("Are you sure you want to delete this user?")) return;
-        try {
-            await api.delete(`/users/${userId}`);
-            toast.success("User deleted successfully");
-            fetchUsers();
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to delete user");
-        }
+    // Delete User (Optimistic with Undo)
+    const handleDeleteUser = (userId) => {
+        const targetUser = users.find(u => u.userid === userId);
+        
+        // Optimistically remove from UI
+        setUsers(prev => prev.filter(u => u.userid !== userId));
+
+        const timer = setTimeout(async () => {
+            try {
+                await api.delete(`/users/${userId}`);
+            } catch (error) {
+                console.error(error);
+                toast.error("Lỗi xóa người dùng");
+                fetchUsers(); // Restore if failed
+            }
+        }, 5000);
+
+        toast.success("Tài khoản đã được đưa vào thùng rác", {
+            duration: 5000,
+            action: {
+                label: 'Hoàn tác (Undo)',
+                onClick: () => {
+                    clearTimeout(timer);
+                    fetchUsers(); // Instantly restore
+                    toast.success("Đã hoàn tác xóa tài khoản!");
+                }
+            }
+        });
     };
 
     // Open Edit Modal

@@ -4,14 +4,20 @@ import { Plus, Video, Image, Type, Trash2, Save, X, ArrowLeft } from "lucide-rea
 import { courseService } from "../../../service/courseService";
 import { api } from "../../../lib/axios";
 import { toast } from "sonner";
+import { useAuthStore } from "../../../stores/userAuthStore";
 
 export const LessonLayout = () => {
   const { courseid, lessonid } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [isEditMode, setIsEditMode] = useState(false);
   const [title, setTitle] = useState("Bài học chưa đặt tên");
   const [loading, setLoading] = useState(true);
   const [blocks, setBlocks] = useState([]);
+
+  const listPath = user?.role === 'admin' ? `/admin/lessons/${courseid}` : `/instructor/lessons/${courseid}`;
+
+  const goBack = () => navigate(listPath, { replace: true });
 
   useEffect(() => {
     const fetchLessonDetail = async () => {
@@ -80,12 +86,17 @@ export const LessonLayout = () => {
       toast.success(response.message);
       setIsEditMode(false);
       
-      if (lessonid === "new" && response.new_lesson_id) {
-         navigate(`/admin/course/${courseid}/lesson/${response.new_lesson_id}`, { replace: true });
+      if (lessonid === "new") {
+         navigate(listPath, { replace: true });
       }
     } catch (error) {
       toast.error("Lỗi khi lưu bài học");
     }
+  };
+
+  const handleCancel = () => {
+      if (lessonid === "new") goBack();
+      else setIsEditMode(false);
   };
 
   if (loading) return <div style={{ textAlign: 'center', padding: '5rem', color: 'black' }}>Đang tải nội dung...</div>;
@@ -93,8 +104,8 @@ export const LessonLayout = () => {
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', paddingBottom: '100px', color: 'black' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', alignItems: 'center' }}>
-        <button onClick={() => navigate(-1)} style={backBtnStyle}>
-           <ArrowLeft size={18} color="black" /> Quay lại
+        <button onClick={goBack} style={backBtnStyle}>
+           <ArrowLeft size={18} color="black" /> Back to Lessons
         </button>
         {!isEditMode && (
           <button onClick={() => setIsEditMode(true)} style={btnPrimary}>
@@ -170,7 +181,7 @@ export const LessonLayout = () => {
 
       {isEditMode && (
         <div style={actionFooter}>
-          <button onClick={() => setIsEditMode(false)} style={btnSecondary}>Hủy bỏ</button>
+          <button onClick={handleCancel} style={btnSecondary}>Hủy bỏ</button>
           <button onClick={handleSave} style={btnBlack}><Save size={18} /> Lưu bài giảng</button>
         </div>
       )}
@@ -193,4 +204,4 @@ const btnSecondary = { backgroundColor: 'white', color: 'black', padding: '0.7re
 const btnPrimary = { backgroundColor: 'black', color: 'white', padding: '0.6rem 1.2rem', borderRadius: '0.5rem', cursor: 'pointer', border: 'none', fontWeight: 'bold' };
 const mediaBox = { padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem', textAlign: 'center', border: '1px solid black' };
 const mediaStyle = { maxWidth: '100%', borderRadius: '8px', maxHeight: '450px', border: '1px solid black' };
-const backBtnStyle = { border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', color: 'black', fontWeight: 'bold' };
+const backBtnStyle = { border: '1px solid #d1d5db', backgroundColor: 'white', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', color: '#111827', fontWeight: '600', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' };

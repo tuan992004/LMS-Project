@@ -5,13 +5,32 @@ const createCourse = async (req, res) => {
     try {
         const { title, description } = req.body;
         const courseid = 'CRS-' + Date.now(); 
+        const status = req.user.role === 'admin' ? 'approved' : 'pending';
+
         await Course.create({
             courseid,
             title,
             description,
-            instructor_id: req.user.userid
+            instructor_id: req.user.userid,
+            status
         });
-        res.status(201).json({ message: "Đã gửi đề xuất khóa học tới Admin", courseid });
+
+        if (status === 'pending') {
+            const User = require('../modules/User');
+            const Notification = require('../modules/Notification');
+            const users = await User.findAll();
+            const admins = users.filter(u => u.role === 'admin');
+            for (const admin of admins) {
+                await Notification.insert(
+                    admin.userid, 
+                    'COURSE_APPROVAL', 
+                    `Giảng viên ${req.user.fullname || req.user.username} vừa đề xuất khóa học mới: "${title}".`
+                );
+            }
+        }
+
+        const msg = status === 'approved' ? "Tạo khóa học thành công" : "Đã gửi đề xuất khóa học tới Admin";
+        res.status(201).json({ message: msg, courseid });
     } catch (error) {
         res.status(500).json({ message: "Lỗi tạo khóa học", error: error.message });
     }
@@ -22,6 +41,18 @@ const approveCourse = async (req, res) => {
         const { courseid } = req.params;
         const { status } = req.body; // 'approved' hoặc 'pending'
         await Course.updateStatus(courseid, status);
+
+        const Notification = require('../modules/Notification');
+        const course = await Course.findById(courseid);
+        if (course && course.instructor_id) {
+            const statusMsg = status === 'approved' ? 'đã được duyệt' : 'bị từ chối hoặc chuyển về Pending';
+            await Notification.insert(
+                course.instructor_id,
+                'COURSE_APPROVAL',
+                `Khóa học "${course.title}" của bạn ${statusMsg}.`
+            );
+        }
+
         res.json({ message: `Trạng thái khóa học đã chuyển thành: ${status}` });
     } catch (error) {
         res.status(500).json({ message: "Lỗi phê duyệt" });

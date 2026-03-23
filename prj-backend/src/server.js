@@ -4,11 +4,14 @@ const db = require('./libs/db.js')
 const authRoute = require('./routes/authRoute.js')
 const userRoute = require('./routes/userRoute.js')
 const courseRoute = require('./routes/courseRoute.js');
+const notificationRoute = require('./routes/notificationRoute.js');
+const assignmentRoute = require('./routes/assignmentRoute.js');
 const protectedRoute = require('./middlewares/authMiddleware.js')
 const bcrypt = require('bcrypt')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 require("dotenv").config()
+const path = require('path');
 
 const app = express()
 const PORT = 5001
@@ -18,8 +21,6 @@ app.use((req, res, next) => {
     next();
 });
 
-
-
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
@@ -27,7 +28,7 @@ app.use(cors({
     credentials: true,
 }))
 
-app.use('/uploads', express.static('public/uploads'));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 //public routes
 app.use('/api/auth', authRoute)
@@ -37,6 +38,8 @@ app.use('/api/auth', authRoute)
 app.use('/api/users', protectedRoute, userRoute)
 app.use('/api/users', protectedRoute, userRoute);
 app.use('/api/courses', protectedRoute, courseRoute);
+app.use('/api/notifications', protectedRoute, notificationRoute);
+app.use('/api/assignments', protectedRoute, assignmentRoute);
 
 //test api
 app.get('/user', async (req, res) => {
