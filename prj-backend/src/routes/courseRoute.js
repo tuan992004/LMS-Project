@@ -30,6 +30,8 @@ router.patch('/approve/:courseid', authorize(['admin']), courseCtrl.approveCours
 // Xem nội dung bài giảng của một khóa học
 router.get('/content/:courseid', authorize(['student', 'instructor', 'admin']), courseCtrl.getCourseContent);
 
+router.get('/my-enrolled', authorize(['student', 'instructor', 'admin']), courseCtrl.getMyEnrolledCourses);
+
 router.get('/lessons/detail/:lesson_id', authorize(['student', 'instructor', 'admin']), courseCtrl.getLessonDetail);
 
 module.exports = router;

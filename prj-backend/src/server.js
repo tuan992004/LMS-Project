@@ -6,6 +6,7 @@ const userRoute = require('./routes/userRoute.js')
 const courseRoute = require('./routes/courseRoute.js');
 const notificationRoute = require('./routes/notificationRoute.js');
 const assignmentRoute = require('./routes/assignmentRoute.js');
+const enrollmentRoute = require('./routes/enrollmentRoute.js');
 const protectedRoute = require('./middlewares/authMiddleware.js')
 const bcrypt = require('bcrypt')
 const cookieParser = require('cookie-parser')
@@ -40,6 +41,7 @@ app.use('/api/users', protectedRoute, userRoute);
 app.use('/api/courses', protectedRoute, courseRoute);
 app.use('/api/notifications', protectedRoute, notificationRoute);
 app.use('/api/assignments', protectedRoute, assignmentRoute);
+app.use('/api/enrollments', protectedRoute, enrollmentRoute);
 
 //test api
 app.get('/user', async (req, res) => {

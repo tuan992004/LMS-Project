@@ -14,11 +14,10 @@ const protectedRoute = (req, res, next) => {
         //Xác nhận Token hợp lệ
         jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, decodedUser) => {
             if(err){
-                console.error(err)
                 return res.status(403).json({message: 'Access Token hết hạn hoặc không đúng!'})
             }
             
-             //Tìm user
+            //Tìm user
             const user = await User.findById(decodedUser.userid);
 
             if (!user){

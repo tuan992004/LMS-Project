@@ -165,6 +165,29 @@ const getCourseContent = async (req, res) => {
     }
 };
 
+const getMyEnrolledCourses = async (req, res) => {
+    try {
+        const Enrollment = require('../modules/Enrollment');
+        const studentId = req.user.userid;
+        const enrollments = await Enrollment.getByStudentId(studentId);
+        
+        // Extract course info from enrollments
+        const courses = enrollments.map(e => ({
+            courseid: e.course_id,
+            title: e.title,
+            description: e.description,
+            instructor_id: e.instructor_id,
+            status: e.course_status,
+            enrollment_status: e.status
+        }));
+        
+        res.json(courses);
+    } catch (error) {
+        console.error("Error fetching my enrolled courses:", error);
+        res.status(500).json({ message: "Lỗi lấy danh sách khóa học của bạn" });
+    }
+};
+
 const deleteCourse = async (req, res) => {
     try {
         const { courseid } = req.params;
@@ -183,5 +206,6 @@ module.exports = {
     getAllCourses, 
     getCourseContent,
     deleteCourse,
-    getLessonDetail
+    getLessonDetail,
+    getMyEnrolledCourses
 };

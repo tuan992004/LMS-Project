@@ -44,7 +44,7 @@ export const AdminDashboard = () => {
                 </div>
                 <div style={{ backgroundColor: 'white', padding: '1.5rem', borderRadius: '1rem', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
                     <h3 style={{ fontSize: '0.875rem', color: '#6b7280', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Total Courses</h3>
-                    <p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#111827' }}>--</p>
+                    <p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#111827' }}>{stats.totalCourses}</p>
                 </div>
             </div>
         </div>
