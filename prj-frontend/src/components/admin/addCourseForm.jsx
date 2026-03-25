@@ -31,43 +31,49 @@ export default function AddCourseForm() {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '2rem auto', padding: '2rem', backgroundColor: 'white', borderRadius: '1rem', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Tạo khóa học mới</h2>
+    <div className="glass-card max-w-2xl mx-auto my-12 p-10">
+      <h2 className="text-3xl font-black text-[var(--text-primary)] mb-8 tracking-tight">
+        Tạo khóa học mới
+      </h2>
       
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <div>
-          <label style={labelStyle}>Tên khóa học</label>
+          <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
+            Tên khóa học
+          </label>
           <input 
             name="title" 
             placeholder="Ví dụ: Lập trình ReactJS cơ bản" 
             onChange={handleChange} 
             required 
-            style={inputStyle}
+            className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-2 focus:ring-[var(--accent-primary)] outline-none transition-all text-[var(--text-primary)]"
           />
         </div>
 
         <div>
-          <label style={labelStyle}>Mô tả khóa học</label>
+          <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
+            Mô tả khóa học
+          </label>
           <textarea 
             name="description" 
             placeholder="Nhập mô tả chi tiết nội dung khóa học..." 
             onChange={handleChange} 
             rows="5"
-            style={inputStyle}
+            className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-2 focus:ring-[var(--accent-primary)] outline-none transition-all text-[var(--text-primary)]"
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div className="flex gap-4 pt-4">
           <button 
             type="button" 
             onClick={() => navigate(cancelPath)}
-            style={{ ...btnStyle, backgroundColor: '#f3f4f6', color: '#1f2937' }}
+            className="flex-1 py-4 rounded-xl bg-[var(--bg-secondary)] text-[var(--text-primary)] font-bold hover:opacity-80 transition-all active:scale-95"
           >
             Hủy
           </button>
           <button 
             type="submit" 
-            style={{ ...btnStyle, backgroundColor: 'black', color: 'white', flex: 1 }}
+            className="flex-[2] py-4 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold hover:opacity-90 transition-all shadow-xl active:scale-95"
           >
             Lưu khóa học
           </button>
@@ -76,7 +82,3 @@ export default function AddCourseForm() {
     </div>
   );
 }
-
-const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: '#374151' };
-const inputStyle = { width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #d1d5db', outline: 'none', color: '#111827', backgroundColor: 'white' };
-const btnStyle = { padding: '0.75rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' };

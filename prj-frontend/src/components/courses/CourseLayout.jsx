@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Plus, BookOpen, ArrowLeft, ChevronRight, FileText, Calendar } from "lucide-react";
+import { 
+  Plus, 
+  BookOpen, 
+  ArrowLeft, 
+  ChevronRight, 
+  FileText, 
+  Calendar,
+  Clock,
+  Info,
+  Layout,
+  Layers,
+  X,
+  Upload,
+  Loader2
+} from "lucide-react";
 import { courseService } from "../../service/courseService";
 import { api } from "../../lib/axios";
 import { toast } from "sonner";
@@ -14,26 +28,34 @@ export const CourseLayout = () => {
   const [lessons, setLessons] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [activeTab, setActiveTab] = useState('lessons'); // 'lessons' | 'assignments'
+  const [loading, setLoading] = useState(true);
 
   // Assignment Modal
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [newAssignment, setNewAssignment] = useState({ title: '', description: '', due_date: '', file: null });
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       // Fetch Content (Lessons)
       const lessonsData = await courseService.getCourseContent(courseid);
       setLessons(lessonsData);
 
       if (lessonsData.length > 0 && lessonsData[0].course_title) {
-        setCourse(prev => ({ ...prev, title: lessonsData[0].course_title }));
+        setCourse(prev => ({ 
+            ...prev, 
+            title: lessonsData[0].course_title,
+            description: lessonsData[0].course_description || prev.description 
+        }));
       }
 
       // Fetch Assignments
       const assignRes = await api.get(`/assignments/course/${courseid}`);
       setAssignments(assignRes.data);
     } catch (e) {
-      toast.error("Lỗi tải dữ liệu khóa học");
+      toast.error("Failed to load course data");
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -46,292 +68,333 @@ export const CourseLayout = () => {
   };
 
   const handleCreateAssignment = async (e) => {
-     e.preventDefault();
-     if (!newAssignment.title) {
-         toast.error("Vui lòng nhập tiêu đề bài tập");
-         return;
-     }
+    e.preventDefault();
+    if (!newAssignment.title) {
+      toast.error("Please enter an assignment title");
+      return;
+    }
 
-     try {
-         const formData = new FormData();
-         formData.append('title', newAssignment.title);
-         formData.append('description', newAssignment.description);
-         if (newAssignment.due_date) formData.append('due_date', newAssignment.due_date);
-         if (newAssignment.file) formData.append('file', newAssignment.file);
+    try {
+      const formData = new FormData();
+      formData.append('title', newAssignment.title);
+      formData.append('description', newAssignment.description);
+      if (newAssignment.due_date) formData.append('due_date', newAssignment.due_date);
+      if (newAssignment.file) formData.append('file', newAssignment.file);
 
-         await api.post(`/assignments/course/${courseid}`, formData, {
-             headers: { 'Content-Type': 'multipart/form-data' }
-         });
+      await api.post(`/assignments/course/${courseid}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
-         toast.success("Tạo bài tập thành công");
-         setIsAssignmentModalOpen(false);
-         setNewAssignment({ title: '', description: '', due_date: '', file: null });
-         fetchData();
-     } catch (e) {
-         toast.error("Lỗi khi tạo bài tập");
-     }
+      toast.success("Assignment created successfully");
+      setIsAssignmentModalOpen(false);
+      setNewAssignment({ title: '', description: '', due_date: '', file: null });
+      fetchData();
+    } catch (e) {
+      toast.error("Failed to create assignment");
+    }
   };
 
   const isInstructorOrAdmin = user?.role === 'admin' || user?.role === 'instructor';
 
   const navigateToAssignment = (id) => {
-      if (user?.role === 'student') navigate(`/student/assignment/${id}`);
-      else if (user?.role === 'admin') navigate(`/admin/assignment/${id}`);
-      else navigate(`/instructor/course/${courseid}/assignment/${id}`);
+    if (user?.role === 'student') navigate(`/student/assignment/${id}`);
+    else if (user?.role === 'admin') navigate(`/admin/assignment/${id}`);
+    else navigate(`/instructor/course/${courseid}/assignment/${id}`);
   };
 
-  return (
-    <div style={containerStyle}>
-      <button 
-        onClick={() => {
-            if (user?.role === 'admin') navigate('/admin/courses');
-            else if (user?.role === 'student') navigate('/student/courses');
-            else navigate('/instructor/courses');
-        }} 
-        style={backBtnStyle}
-      >
-        <ArrowLeft size={18} color="black" /> Quay lại danh sách
-      </button>
-      
-      <section style={infoSectionStyle}>
-        <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: 'black' }}>
-          {course.title || "Tên khóa học"}
-        </h1>
-        <p style={{ color: 'black' }}>ID: <strong>{courseid}</strong></p>
-        <p style={{ marginTop: '1rem', lineHeight: '1.6', color: 'black' }}>
-          {course.description || "Mô tả khóa học sẽ hiển thị ở đây..."}
-        </p>
-      </section>
+  const getBackPath = () => {
+    if (user?.role === 'admin') return '/admin/courses';
+    if (user?.role === 'student') return '/student/courses';
+    return '/instructor/courses';
+  };
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', borderBottom: '2px solid #e5e7eb' }}>
-          <button 
-              onClick={() => setActiveTab('lessons')}
-              style={{ ...tabStyle, borderBottom: activeTab === 'lessons' ? '3px solid black' : '3px solid transparent', fontWeight: activeTab === 'lessons' ? 'bold' : 'normal', color: activeTab === 'lessons' ? 'black' : '#6b7280' }}
-          >
-              <BookOpen size={20} /> Bài học
-          </button>
-          <button 
-              onClick={() => setActiveTab('assignments')}
-              style={{ ...tabStyle, borderBottom: activeTab === 'assignments' ? '3px solid black' : '3px solid transparent', fontWeight: activeTab === 'assignments' ? 'bold' : 'normal', color: activeTab === 'assignments' ? 'black' : '#6b7280' }}
-          >
-              <FileText size={20} /> Bài tập
-          </button>
+  if (loading && lessons.length === 0) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-12 w-12 animate-spin text-[var(--accent-primary)] mb-4" />
+        <p className="text-[var(--text-secondary)] font-bold animate-pulse">Loading course architecture...</p>
+    </div>
+  );
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 p-4 sm:p-0">
+      {/* Top Header */}
+      <div className="glass-card p-10 relative overflow-hidden group shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent-primary)] opacity-[0.03] rounded-full -mr-32 -mt-32 transition-transform group-hover:scale-110" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8">
+          <div className="space-y-6 flex-1">
+            <button
+                onClick={() => navigate(getBackPath())}
+                className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all text-[10px] font-black uppercase tracking-widest group/back"
+            >
+                <ArrowLeft className="h-4 w-4 group-hover/back:-translate-x-1 transition-transform" />
+                Quay lại danh sách
+            </button>
+            
+            <h1 className="text-5xl font-black text-[var(--text-primary)] tracking-tight leading-[1.1]">
+                {course.title || "Chi tiết khóa học"}
+            </h1>
+            
+            <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2 bg-[var(--bg-secondary)] px-4 py-2 rounded-2xl text-[var(--text-secondary)] font-bold text-[10px] uppercase tracking-widest border border-[var(--border-color)]">
+                    <Layout className="h-3.5 w-3.5" />
+                    ID: {courseid}
+                </div>
+                {lessons.length > 0 && (
+                    <div className="flex items-center gap-2 bg-[var(--accent-primary)]/10 px-4 py-2 rounded-2xl text-[var(--accent-primary)] font-bold text-[10px] uppercase tracking-widest border border-[var(--accent-primary)]/20 shadow-sm">
+                        <Layers className="h-3.5 w-3.5" />
+                        {lessons.length} Bài học
+                    </div>
+                )}
+            </div>
+          </div>
+
+          <div className="relative z-10 flex flex-col justify-end max-w-sm">
+            <div className="bg-white/30 backdrop-blur-sm p-6 rounded-3xl border border-white/20 shadow-sm">
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] mb-2 flex items-center gap-2">
+                    <Info className="h-3 w-3" /> Giới thiệu
+                </h4>
+                <p className="text-[var(--text-secondary)] text-sm leading-relaxed line-clamp-4 font-medium italic">
+                    {course.description || "Khóa học này cung cấp các kiến thức chuyên sâu và kỹ năng thực hành thực tế cho học viên."}
+                </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div style={{ paddingTop: '2rem' }}>
-          {activeTab === 'lessons' && (
-              <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'black' }}>Nội dung bài học</h2>
-                    {isInstructorOrAdmin && (
-                        <button onClick={handleAddLesson} style={addBtnStyle}>
-                          <Plus size={18} /> Thêm bài học mới
-                        </button>
-                    )}
-                  </div>
+      {/* Main Content Area */}
+      <div className="glass-card overflow-hidden min-h-[600px] flex flex-col shadow-2xl">
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-[var(--border-color)] px-8 pt-6 bg-white/30 backdrop-blur-md">
+          <button
+            onClick={() => setActiveTab('lessons')}
+            className={`
+              flex items-center gap-3 px-8 py-5 transition-all duration-300 relative font-black text-[10px] uppercase tracking-widest
+              ${activeTab === 'lessons' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] opacity-50 hover:opacity-100'}
+            `}
+          >
+            <BookOpen className={`h-5 w-5 ${activeTab === 'lessons' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`} />
+            Nội dung bài học
+            {activeTab === 'lessons' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--accent-primary)] rounded-t-full shadow-lg shadow-indigo-600/20" />}
+          </button>
+          <button
+            onClick={() => setActiveTab('assignments')}
+            className={`
+              flex items-center gap-3 px-8 py-5 transition-all duration-300 relative font-black text-[10px] uppercase tracking-widest
+              ${activeTab === 'assignments' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)] opacity-50 hover:opacity-100'}
+            `}
+          >
+            <FileText className={`h-5 w-5 ${activeTab === 'assignments' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`} />
+            Bài tập & Dự án
+            {activeTab === 'assignments' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--accent-primary)] rounded-t-full shadow-lg shadow-indigo-600/20" />}
+          </button>
+        </div>
 
-                  <div style={lessonContainerStyle}>
-                    {lessons.length === 0 ? (
-                      <div style={emptyStyle}>Chưa có bài học nào.</div>
-                    ) : (
-                      lessons.map((lesson, index) => (
-                        <div 
-                          key={lesson.lesson_id} 
-                          style={lessonItemStyle}
-                          onClick={() => navigate(`/course/${courseid}/lesson/${lesson.lesson_id}`)}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'black' }}>
-                            <BookOpen size={20} color="black" />
-                            <span style={{ fontWeight: '500' }}>Bài {index + 1}: {lesson.title}</span>
-                          </div>
-                          <ChevronRight size={20} color="black" />
-                        </div>
-                      ))
-                    )}
+        {/* Tab View Content */}
+        <div className="p-8 sm:p-12 flex-1 relative">
+          {activeTab === 'lessons' && (
+            <div className="space-y-10 animate-in slide-in-from-bottom-4 duration-500">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div>
+                  <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">Học phần đào tạo</h2>
+                  <p className="text-[var(--text-secondary)] font-medium mt-1">Hoàn thành các bài học theo lộ trình để nắm vững kiến thức.</p>
+                </div>
+                {isInstructorOrAdmin && (
+                  <button 
+                    onClick={handleAddLesson} 
+                    className="flex items-center gap-3 bg-[var(--text-primary)] text-[var(--bg-primary)] px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-xl active:scale-95 group"
+                  >
+                    <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
+                    Thêm bài học mới
+                  </button>
+                )}
+              </div>
+
+              <div className="grid gap-6">
+                {lessons.length === 0 ? (
+                  <div className="py-24 flex flex-col items-center justify-center text-center bg-white/20 rounded-[3rem] border-2 border-dashed border-[var(--border-color)]">
+                    <BookOpen className="h-20 w-20 text-[var(--text-secondary)] opacity-10 mb-6" />
+                    <p className="text-[var(--text-primary)] font-black uppercase tracking-widest text-sm">Chưa có bài học nào</p>
+                    <p className="text-[var(--text-secondary)] text-sm mt-2 font-medium">Nội dung đang được biên soạn, vui lòng quay lại sau.</p>
                   </div>
-              </>
+                ) : (
+                  lessons.map((lesson, index) => (
+                    <div
+                      key={lesson.lesson_id}
+                      onClick={() => navigate(`/course/${courseid}/lesson/${lesson.lesson_id}`)}
+                      className="group insta-card p-6 flex items-center justify-between cursor-pointer border-transparent hover:border-[var(--accent-primary)]/30 active:scale-[0.99] transition-all"
+                    >
+                      <div className="flex items-center gap-8">
+                        <div className="h-14 w-14 rounded-2xl bg-[var(--text-primary)] flex items-center justify-center text-[var(--bg-primary)] font-black text-xl group-hover:bg-[var(--accent-primary)] transition-all shadow-lg shadow-black/10">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors leading-tight">{lesson.title}</h3>
+                          <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-black opacity-40 mt-1">Lesson Module</p>
+                        </div>
+                      </div>
+                      <div className="h-12 w-12 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] group-hover:bg-[var(--accent-primary)] group-hover:text-white transition-all duration-300 shadow-sm">
+                        <ChevronRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           )}
 
           {activeTab === 'assignments' && (
-              <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'black' }}>Danh sách bài tập</h2>
-                    {isInstructorOrAdmin && (
-                        <button onClick={() => setIsAssignmentModalOpen(true)} style={addBtnStyle}>
-                          <Plus size={18} /> Tạo bài tập
-                        </button>
-                    )}
-                  </div>
+            <div className="space-y-10 animate-in slide-in-from-bottom-4 duration-500">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div>
+                  <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">Cổng nộp bài tập</h2>
+                  <p className="text-[var(--text-secondary)] font-medium mt-1">Thực hành thông qua các bài tập và dự án thực tế.</p>
+                </div>
+                {isInstructorOrAdmin && (
+                  <button 
+                    onClick={() => setIsAssignmentModalOpen(true)} 
+                    className="flex items-center gap-3 bg-[var(--text-primary)] text-[var(--bg-primary)] px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-xl active:scale-95 group"
+                  >
+                    <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform" />
+                    Tạo bài tập mới
+                  </button>
+                )}
+              </div>
 
-                  <div style={lessonContainerStyle}>
-                    {assignments.length === 0 ? (
-                      <div style={emptyStyle}>Chưa có bài tập nào cho khóa học này.</div>
-                    ) : (
-                      assignments.map((assignment) => (
-                        <div 
-                          key={assignment.id} 
-                          style={lessonItemStyle}
-                          onClick={() => navigateToAssignment(assignment.id)}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0fdf4'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'black' }}>
-                            <FileText size={20} color="#059669" />
-                            <div>
-                                <span style={{ fontWeight: 'bold', display: 'block', fontSize: '1.1rem' }}>{assignment.title}</span>
-                                <span style={{ fontSize: '0.85rem', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                                    <Calendar size={14} /> Created: {new Date(assignment.created_at).toLocaleDateString()}
-                                </span>
-                            </div>
-                          </div>
-                          
-                          <ChevronRight size={20} color="black" />
-                        </div>
-                      ))
-                    )}
+              <div className="grid gap-6">
+                {assignments.length === 0 ? (
+                  <div className="py-24 flex flex-col items-center justify-center text-center bg-white/20 rounded-[3rem] border-2 border-dashed border-[var(--border-color)]">
+                    <FileText className="h-20 w-20 text-[var(--text-secondary)] opacity-10 mb-6" />
+                    <p className="text-[var(--text-primary)] font-black uppercase tracking-widest text-sm">Chưa có bài tập nào</p>
+                    <p className="text-[var(--text-secondary)] text-sm mt-2 font-medium">Bạn đã hoàn thành tất cả các yêu cầu hiện tại!</p>
                   </div>
-              </>
+                ) : (
+                  assignments.map((assignment) => (
+                    <div
+                      key={assignment.id}
+                      onClick={() => navigateToAssignment(assignment.id)}
+                      className="group insta-card p-6 flex items-center justify-between cursor-pointer border-transparent hover:border-[var(--accent-primary)]/30 active:scale-[0.99] transition-all"
+                    >
+                      <div className="flex items-center gap-8">
+                        <div className="h-14 w-14 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)] shadow-sm border border-[var(--accent-primary)]/20 group-hover:bg-[var(--accent-primary)] group-hover:text-white transition-all">
+                          <FileText className="h-7 w-7" />
+                        </div>
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors leading-tight">{assignment.title}</h3>
+                          <div className="flex flex-wrap items-center gap-4">
+                            <span className="text-[10px] text-[var(--text-secondary)] font-black uppercase tracking-widest flex items-center gap-2">
+                              <Calendar className="h-3.5 w-3.5 opacity-40" />
+                              Ngày tạo: {new Date(assignment.created_at).toLocaleDateString()}
+                            </span>
+                            {assignment.due_date && (
+                              <span className="text-[10px] text-rose-500 font-black uppercase tracking-widest flex items-center gap-2 bg-rose-500/5 px-3 py-1 rounded-xl border border-rose-500/10">
+                                <Clock className="h-3.5 w-3.5" />
+                                Hạn nộp: {new Date(assignment.due_date).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="h-12 w-12 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] group-hover:bg-[var(--accent-primary)] group-hover:text-white transition-all duration-300 shadow-sm">
+                        <ChevronRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           )}
+        </div>
       </div>
 
       {/* Assignment Creation Modal */}
       {isAssignmentModalOpen && (
-        <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100,
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-            <div style={{ backgroundColor: 'white', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: '500px' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Tạo bài tập mới</h3>
-                <form onSubmit={handleCreateAssignment} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Tiêu đề</label>
-                        <input
-                            type="text"
-                            value={newAssignment.title}
-                            onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #d1d5db' }}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Mô tả</label>
-                        <textarea
-                            value={newAssignment.description}
-                            onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #d1d5db', height: '100px', resize: 'vertical' }}
-                        />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Hạn nộp (Không bắt buộc)</label>
-                        <input
-                            type="datetime-local"
-                            value={newAssignment.due_date}
-                            onChange={(e) => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #d1d5db' }}
-                        />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Tài liệu đính kèm (Không bắt buộc)</label>
-                        <input
-                            type="file"
-                            onChange={(e) => setNewAssignment({ ...newAssignment, file: e.target.files[0] })}
-                            style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #d1d5db', backgroundColor: '#f9fafb' }}
-                        />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
-                        <button
-                            type="button"
-                            onClick={() => setIsAssignmentModalOpen(false)}
-                            style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: '#f3f4f6', color: '#1f2937', fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                        >
-                            Hủy
-                        </button>
-                        <button
-                            type="submit"
-                            style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', backgroundColor: 'black', color: 'white', fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                        >
-                            Tạo bài tập
-                        </button>
-                    </div>
-                </form>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="glass-card p-10 md:p-14 w-full max-w-2xl max-h-[95vh] shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setIsAssignmentModalOpen(false)}
+              className="absolute right-10 top-10 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              <X className="h-7 w-7" />
+            </button>
+
+            <div className="mb-12">
+              <h3 className="text-4xl font-black text-[var(--text-primary)] mb-3 tracking-tight leading-none italic">New Project</h3>
+              <p className="text-[var(--text-secondary)] font-medium">Thiết kế bài tập thực hành mới cho học viên của bạn.</p>
             </div>
+
+            <form onSubmit={handleCreateAssignment} className="space-y-8">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest ml-1">Tiêu đề bài tập</label>
+                <input
+                  type="text"
+                  value={newAssignment.title}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, title: e.target.value })}
+                  placeholder="Ví dụ: Final Project Phase 1 - Database Schema"
+                  className="w-full px-6 py-5 rounded-3xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-4 focus:ring-[var(--accent-primary)]/10 outline-none transition-all text-[var(--text-primary)] font-bold placeholder:text-[var(--text-secondary)]/30"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest ml-1">Yêu cầu chi tiết</label>
+                <textarea
+                  value={newAssignment.description}
+                  onChange={(e) => setNewAssignment({ ...newAssignment, description: e.target.value })}
+                  placeholder="Mô tả các bước thực hiện, mục tiêu và tiêu chí đánh giá..."
+                  className="w-full h-40 px-6 py-5 rounded-3xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-4 focus:ring-[var(--accent-primary)]/10 outline-none transition-all text-[var(--text-primary)] font-medium placeholder:text-[var(--text-secondary)]/30 resize-none leading-relaxed"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest ml-1">Hạn chót (Deadline)</label>
+                  <input
+                    type="datetime-local"
+                    value={newAssignment.due_date}
+                    onChange={(e) => setNewAssignment({ ...newAssignment, due_date: e.target.value })}
+                    className="w-full px-6 py-5 rounded-3xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-4 focus:ring-[var(--accent-primary)]/10 outline-none transition-all text-[var(--text-primary)] font-bold"
+                  />
+                </div>
+                
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest ml-1">Tài liệu tham khảo</label>
+                  <div className="relative group cursor-pointer h-[66px]">
+                    <input
+                      type="file"
+                      onChange={(e) => setNewAssignment({ ...newAssignment, file: e.target.files[0] })}
+                      className="absolute inset-0 opacity-0 z-10 cursor-pointer"
+                    />
+                    <div className="w-full h-full px-6 rounded-3xl border-2 border-dashed border-[var(--border-color)] bg-white/20 group-hover:bg-white/40 group-hover:border-[var(--accent-primary)]/50 transition-all flex items-center justify-center gap-3">
+                      <Upload className="h-5 w-5 text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors" />
+                      <span className="text-xs font-black text-[var(--text-secondary)] truncate group-hover:text-[var(--text-primary)] transition-colors uppercase tracking-widest">
+                        {newAssignment.file ? newAssignment.file.name : "Tải lên tài liệu"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-6 pt-8">
+                <button
+                  type="button"
+                  onClick={() => setIsAssignmentModalOpen(false)}
+                  className="flex-1 py-5 rounded-3xl bg-[var(--bg-secondary)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:opacity-80 transition-all active:scale-95"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  className="flex-[2] py-5 rounded-3xl bg-[var(--text-primary)] text-[var(--bg-primary)] font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-3"
+                >
+                  <Plus className="h-5 w-5" />
+                  Xuất bản bài tập
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
-
     </div>
   );
-};
-
-// --- Styles ---
-const containerStyle = { padding: '2rem', maxWidth: '900px', margin: '0 auto', color: 'black' };
-
-const infoSectionStyle = { 
-  backgroundColor: 'white', 
-  padding: '2rem', 
-  borderRadius: '1rem', 
-  border: '1px solid black' 
-};
-
-const tabStyle = {
-  background: 'none',
-  border: 'none',
-  padding: '1rem 2rem',
-  fontSize: '1.1rem',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.5rem',
-  transition: 'all 0.2s ease'
-};
-
-const addBtnStyle = { 
-  display: 'flex', 
-  alignItems: 'center', 
-  gap: '0.5rem', 
-  backgroundColor: 'black', 
-  color: 'white', 
-  padding: '0.6rem 1.2rem', 
-  borderRadius: '0.5rem', 
-  border: 'none', 
-  cursor: 'pointer',
-  fontWeight: 'bold'
-};
-
-const lessonContainerStyle = { display: 'flex', flexDirection: 'column', gap: '0.75rem' };
-
-const lessonItemStyle = { 
-  display: 'flex', 
-  justifyContent: 'space-between', 
-  alignItems: 'center', 
-  padding: '1.25rem 1.5rem', 
-  backgroundColor: 'white', 
-  borderRadius: '0.75rem', 
-  border: '1px solid black',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease'
-};
-
-const backBtnStyle = { 
-  background: 'none', 
-  border: 'none', 
-  cursor: 'pointer', 
-  display: 'flex', 
-  alignItems: 'center', 
-  gap: '0.5rem', 
-  marginBottom: '1rem', 
-  color: 'black',
-  fontWeight: 'bold'
-};
-
-const emptyStyle = { 
-  textAlign: 'center', 
-  padding: '3rem', 
-  color: '#6b7280', 
-  border: '2px dashed #d1d5db', 
-  borderRadius: '1rem',
-  backgroundColor: '#f9fafb'
 };

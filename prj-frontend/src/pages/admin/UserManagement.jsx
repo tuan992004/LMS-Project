@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/axios';
-import { useAuthStore } from '../../stores/userAuthStore';
 import { toast } from 'sonner';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { userSchema } from "../../type/userSchema";
+import { User, Mail, Lock, Shield, Loader2, Edit2, Trash2, UserPlus, BookOpen, X } from "lucide-react";
 
 export const UserManagement = () => {
     const navigate = useNavigate();
@@ -12,12 +15,14 @@ export const UserManagement = () => {
     // Edit Modal State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
-    const [formData, setFormData] = useState({
-        fullname: '',
-        username: '',
-        email: '',
-        role: 'student',
-        password: ''
+
+    const {
+        register,
+        handleSubmit: handleEditSubmit,
+        reset,
+        formState: { errors: editErrors, isSubmitting: isUpdating },
+    } = useForm({
+        resolver: zodResolver(userSchema),
     });
 
     // Assign Course Modal State
@@ -45,9 +50,8 @@ export const UserManagement = () => {
 
     // Delete User (Optimistic with Undo)
     const handleDeleteUser = (userId) => {
-        const targetUser = users.find(u => u.userid === userId);
-        
         // Optimistically remove from UI
+        const previousUsers = [...users];
         setUsers(prev => prev.filter(u => u.userid !== userId));
 
         const timer = setTimeout(async () => {
@@ -56,7 +60,7 @@ export const UserManagement = () => {
             } catch (error) {
                 console.error(error);
                 toast.error("Lỗi xóa người dùng");
-                fetchUsers(); // Restore if failed
+                setUsers(previousUsers); // Restore if failed
             }
         }, 5000);
 
@@ -66,7 +70,7 @@ export const UserManagement = () => {
                 label: 'Hoàn tác (Undo)',
                 onClick: () => {
                     clearTimeout(timer);
-                    fetchUsers(); // Instantly restore
+                    setUsers(previousUsers); // Instantly restore
                     toast.success("Đã hoàn tác xóa tài khoản!");
                 }
             }
@@ -76,12 +80,12 @@ export const UserManagement = () => {
     // Open Edit Modal
     const handleEditClick = (user) => {
         setEditingUser(user);
-        setFormData({
+        reset({
             fullname: user.fullname,
             username: user.username,
             email: user.email,
             role: user.role,
-            password: '' // Reset password field
+            password: ''
         });
         setIsEditModalOpen(true);
     };
@@ -93,10 +97,9 @@ export const UserManagement = () => {
     };
 
     // Update User
-    const handleUpdateUser = async (e) => {
-        e.preventDefault();
+    const onUpdateSubmit = async (data) => {
         try {
-            const payload = { ...formData };
+            const payload = { ...data };
             if (!payload.password) {
                 delete payload.password; // Don't send empty password
             }
@@ -107,7 +110,7 @@ export const UserManagement = () => {
             fetchUsers();
         } catch (error) {
             console.error(error);
-            toast.error("Failed to update user");
+            toast.error(error.response?.data?.message || "Failed to update user");
         }
     };
 
@@ -160,74 +163,94 @@ export const UserManagement = () => {
     };
 
     return (
-        <div style={{ padding: '3rem' }}>
-            <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#111827' }}>
-                    User Management
-                </h2>
+        <div className="p-8 max-w-7xl mx-auto min-h-screen">
+            <header className="mb-10 flex justify-between items-center">
+                <div>
+                    <h2 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">
+                        User Management
+                    </h2>
+                    <p className="text-[var(--text-secondary)] mt-1">Manage and monitor all system accounts.</p>
+                </div>
                 <button
                     onClick={() => navigate('/adduser')}
-                    style={{ backgroundColor: 'black', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                    className="flex items-center gap-2 bg-[var(--text-primary)] text-[var(--bg-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg active:scale-95"
                 >
-                    + Add New User
+                    <UserPlus className="h-5 w-5" />
+                    Add New User
                 </button>
             </header>
 
             {/* Content Area */}
-            <div style={{ backgroundColor: 'white', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', padding: '2rem', border: '1px solid #e5e7eb' }}>
+            <div className="insta-card overflow-hidden">
                 {loading ? (
-                    <p>Loading...</p>
+                    <div className="flex flex-col items-center justify-center p-20">
+                        <Loader2 className="h-10 w-10 animate-spin text-[var(--text-secondary)] mb-4" />
+                        <p className="text-[var(--text-secondary)] font-medium">Loading system users...</p>
+                    </div>
                 ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
                             <thead>
-                                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                                    <th style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280', textTransform: 'uppercase' }}>Full Name</th>
-                                    <th style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280', textTransform: 'uppercase' }}>Username</th>
-                                    <th style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280', textTransform: 'uppercase' }}>Email</th>
-                                    <th style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280', textTransform: 'uppercase' }}>Role</th>
-                                    <th style={{ padding: '1rem', fontSize: '0.875rem', color: '#6b7280', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
+                                <tr className="border-b border-[var(--border-color)] bg-white/30 backdrop-blur-sm">
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Full Name</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Username</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Email Address</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Role</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-[var(--border-color)]">
                                 {users.map((u) => (
-                                    <tr key={u.userid} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                        <td style={{ padding: '1rem', fontWeight: 500, color: '#111827' }}>{u.fullname}</td>
-                                        <td style={{ padding: '1rem', color: '#4b5563' }}>{u.username}</td>
-                                        <td style={{ padding: '1rem', color: '#4b5563' }}>{u.email}</td>
-                                        <td style={{ padding: '1rem' }}>
-                                            <span style={{
-                                                padding: '0.25rem 0.75rem',
-                                                borderRadius: '9999px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 'bold',
-                                                backgroundColor: u.role === 'admin' ? '#f3f4f6' : '#e0e7ff',
-                                                color: u.role === 'admin' ? '#1f2937' : '#3730a3'
-                                            }}>
+                                    <tr key={u.userid} className="hover:bg-white/40 transition-colors group">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-9 w-9 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] font-bold text-sm">
+                                                    {u.fullname.charAt(0).toUpperCase()}
+                                                </div>
+                                                <span className="font-semibold text-[var(--text-primary)]">{u.fullname}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-[var(--text-secondary)] font-medium">{u.username}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-[var(--text-secondary)]">{u.email}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`
+                                                px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase
+                                                ${u.role === 'admin' ? 'bg-[var(--text-primary)] text-[var(--bg-primary)]' : 
+                                                  u.role === 'instructor' ? 'bg-indigo-500/10 text-indigo-500' : 
+                                                  'bg-white/40 text-[var(--text-secondary)]'}
+                                            `}>
                                                 {u.role}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '1rem', textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                            {u.role === 'student' && (
+                                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {u.role === 'student' && (
+                                                    <button
+                                                        onClick={() => handleAssignClick(u)}
+                                                        className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
+                                                        title="Assign Courses"
+                                                    >
+                                                        <BookOpen className="h-4 w-4" />
+                                                        <span className="hidden sm:inline">Courses</span>
+                                                    </button>
+                                                )}
                                                 <button
-                                                    onClick={() => handleAssignClick(u)}
-                                                    style={{ padding: '0.5rem', color: '#059669', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}
+                                                    onClick={() => handleEditClick(u)}
+                                                    className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
+                                                    title="Edit User"
                                                 >
-                                                    Assign Courses
+                                                    <Edit2 className="h-4 w-4" />
+                                                    <span className="hidden sm:inline">Edit</span>
                                                 </button>
-                                            )}
-                                            <button
-                                                onClick={() => handleEditClick(u)}
-                                                style={{ padding: '0.5rem', color: '#2563eb', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteUser(u.userid)}
-                                                style={{ padding: '0.5rem', color: '#dc2626', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}
-                                            >
-                                                Delete
-                                            </button>
+                                                <button
+                                                    onClick={() => handleDeleteUser(u.userid)}
+                                                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
+                                                    title="Delete User"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    <span className="hidden sm:inline">Delete</span>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -239,86 +262,119 @@ export const UserManagement = () => {
 
             {/* Edit Modal Overlay */}
             {isEditModalOpen && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(17, 24, 39, 0.6)', zIndex: 100,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)'
-                }}>
-                    <div style={{ backgroundColor: 'white', borderRadius: '1.5rem', padding: '3rem', width: '100%', maxWidth: '500px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-                        <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
-                            <h3 style={{ fontSize: '2rem', fontWeight: '800', color: '#111827', marginBottom: '0.5rem', letterSpacing: '-0.025em' }}>Edit User</h3>
-                            <p style={{ color: '#6b7280', fontSize: '0.95rem' }}>Update the details for this system user.</p>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="glass-card p-8 md:p-12 w-full max-w-[550px] shadow-2xl relative overflow-hidden">
+                        <button 
+                            onClick={handleCloseModal}
+                            className="absolute right-8 top-8 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                        >
+                            <X className="h-6 w-6" />
+                        </button>
+
+                        <div className="mb-10">
+                            <h3 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2 tracking-tight">Edit Profile</h3>
+                            <p className="text-[var(--text-secondary)]">Update account settings and permissions.</p>
                         </div>
-                        <form onSubmit={handleUpdateUser} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                        <form onSubmit={handleEditSubmit(onUpdateSubmit)} className="space-y-5">
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: '#374151' }}>Full Name</label>
-                                <input
-                                    type="text"
-                                    value={formData.fullname}
-                                    onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
-                                    style={{ width: '100%', padding: '0.875rem 1rem', borderRadius: '0.75rem', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem', backgroundColor: '#f9fafb', color: '#111827', transition: 'border-color 0.2s' }}
-                                    required
-                                />
+                                <label className="block text-sm font-bold mb-2 text-[var(--text-secondary)]">Full Name</label>
+                                <div className="relative">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5" />
+                                    <input
+                                        {...register("fullname")}
+                                        className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border transition-all text-[var(--text-primary)] bg-white/40 focus:bg-white/60 ${
+                                            editErrors.fullname ? 'border-red-500 bg-red-50/10' : 'border-[var(--border-color)] focus:border-[var(--accent-primary)]'
+                                        }`}
+                                    />
+                                </div>
+                                {editErrors.fullname && <p className="text-red-500 text-xs mt-2 font-medium">{editErrors.fullname.message}</p>}
                             </div>
+
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: '#374151' }}>Username</label>
-                                <input
-                                    type="text"
-                                    value={formData.username}
-                                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                                    style={{ width: '100%', padding: '0.875rem 1rem', borderRadius: '0.75rem', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem', backgroundColor: '#f9fafb', color: '#111827', transition: 'border-color 0.2s' }}
-                                    required
-                                />
+                                <label className="block text-sm font-bold mb-2 text-[var(--text-secondary)]">Username</label>
+                                <div className="relative">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5" />
+                                    <input
+                                        {...register("username")}
+                                        className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border transition-all text-[var(--text-primary)] bg-white/40 focus:bg-white/60 ${
+                                            editErrors.username ? 'border-red-500 bg-red-50/10' : 'border-[var(--border-color)] focus:border-[var(--accent-primary)]'
+                                        }`}
+                                    />
+                                </div>
+                                {editErrors.username && <p className="text-red-500 text-xs mt-2 font-medium">{editErrors.username.message}</p>}
                             </div>
+
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: '#374151' }}>Email Address</label>
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    style={{ width: '100%', padding: '0.875rem 1rem', borderRadius: '0.75rem', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem', backgroundColor: '#f9fafb', color: '#111827', transition: 'border-color 0.2s' }}
-                                    required
-                                />
+                                <label className="block text-sm font-bold mb-2 text-[var(--text-secondary)]">Email Address</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5" />
+                                    <input
+                                        {...register("email")}
+                                        className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border transition-all text-[var(--text-primary)] bg-white/40 focus:bg-white/60 ${
+                                            editErrors.email ? 'border-red-500 bg-red-50/10' : 'border-[var(--border-color)] focus:border-[var(--accent-primary)]'
+                                        }`}
+                                    />
+                                </div>
+                                {editErrors.email && <p className="text-red-500 text-xs mt-2 font-medium">{editErrors.email.message}</p>}
                             </div>
+
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: '#374151' }}>Password <span style={{fontWeight: 400, color: '#9ca3af'}}>(Leave blank to keep current)</span></label>
-                                <input
-                                    type="password"
-                                    value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    style={{ width: '100%', padding: '0.875rem 1rem', borderRadius: '0.75rem', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem', backgroundColor: '#f9fafb', color: '#111827', transition: 'border-color 0.2s' }}
-                                    placeholder="••••••••"
-                                />
+                                <label className="block text-sm font-bold mb-2 text-[var(--text-secondary)]">
+                                    Password <span className="text-[var(--text-secondary)] font-normal ml-1">(Optional)</span>
+                                </label>
+                                <div className="relative">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5" />
+                                    <input
+                                        {...register("password")}
+                                        type="password"
+                                        placeholder="Leave blank to keep current"
+                                        className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border transition-all text-[var(--text-primary)] bg-white/40 focus:bg-white/60 ${
+                                            editErrors.password ? 'border-red-500 bg-red-50/10' : 'border-[var(--border-color)] focus:border-[var(--accent-primary)]'
+                                        }`}
+                                    />
+                                </div>
+                                {editErrors.password && <p className="text-red-500 text-xs mt-2 font-medium">{editErrors.password.message}</p>}
                             </div>
+
                             <div>
-                                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: '#374151' }}>Role</label>
-                                <select
-                                    value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                    style={{ width: '100%', padding: '0.875rem 1rem', borderRadius: '0.75rem', border: '1px solid #d1d5db', outline: 'none', fontSize: '0.95rem', backgroundColor: '#f9fafb', color: '#111827', transition: 'border-color 0.2s' }}
-                                >
-                                    <option value="student">Student</option>
-                                    <option value="instructor">Instructor</option>
-                                    <option value="admin">Admin</option>
-                                </select>
+                                <label className="block text-sm font-bold mb-2 text-[var(--text-secondary)]">Account Role</label>
+                                <div className="relative">
+                                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5" />
+                                    <select
+                                        {...register("role")}
+                                        className={`w-full pl-12 pr-10 py-3.5 rounded-2xl border transition-all appearance-none text-[var(--text-primary)] bg-white/40 focus:bg-white/60 ${
+                                            editErrors.role ? 'border-red-500 bg-red-50/10' : 'border-[var(--border-color)] focus:border-[var(--accent-primary)]'
+                                        }`}
+                                    >
+                                        <option value="student">Student</option>
+                                        <option value="instructor">Instructor</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+
+                            <div className="flex gap-4 pt-6">
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}
-                                    style={{ flex: 1, padding: '0.875rem', borderRadius: '0.75rem', backgroundColor: '#f3f4f6', color: '#374151', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem' }}
-                                    onMouseOver={(e) => e.target.style.backgroundColor = '#e5e7eb'}
-                                    onMouseOut={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                                    className="flex-1 py-4 rounded-2xl bg-[var(--bg-secondary)] text-[var(--text-primary)] font-bold hover:opacity-80 transition-all active:scale-95"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    style={{ flex: 1, padding: '0.875rem', borderRadius: '0.75rem', backgroundColor: '#111827', color: 'white', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                    onMouseOver={(e) => e.target.style.backgroundColor = '#000000'}
-                                    onMouseOut={(e) => e.target.style.backgroundColor = '#111827'}
+                                    disabled={isUpdating}
+                                    className="flex-1 py-4 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold hover:opacity-90 disabled:opacity-50 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
                                 >
-                                    Save Changes
+                                    {isUpdating ? (
+                                        <>
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        "Save Changes"
+                                    )}
                                 </button>
                             </div>
                         </form>
@@ -327,57 +383,75 @@ export const UserManagement = () => {
             )}
             {/* Assign Course Modal Overlay */}
             {isAssignModalOpen && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(17, 24, 39, 0.6)', zIndex: 100,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)'
-                }}>
-                    <div style={{ backgroundColor: 'white', borderRadius: '1.5rem', padding: '3rem', width: '100%', maxWidth: '500px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
-                        <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-                            <h3 style={{ fontSize: '2rem', fontWeight: '800', color: '#111827', marginBottom: '0.5rem', letterSpacing: '-0.025em' }}>Assign Courses</h3>
-                            <p style={{ color: '#6b7280', fontSize: '0.95rem' }}>Select courses for student: <span style={{ fontWeight: '700', color: '#111827' }}>{assigningUser?.fullname}</span></p>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="glass-card p-8 md:p-12 w-full max-w-[550px] max-h-[90vh] flex flex-col shadow-2xl relative">
+                        <button 
+                            onClick={() => setIsAssignModalOpen(false)}
+                            className="absolute right-8 top-8 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                        >
+                            <X className="h-6 w-6" />
+                        </button>
+
+                        <div className="mb-8">
+                            <h3 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2 tracking-tight">Assign Courses</h3>
+                            <p className="text-[var(--text-secondary)]">
+                                Select courses for <span className="font-bold text-[var(--text-primary)]">{assigningUser?.fullname}</span>
+                            </p>
                         </div>
                         
-                        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '2rem', border: '1px solid #e5e7eb', borderRadius: '0.75rem', padding: '1.25rem', backgroundColor: '#f9fafb' }}>
+                        <div className="flex-1 overflow-y-auto mb-8 border border-[var(--border-color)] rounded-2xl p-6 bg-white/20">
                             {availableCourses.length === 0 ? (
-                                <p style={{ color: '#6b7280', fontSize: '0.95rem', textAlign: 'center', margin: '2rem 0' }}>No available courses found.</p>
+                                <div className="text-center py-10">
+                                    <BookOpen className="h-12 w-12 text-[var(--text-secondary)] opacity-20 mx-auto mb-3" />
+                                    <p className="text-[var(--text-secondary)] font-medium">No courses available.</p>
+                                </div>
                             ) : (
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <ul className="space-y-3">
                                     {availableCourses.map(course => (
-                                        <li key={course.courseid} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.5rem', borderRadius: '0.5rem', transition: 'background-color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'white'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                                            <input
-                                                type="checkbox"
-                                                id={`course-${course.courseid}`}
-                                                checked={selectedCourseIds.includes(course.courseid)}
-                                                onChange={() => toggleCourseSelection(course.courseid)}
-                                                style={{ width: '1.25rem', height: '1.25rem', cursor: 'pointer', accentColor: '#111827' }}
-                                            />
-                                            <label htmlFor={`course-${course.courseid}`} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                                                <span style={{ fontWeight: 600, fontSize: '0.95rem', color: '#111827' }}>{course.title}</span>
-                                                <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>ID: {course.courseid}</span>
-                                            </label>
+                                        <li 
+                                            key={course.courseid} 
+                                            onClick={() => toggleCourseSelection(course.courseid)}
+                                            className={`
+                                                flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border
+                                                ${selectedCourseIds.includes(course.courseid) 
+                                                    ? 'bg-white/40 border-[var(--text-primary)] shadow-sm' 
+                                                    : 'bg-transparent border-transparent hover:bg-white/30'}
+                                            `}
+                                        >
+                                            <div className={`
+                                                w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all
+                                                ${selectedCourseIds.includes(course.courseid) 
+                                                    ? 'bg-[var(--text-primary)] border-[var(--text-primary)] text-[var(--bg-primary)]' 
+                                                    : 'bg-white/50 border-[var(--border-color)]'}
+                                            `}>
+                                                {selectedCourseIds.includes(course.courseid) && (
+                                                    <div className="w-2 h-2 bg-[var(--bg-primary)] rounded-full" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className={`font-bold transition-colors ${selectedCourseIds.includes(course.courseid) ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                                                    {course.title}
+                                                </p>
+                                                <p className="text-xs text-[var(--text-secondary)] opacity-60 uppercase tracking-widest font-bold">ID: {course.courseid}</p>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
                             )}
                         </div>
 
-                        <div style={{ display: 'flex', gap: '1rem' }}>
+                        <div className="flex gap-4">
                             <button
                                 type="button"
                                 onClick={() => setIsAssignModalOpen(false)}
-                                style={{ flex: 1, padding: '0.875rem', borderRadius: '0.75rem', backgroundColor: '#f3f4f6', color: '#374151', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem' }}
-                                onMouseOver={(e) => e.target.style.backgroundColor = '#e5e7eb'}
-                                onMouseOut={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                                className="flex-1 py-4 rounded-2xl bg-[var(--bg-secondary)] text-[var(--text-primary)] font-bold hover:opacity-80 transition-all"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="button"
                                 onClick={handleSaveAssignments}
-                                style={{ flex: 1, padding: '0.875rem', borderRadius: '0.75rem', backgroundColor: '#111827', color: 'white', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                                onMouseOver={(e) => e.target.style.backgroundColor = '#000000'}
-                                onMouseOut={(e) => e.target.style.backgroundColor = '#111827'}
+                                className="flex-1 py-4 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold hover:opacity-90 transition-all shadow-xl active:scale-95"
                             >
                                 Save Assignments
                             </button>

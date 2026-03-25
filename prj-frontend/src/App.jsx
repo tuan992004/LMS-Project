@@ -14,7 +14,7 @@ import { AdminLayout } from "./components/admin/AdminLayout";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import AddCoursePage from "./pages/admin/AddCoursePage";
 import { TeacherDashboard } from "./pages/teacher/teacherDashboard";
-import { TeacherLayout } from "./components/teacher/TeacherLayour";
+import { TeacherLayout } from "./components/teacher/TeacherLayout";
 
 // IMPORT CÁC COMPONENT MỚI Ở ĐÂY
 import { CourseLayout } from "./components/courses/CourseLayout";

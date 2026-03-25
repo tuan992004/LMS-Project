@@ -33,15 +33,15 @@ const Assignment = {
     submit: async (assignment_id, student_id, content, file_url) => {
         // check if sub exists
         const [existing] = await db.execute(`SELECT id FROM assignment_submissions WHERE assignment_id = ? AND student_id = ?`, [assignment_id, student_id]);
-        
+
         if (existing.length > 0) {
-             const updateQuery = `
+            const updateQuery = `
                 UPDATE assignment_submissions
                 SET content = ?, file_url = ?, status = 'submitted', submitted_at = CURRENT_TIMESTAMP
                 WHERE id = ?
              `;
-             await db.execute(updateQuery, [content, file_url, existing[0].id]);
-             return existing[0].id;
+            await db.execute(updateQuery, [content, file_url, existing[0].id]);
+            return existing[0].id;
         }
 
         const query = `

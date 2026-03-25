@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/axios';
 import { useAuthStore } from '../../stores/userAuthStore';
 import { toast } from 'sonner';
+import { Plus, Loader2, BookOpen, CheckCircle, Trash2, Settings2 } from 'lucide-react';
 
 export const CourseManagement = () => {
     const navigate = useNavigate();
@@ -29,9 +30,7 @@ export const CourseManagement = () => {
 
     // Delete Course (Optimistic with Undo)
     const handleDeleteCourse = (courseId) => {
-        const targetCourse = courses.find(c => c.courseid === courseId);
-        
-        // Optimistically remove from UI
+        const previousCourses = [...courses];
         setCourses(prev => prev.filter(c => c.courseid !== courseId));
 
         const timer = setTimeout(async () => {
@@ -39,7 +38,7 @@ export const CourseManagement = () => {
                 await api.delete(`/courses/${courseId}`);
             } catch (error) {
                 toast.error("Lỗi xóa khóa học");
-                fetchCourses(); // Restore if failed
+                setCourses(previousCourses);
             }
         }, 5000);
 
@@ -49,7 +48,7 @@ export const CourseManagement = () => {
                 label: 'Hoàn tác (Undo)',
                 onClick: () => {
                     clearTimeout(timer);
-                    fetchCourses(); // Restore UI
+                    setCourses(previousCourses);
                     toast.success("Đã hoàn tác xóa khóa học!");
                 }
             }
@@ -68,81 +67,93 @@ export const CourseManagement = () => {
     };
 
     return (
-        <div style={{ padding: '3rem' }}>
-            <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#111827' }}>
-                    Course Management
-                </h2>
+        <div className="p-8 max-w-7xl mx-auto min-h-screen">
+            <header className="mb-10 flex justify-between items-center">
+                <div>
+                    <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">
+                        Course Management
+                    </h2>
+                    <p className="text-[var(--text-secondary)] mt-1 font-medium">Review and manage learning materials.</p>
+                </div>
                 
-                {/* Nút Add New Course chung cho cả Admin và Instructor */}
                 <button
                     onClick={() => navigate(user?.role === 'admin' ? '/admin/addcourse' : '/instructor/addcourse')}
-                    style={{ backgroundColor: 'black', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                    className="flex items-center gap-2 bg-[var(--text-primary)] text-[var(--bg-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg active:scale-95"
                 >
-                    + Add New Course
+                    <Plus className="h-5 w-5" />
+                    Add New Course
                 </button>
             </header>
 
-            <div style={{ backgroundColor: 'white', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', padding: '2rem', border: '1px solid #e5e7eb' }}>
+            <div className="insta-card overflow-hidden">
                 {loading ? (
-                    <p>Loading courses...</p>
+                    <div className="flex flex-col items-center justify-center p-20">
+                        <Loader2 className="h-10 w-10 animate-spin text-[var(--text-secondary)] mb-4" />
+                        <p className="text-[var(--text-secondary)] font-medium">Loading system courses...</p>
+                    </div>
                 ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
                             <thead>
-                                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                                    <th style={tableHeadStyle}>Course ID</th>
-                                    <th style={tableHeadStyle}>Title</th>
-                                    <th style={tableHeadStyle}>Status</th>
-                                    <th style={tableHeadStyle}>Instructor ID</th>
-                                    <th style={{ ...tableHeadStyle, textAlign: 'right' }}>Actions</th>
+                                <tr className="border-b border-[var(--border-color)] bg-white/30 backdrop-blur-sm">
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Course ID</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Title</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Instructor ID</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-[var(--border-color)]">
                                 {courses.map((c) => (
-                                    <tr key={c.courseid} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                        <td style={tableCellStyle}>{c.courseid}</td>
-                                        <td style={{ ...tableCellStyle, fontWeight: 500, color: '#111827' }}>{c.title}</td>
-                                        <td style={tableCellStyle}>
-                                            <span style={{
-                                                padding: '0.25rem 0.75rem',
-                                                borderRadius: '9999px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 'bold',
-                                                backgroundColor: c.status === 'approved' ? '#dcfce7' : '#fef9c3',
-                                                color: c.status === 'approved' ? '#166534' : '#854d0e'
-                                            }}>
+                                    <tr key={c.courseid} className="hover:bg-white/40 transition-colors group">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-secondary)] font-mono">{c.courseid}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-9 w-9 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] font-bold">
+                                                    <BookOpen className="h-4 w-4" />
+                                                </div>
+                                                <span className="font-bold text-[var(--text-primary)]">{c.title}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`
+                                                px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase
+                                                ${c.status === 'approved' 
+                                                    ? 'bg-emerald-500/10 text-emerald-500' 
+                                                    : 'bg-amber-500/10 text-amber-500'}
+                                            `}>
                                                 {c.status}
                                             </span>
                                         </td>
-                                        <td style={tableCellStyle}>{c.instructor_id}</td>
-                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                                                
-                                                {/* Button chung cho cả Admin và Instructor */}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-secondary)]">{c.instructor_id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={() => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/instructor/lessons/${c.courseid}`)}
-                                                    style={{ color: '#2563eb', ...actionBtnStyle }}
+                                                    className="p-2 text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
+                                                    title="Manage Lessons"
                                                 >
-                                                    Manage Lessons
+                                                    <Settings2 className="h-4 w-4" />
+                                                    <span className="hidden sm:inline">Lessons</span>
                                                 </button>
 
-                                                {/* Admin Only Actions */}
                                                 {user?.role === 'admin' && (
                                                     <>
                                                         {c.status === 'pending' && (
                                                             <button
                                                                 onClick={() => handleApprove(c.courseid)}
-                                                                style={{ color: '#059669', ...actionBtnStyle }}
+                                                                className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
                                                             >
-                                                                Approve
+                                                                <CheckCircle className="h-4 w-4" />
+                                                                <span className="hidden sm:inline">Approve</span>
                                                             </button>
                                                         )}
                                                         <button
                                                             onClick={() => handleDeleteCourse(c.courseid)}
-                                                            style={{ color: '#dc2626', ...actionBtnStyle }}
+                                                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
                                                         >
-                                                            Delete
+                                                            <Trash2 className="h-4 w-4" />
+                                                            <span className="hidden sm:inline">Delete</span>
                                                         </button>
                                                     </>
                                                 )}
@@ -158,8 +169,3 @@ export const CourseManagement = () => {
         </div>
     );
 };
-
-// Reusable Styles
-const tableHeadStyle = { padding: '1rem', fontSize: '0.875rem', color: '#6b7280', textTransform: 'uppercase' };
-const tableCellStyle = { padding: '1rem', color: '#4b5563', fontSize: '0.875rem' };
-const actionBtnStyle = { background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.875rem' };

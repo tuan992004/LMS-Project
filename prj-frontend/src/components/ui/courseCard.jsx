@@ -35,49 +35,52 @@ export const CourseCard = ({ course, role, onClick, actionButton }) => {
 
   return (
     <div
-      className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden cursor-pointer flex flex-col h-full"
+      className="group insta-card hover:shadow-2xl transition-all duration-500 overflow-hidden cursor-pointer flex flex-col h-full active:scale-[0.98]"
       onClick={onClick}
     >
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-52 overflow-hidden">
         <img
           src={course.thumbnail}
           alt={course.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
         />
 
-        <div className="absolute top-3 right-3">
-          <span className="bg-white/90 backdrop-blur-sm text-gray-800 text-xs px-3 py-1 rounded-full font-bold shadow-sm">
+        <div className="absolute top-4 right-4">
+          <span className="bg-black/60 backdrop-blur-md text-white text-[10px] px-3 py-1.5 rounded-full font-black tracking-widest uppercase shadow-lg border border-white/10">
             {course.category}
           </span>
         </div>
 
         {(role === UserRole.TEACHER || role === UserRole.ADMIN) && (
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-4 left-4">
             {getStatusBadge(course.status)}
           </div>
         )}
       </div>
 
-      <div className="p-5 flex-1 flex flex-col">
-        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">
+      <div className="p-6 flex-1 flex flex-col">
+        <h3 className="text-xl font-black text-[var(--text-primary)] mb-3 line-clamp-2 leading-tight group-hover:text-[var(--accent-primary)] transition-colors">
           {course.title}
         </h3>
 
-        <p className="text-gray-500 text-sm line-clamp-2 mb-4 flex-1">
+        <p className="text-[var(--text-secondary)] text-sm font-medium line-clamp-2 mb-6 flex-1">
           {course.description}
         </p>
 
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold">
+        <div className="flex items-center gap-3 mb-6 p-3 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/20">
+          <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-white text-xs font-black shadow-lg shadow-indigo-500/20">
             {course.instructorName.charAt(0)}
           </div>
-          <span className="text-xs text-gray-600 truncate">
-            {course.instructorName}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] opacity-60">Instructor</span>
+            <span className="text-xs font-bold text-[var(--text-primary)] truncate">
+              {course.instructorName}
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-50 mt-auto">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
+        <div className="flex items-center justify-between pt-5 border-t border-[var(--border-color)] group-hover:border-[var(--accent-primary)]/20 transition-colors mt-auto">
+          <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-secondary)]">
             <i className="fa-regular fa-clock"></i>
             <span>{course.lessons.length} Lessons</span>
           </div>

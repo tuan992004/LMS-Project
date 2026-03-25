@@ -1,0 +1,72 @@
+<h2>Subtle Mesh Gradient Implementation</h2>
+<p class="subtitle">Global background design for all user roles</p>
+
+<div class="mockup">
+  <div class="mockup-header">Implementation Strategy</div>
+  <div class="mockup-body">
+    <div class="section">
+      <h3>1. CSS Definition (in index.css)</h3>
+      <pre><code>.mesh-gradient-bg {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+  /* We will use lighter, more subtle colors for the actual app */
+}</code></pre>
+    </div>
+
+    <div class="section">
+      <h3>2. Visual Preview (Subtle Mode)</h3>
+      <div style="
+        height: 200px; 
+        border-radius: 12px; 
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        background-image: 
+          radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%), 
+          radial-gradient(at 50% 0%, rgba(168, 85, 247, 0.05) 0px, transparent 50%), 
+          radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.05) 0px, transparent 50%), 
+          radial-gradient(at 50% 100%, rgba(79, 70, 229, 0.05) 0px, transparent 50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      ">
+        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); width: 60%; border: 1px solid #f1f5f9;">
+          <div style="height: 10px; width: 40%; background: #e2e8f0; border-radius: 4px; margin-bottom: 10px;"></div>
+          <div style="height: 10px; width: 80%; background: #f1f5f9; border-radius: 4px; margin-bottom: 5px;"></div>
+          <div style="height: 10px; width: 70%; background: #f1f5f9; border-radius: 4px;"></div>
+        </div>
+        <p style="position: absolute; bottom: 10px; right: 15px; font-size: 10px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;">LUMINA LMS PREVIEW</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="pros-cons">
+  <div class="pros">
+    <h4>Pros</h4>
+    <ul>
+      <li>High-end, modern aesthetic</li>
+      <li>Low performance impact (Pure CSS)</li>
+      <li>Works well with existing "Lumina" branding</li>
+    </ul>
+  </div>
+  <div class="cons">
+    <h4>Cons</h4>
+    <ul>
+      <li>Needs careful color balancing to stay "subtle"</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Next Steps</h3>
+  <ol>
+    <li>Define <code>.bg-mesh</code> in <code>index.css</code></li>
+    <li>Replace <code>bg-gray-50/50</code> in all Layout components with <code>bg-mesh</code></li>
+    <li>Update <code>LoginPage</code> to use the same background class</li>
+  </ol>
+</div>

@@ -52,7 +52,7 @@ const assignmentController = {
     deleteAssignment: async (req, res) => {
         try {
             const { id } = req.params;
-            
+
             // Should add a check here for role/ownership in a real system
             if (req.user.role === 'student') {
                 return res.status(403).json({ message: "Not authorized" });
@@ -99,12 +99,12 @@ const assignmentController = {
             const details = await Assignment.getSubmissionDetails(submission_id);
             if (details && details.student_id) {
                 await Notification.insert(
-                    details.student_id, 
-                    "assignment_graded", 
+                    details.student_id,
+                    "assignment_graded",
                     `Giảng viên đã chấm điểm bài tập "${details.assignment_title}" của bạn. Điểm: ${grade}/100.`
                 );
             }
-            
+
             res.status(200).json({ message: "Submission graded successfully" });
         } catch (error) {
             console.error("Grade Submission Error:", error);
@@ -134,12 +134,12 @@ const assignmentController = {
             }
 
             const submissionId = await Assignment.submit(assignment_id, student_id, content || "", finalFileUrl);
-            
+
             const details = await Assignment.getInstructorForAssignment(assignment_id);
             if (details && details.instructor_id) {
                 await Notification.insert(
-                    details.instructor_id, 
-                    "assignment_submitted", 
+                    details.instructor_id,
+                    "assignment_submitted",
                     `Một học viên đã nộp bài tập "${details.assignment_title}" cho khóa học ${details.course_title}.`
                 );
             }
@@ -158,7 +158,7 @@ const assignmentController = {
             const student_id = req.user.userid;
 
             const submission = await Assignment.getSubmissionByStudent(assignment_id, student_id);
-            
+
             if (!submission) {
                 return res.status(404).json({ message: "No submission found" });
             }
