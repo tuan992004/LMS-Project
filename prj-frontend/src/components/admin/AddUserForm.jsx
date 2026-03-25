@@ -1,96 +1,203 @@
-import { useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createUserSchema } from "../../type/userSchema";
+import { User, Mail, Lock, Shield, Loader2 } from "lucide-react";
 import userService from "../../service/userService";
 
 export default function AddUserForm() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    fullname: "",
-    username: "",
-    email: "",
-    password: "",
-    role: "student"
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: {
+      fullname: "",
+      username: "",
+      email: "",
+      password: "",
+      role: "student",
+    },
   });
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setIsLoading(true);
+  const onSubmit = async (data) => {
     try {
-      await userService.addUser(form);
-      toast.success('User added successfully!');
-      navigate('/admin/users');
+      await userService.addUser(data);
+      toast.success("User added successfully!");
+      navigate("/admin/users");
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add user');
-    } finally {
-      setIsLoading(false);
+      toast.error(error.response?.data?.message || "Failed to add user");
     }
-  }
+  };
 
   return (
-    <div style={{ padding: '3rem', minHeight: 'calc(100vh - 4rem)', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb' }}>
-      <div style={{ backgroundColor: 'white', borderRadius: '1.5rem', padding: '3rem', width: '100%', maxWidth: '500px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
-        <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
-            <h2 style={{ fontSize: '2rem', fontWeight: '800', color: '#111827', marginBottom: '0.5rem', letterSpacing: '-0.025em' }}>Create New User</h2>
-            <p style={{ color: '#6b7280', fontSize: '0.95rem' }}>Fill in the details below to add a new member to the system.</p>
+    <div className="p-12 min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
+      <div className="bg-white rounded-3xl p-12 w-full max-w-[500px] shadow-2xl">
+        <div className="mb-10 text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">
+            Create New User
+          </h2>
+          <p className="text-gray-500 text-sm">
+            Fill in the details below to add a new member to the system.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+          {/* Full Name */}
           <div>
-              <label style={labelStyle}>Full Name</label>
-              <input name="fullname" placeholder="John Doe" onChange={handleChange} required style={inputStyle} />
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              Full Name
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                {...register("fullname")}
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all ${
+                  errors.fullname
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-200 focus:border-black"
+                }`}
+                placeholder="John Doe"
+              />
+            </div>
+            {errors.fullname && (
+              <p className="text-red-500 text-xs mt-1 font-medium">
+                {errors.fullname.message}
+              </p>
+            )}
           </div>
+
+          {/* Username */}
           <div>
-              <label style={labelStyle}>Username</label>
-              <input name="username" placeholder="johndoe123" onChange={handleChange} required style={inputStyle} />
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              Username
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                {...register("username")}
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all ${
+                  errors.username
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-200 focus:border-black"
+                }`}
+                placeholder="johndoe123"
+              />
+            </div>
+            {errors.username && (
+              <p className="text-red-500 text-xs mt-1 font-medium">
+                {errors.username.message}
+              </p>
+            )}
           </div>
+
+          {/* Email */}
           <div>
-              <label style={labelStyle}>Email Address</label>
-              <input name="email" type="email" placeholder="john@example.com" onChange={handleChange} required style={inputStyle} />
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                {...register("email")}
+                type="email"
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all ${
+                  errors.email
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-200 focus:border-black"
+                }`}
+                placeholder="john@example.com"
+              />
+            </div>
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1 font-medium">
+                {errors.email.message}
+              </p>
+            )}
           </div>
+
+          {/* Password */}
           <div>
-              <label style={labelStyle}>Password</label>
-              <input name="password" type="password" placeholder="••••••••" onChange={handleChange} required style={inputStyle} />
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                {...register("password")}
+                type="password"
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all ${
+                  errors.password
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-200 focus:border-black"
+                }`}
+                placeholder="••••••••"
+              />
+            </div>
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1 font-medium">
+                {errors.password.message}
+              </p>
+            )}
           </div>
+
+          {/* Role */}
           <div>
-              <label style={labelStyle}>Role</label>
-              <select name="role" onChange={handleChange} value={form.role} style={inputStyle}>
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              Role
+            </label>
+            <div className="relative">
+              <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <select
+                {...register("role")}
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border transition-all appearance-none ${
+                  errors.role
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-200 focus:border-black"
+                }`}
+              >
                 <option value="student">Student</option>
                 <option value="instructor">Instructor</option>
                 <option value="admin">Admin</option>
               </select>
+            </div>
+            {errors.role && (
+              <p className="text-red-500 text-xs mt-1 font-medium">
+                {errors.role.message}
+              </p>
+            )}
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-              <button
-                  type="button"
-                  onClick={() => navigate('/admin/users')}
-                  style={{ flex: 1, padding: '0.875rem', borderRadius: '0.75rem', backgroundColor: '#f3f4f6', color: '#374151', fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.95rem' }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#e5e7eb'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#f3f4f6'}
-              >
-                  Cancel
-              </button>
-              <button 
-                  type="submit" 
-                  disabled={isLoading}
-                  style={{ flex: 1, padding: '0.875rem', borderRadius: '0.75rem', backgroundColor: isLoading ? '#9ca3af' : '#111827', color: 'white', fontWeight: 600, border: 'none', cursor: isLoading ? 'not-allowed' : 'pointer', transition: 'all 0.2s', fontSize: '0.95rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                  onMouseOver={(e) => { if (!isLoading) e.target.style.backgroundColor = '#000000'; }}
-                  onMouseOut={(e) => { if (!isLoading) e.target.style.backgroundColor = '#111827'; }}
-              >
-                  {isLoading ? 'Creating...' : 'Create User'}
-              </button>
+          {/* Buttons */}
+          <div className="flex gap-4 mt-6">
+            <button
+              type="button"
+              onClick={() => navigate("/admin/users")}
+              className="flex-1 py-3.5 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-all text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 py-3.5 rounded-xl bg-black text-white font-bold hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all text-sm shadow-lg flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create User"
+              )}
+            </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
-
-const labelStyle = { display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: '#374151' };
-const inputStyle = { width: '100%', padding: '0.875rem 1rem', borderRadius: '0.75rem', border: '1px solid #d1d5db', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s', fontSize: '0.95rem', backgroundColor: '#f9fafb', color: '#111827' };

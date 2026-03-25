@@ -4,20 +4,22 @@ import { useAuthStore } from '../../stores/userAuthStore';
 import { NotificationBell } from '../shared/NotificationBell';
 import { 
     LayoutDashboard, 
-    Users, 
     BookOpen, 
     Settings, 
     LogOut, 
     ChevronLeft, 
     ChevronRight, 
     Search,
-    Bell,
     User as UserIcon,
     Menu,
-    X
+    X,
+    Trophy,
+    Users,
+    ClipboardList,
+    PlusCircle
 } from 'lucide-react';
 
-export const AdminLayout = () => {
+export const TeacherLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { user, logOut } = useAuthStore((state) => state);
@@ -25,10 +27,11 @@ export const AdminLayout = () => {
     const navigate = useNavigate();
 
     const navItems = [
-        { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/admin/users', label: 'User Management', icon: Users },
-        { path: '/admin/courses', label: 'Course Management', icon: BookOpen },
-        { path: '/admin/settings', label: 'Settings', icon: Settings },
+        { path: '/teacher', label: 'Dashboard', icon: LayoutDashboard },
+        { path: '/teacher/courses', label: 'My Courses', icon: BookOpen },
+        { path: '/teacher/students', label: 'Students', icon: Users },
+        { path: '/teacher/assignments', label: 'Assignments', icon: ClipboardList },
+        { path: '/teacher/settings', label: 'Settings', icon: Settings },
     ];
 
     const handleLogout = () => {
@@ -58,13 +61,13 @@ export const AdminLayout = () => {
                     {isSidebarOpen ? (
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-[var(--accent-primary)] rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                                <Settings className="text-white h-5 w-5" />
+                                <Trophy className="text-white h-5 w-5" />
                             </div>
-                            <span className="font-bold text-xl tracking-tight text-[var(--text-primary)]">ADMIN <span className="text-[var(--accent-primary)]">HUB</span></span>
+                            <span className="font-bold text-xl tracking-tight text-[var(--text-primary)]">TEACHER <span className="text-indigo-400">HUB</span></span>
                         </div>
                     ) : (
                         <div className="w-8 h-8 bg-[var(--accent-primary)] rounded-lg flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/20">
-                            <Settings className="text-white h-5 w-5" />
+                            <Trophy className="text-white h-5 w-5" />
                         </div>
                     )}
                 </div>
@@ -72,7 +75,7 @@ export const AdminLayout = () => {
                 {/* Sidebar Navigation */}
                 <nav className="flex-1 py-6 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
                     {navItems.map((item) => {
-                        const isActive = location.pathname.startsWith(item.path) && (item.path !== '/admin' || location.pathname === '/admin');
+                        const isActive = location.pathname === item.path;
                         return (
                             <Link
                                 key={item.label}
@@ -94,19 +97,19 @@ export const AdminLayout = () => {
                 </nav>
 
                 {/* Sidebar User Profile */}
-                <div className="p-4 border-t border-[var(--border-color)]">
-                    <div className={`flex items-center gap-3 p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] ${!isSidebarOpen && 'justify-center'}`}>
-                        <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-white shrink-0">
+                <div className="p-4 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]">
+                    <div className={`flex items-center gap-3 p-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] ${!isSidebarOpen && 'justify-center'}`}>
+                        <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)]/20 flex items-center justify-center text-[var(--accent-primary)] shrink-0">
                             <UserIcon className="h-5 w-5" />
                         </div>
                         {isSidebarOpen && (
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-[var(--text-primary)] truncate">{user?.fullname || 'Admin'}</p>
-                                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-bold">Administrator</p>
+                                <p className="text-sm font-bold text-[var(--text-primary)] truncate">{user?.fullname || 'Teacher'}</p>
+                                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-bold">Teacher</p>
                             </div>
                         )}
                     </div>
-                    
+
                     <button
                         onClick={handleLogout}
                         className={`
@@ -141,7 +144,7 @@ export const AdminLayout = () => {
                         <Search className="h-4 w-4 text-[var(--text-secondary)]" />
                         <input 
                             type="text" 
-                            placeholder="Quick search..." 
+                            placeholder="Search courses, students..." 
                             className="bg-transparent border-none outline-none text-sm w-full text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]"
                         />
                     </div>
@@ -149,15 +152,15 @@ export const AdminLayout = () => {
                     {/* Right Side Actions */}
                     <div className="flex items-center gap-2 sm:gap-4">
                         <NotificationBell />
-                        
+
                         <div className="h-8 w-px bg-[var(--border-color)] mx-2 hidden sm:block" />
-                        
+
                         <div className="flex items-center gap-3 px-2 py-1.5 rounded-2xl hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer group">
                             <div className="text-right hidden sm:block">
                                 <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors line-clamp-1">
-                                    {user?.fullname || 'Admin'}
+                                    {user?.fullname || 'Teacher'}
                                 </p>
-                                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-bold">Admin</p>
+                                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-bold">Teacher</p>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-[var(--text-primary)] flex items-center justify-center text-[var(--bg-primary)] shadow-lg group-hover:scale-105 transition-transform duration-200">
                                 <UserIcon className="h-5 w-5" />
@@ -175,23 +178,23 @@ export const AdminLayout = () => {
             {/* Mobile Sidebar Overlay */}
             {isMobileMenuOpen && (
                 <div className="fixed inset-0 z-[60] lg:hidden">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-                    <aside className="absolute left-0 top-0 bottom-0 w-80 bg-white/40 backdrop-blur-2xl shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 border-r border-white/20">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/80" onClick={() => setIsMobileMenuOpen(false)} />
+                    <aside className="absolute left-0 top-0 bottom-0 w-80 bg-[var(--nav-bg)] backdrop-blur-2xl shadow-2xl flex flex-col animate-in slide-in-from-left duration-300 border-r border-[var(--border-color)]">
                         <div className="h-20 flex items-center justify-between px-6 border-b border-[var(--border-color)]">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-[var(--accent-primary)] rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                                    <Settings className="text-white h-5 w-5" />
+                                    <Trophy className="text-white h-5 w-5" />
                                 </div>
-                                <span className="font-bold text-xl tracking-tight text-[var(--text-primary)]">ADMIN <span className="text-[var(--accent-primary)]">HUB</span></span>
+                                <span className="font-bold text-xl tracking-tight text-[var(--text-primary)]">TEACHER <span className="text-indigo-400">HUB</span></span>
                             </div>
                             <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                                 <X className="h-6 w-6" />
                             </button>
                         </div>
-                        
+
                         <nav className="flex-1 py-6 px-4 space-y-1.5">
                             {navItems.map((item) => {
-                                const isActive = location.pathname.startsWith(item.path) && (item.path !== '/admin' || location.pathname === '/admin');
+                                const isActive = location.pathname === item.path;
                                 return (
                                     <Link
                                         key={item.label}
@@ -209,7 +212,7 @@ export const AdminLayout = () => {
                                 );
                             })}
                         </nav>
-                        
+
                         <div className="p-6 border-t border-[var(--border-color)]">
                             <button
                                 onClick={handleLogout}
@@ -225,4 +228,3 @@ export const AdminLayout = () => {
         </div>
     );
 };
-
