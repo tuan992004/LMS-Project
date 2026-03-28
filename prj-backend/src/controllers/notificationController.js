@@ -38,9 +38,30 @@ const deleteNotification = async (req, res) => {
     }
 };
 
+const restoreNotification = async (req, res) => {
+    try {
+        const notificationId = req.params.id;
+        await Notification.restore(notificationId, req.user.userid);
+        res.status(200).json({ message: "Restored notification successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi khôi phục thông báo", error: error.message });
+    }
+};
+
+const deleteAllNotifications = async (req, res) => {
+    try {
+        await Notification.deleteAll(req.user.userid);
+        res.status(200).json({ message: "All notifications cleared" });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi xóa tất cả thông báo", error: error.message });
+    }
+};
+
 module.exports = {
     getUserNotifications,
     markAsRead,
     markAllAsRead,
-    deleteNotification
+    deleteNotification,
+    restoreNotification,
+    deleteAllNotifications
 };

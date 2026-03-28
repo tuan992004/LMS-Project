@@ -31,4 +31,7 @@ router.post('/:assignment_id/submit', assignmentController.submitAssignment);
 // Get their own submission for an assignment
 router.get('/:assignment_id/my-submission', assignmentController.getMySubmission);
 
+// Get all assignments for the logged-in student (across all their enrolled courses)
+router.get('/student/my-all', assignmentController.getStudentAssignments);
+
 module.exports = router;

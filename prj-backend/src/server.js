@@ -8,6 +8,7 @@ const notificationRoute = require('./routes/notificationRoute.js');
 const assignmentRoute = require('./routes/assignmentRoute.js');
 const enrollmentRoute = require('./routes/enrollmentRoute.js');
 const instructorRoute = require('./routes/instructorRoute.js');
+const dashboardRoute = require('./routes/dashboardRoute.js');
 const protectedRoute = require('./middlewares/authMiddleware.js')
 const bcrypt = require('bcrypt')
 const cookieParser = require('cookie-parser')
@@ -37,13 +38,13 @@ app.use('/api/auth', authRoute)
 
 
 //private routes (Bỏ protectedRoute khi chưa setup database)
-app.use('/api/users', protectedRoute, userRoute)
 app.use('/api/users', protectedRoute, userRoute);
 app.use('/api/courses', protectedRoute, courseRoute);
 app.use('/api/notifications', protectedRoute, notificationRoute);
 app.use('/api/assignments', protectedRoute, assignmentRoute);
 app.use('/api/enrollments', protectedRoute, enrollmentRoute);
 app.use('/api/instructor', protectedRoute, instructorRoute);
+app.use('/api/dashboard', protectedRoute, dashboardRoute);
 
 //test api
 app.get('/user', async (req, res) => {

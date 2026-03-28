@@ -6,7 +6,9 @@ const notifCtrl = require('../controllers/notificationController');
 // All roles can access their own notifications
 router.get('/', authorize(['admin', 'instructor', 'student']), notifCtrl.getUserNotifications);
 router.patch('/read-all', authorize(['admin', 'instructor', 'student']), notifCtrl.markAllAsRead);
+router.delete('/clear-all', authorize(['admin', 'instructor', 'student']), notifCtrl.deleteAllNotifications);
 router.patch('/:id/read', authorize(['admin', 'instructor', 'student']), notifCtrl.markAsRead);
 router.delete('/:id', authorize(['admin', 'instructor', 'student']), notifCtrl.deleteNotification);
+router.patch('/:id/restore', authorize(['admin', 'instructor', 'student']), notifCtrl.restoreNotification);
 
 module.exports = router;

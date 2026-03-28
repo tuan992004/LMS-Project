@@ -179,6 +179,25 @@ const assignmentController = {
             console.error("Get My Submission Error:", error);
             res.status(500).json({ message: "Internal server error" });
         }
+    },
+
+    // Get all assignments for the logged-in student (across all their enrolled courses)
+    getStudentAssignments: async (req, res) => {
+        try {
+            const student_id = req.user.userid;
+            const assignments = await Assignment.getByStudent(student_id);
+            
+            // Map status to 'pending' if null (no submission)
+            const formatted = assignments.map(a => ({
+                ...a,
+                status: a.status || 'pending'
+            }));
+
+            res.status(200).json(formatted);
+        } catch (error) {
+            console.error("Get Student Assignments Error:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
     }
 };
 

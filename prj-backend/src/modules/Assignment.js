@@ -35,6 +35,21 @@ const Assignment = {
         return rows;
     },
 
+    // 2.2 Fetch all assignments for courses a student is enrolled in
+    getByStudent: async (student_id) => {
+        const query = `
+            SELECT a.*, c.title as course_title, sub.status as status, sub.grade
+            FROM assignments a
+            JOIN enrollments e ON a.course_id = e.course_id
+            JOIN courses c ON a.course_id = c.courseid
+            LEFT JOIN assignment_submissions sub ON a.id = sub.assignment_id AND sub.student_id = ?
+            WHERE e.student_id = ? AND e.status = 'enrolled'
+            ORDER BY a.due_date ASC
+        `;
+        const [rows] = await db.execute(query, [student_id, student_id]);
+        return rows;
+    },
+
     // 3. Delete an assignment
     delete: async (id) => {
         const query = `DELETE FROM assignments WHERE id = ?`;
