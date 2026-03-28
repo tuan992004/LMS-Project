@@ -1,29 +1,13 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
 
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: 'Fraunces', serif;
+  --font-body: 'DM Sans', sans-serif;
+  
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-
-  /* --- GLASSMORPHISM AESTHETIC --- */
-  
-  /* Glassmorphism Variables */
-  --card-bg: rgba(255, 255, 255, 0.6);
-  --card-border: rgba(255, 255, 255, 0.4);
-  --nav-bg: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(0, 0, 0, 0.08);
-
-  /* Text & Accents */
-  --bg-primary: #f8fafc; /* slate-50 */
-  --bg-secondary: #f1f5f9; /* slate-100 */
-  --text-primary: #1e293b; /* slate-800 */
-  --text-secondary: #64748b; /* slate-500 */
-  --accent-primary: #6366f1; /* indigo-500 */
-
-  color: var(--text-primary);
-  background-color: var(--bg-primary);
+  font-family: var(--font-body);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -31,21 +15,34 @@
   -moz-osx-smoothing: grayscale;
 }
 
-/* --- PREMIUM DARK AESTHETIC --- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #020617; /* slate-950 */
-    --bg-secondary: #0f172a; /* slate-900 */
+[data-theme="light"] {
+  --bg-primary: #faf9f6;
+  --bg-secondary: #f3f2ee;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --nav-bg: rgba(250, 249, 246, 0.8);
+  --text-primary: #1a1a2e;
+  --text-secondary: #6b7280;
+  --accent-primary: #4f46e5;
+  --border-color: #e5e7eb;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
 
-    --card-bg: rgba(15, 23, 42, 0.6);
-    --card-border: rgba(255, 255, 255, 0.05);
-    --nav-bg: rgba(2, 6, 23, 0.8);
-    --border-color: rgba(255, 255, 255, 0.1);
-
-    --text-primary: #f8fafc; /* slate-50 */
-    --text-secondary: #94a3b8; /* slate-400 */
-    --accent-primary: #818cf8; /* indigo-400 */
-  }
+[data-theme="dark"] {
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #161625;
+  --card-bg: #1a1a2e;
+  --card-border: #2d2d45;
+  --nav-bg: rgba(15, 15, 26, 0.8);
+  --text-primary: #e8e8f0;
+  --text-secondary: #9ca3af;
+  --accent-primary: #818cf8;
+  --border-color: #2d2d45;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
 }
 
 body {
@@ -54,73 +51,138 @@ body {
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Global Aesthetics */
 .glass-nav {
   background-color: var(--nav-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border-color);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card {
   background-color: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
 }
 
 .insta-card {
   background-color: var(--card-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border-color);
   border-radius: 1rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, background-color 0.4s ease;
 }
 
 .insta-card:hover {
-  transform: translateY(-2px);
-  background-color: rgba(255, 255, 255, 0.65);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
-@media (prefers-color-scheme: dark) {
-  .insta-card:hover {
-    background-color: rgba(15, 23, 42, 0.75);
-  }
+[data-theme="dark"] .insta-card:hover {
+  box-shadow: 0 0 20px rgba(129, 140, 248, 0.15);
 }
 
 .btn-primary {
   background-color: var(--accent-primary);
-  color: white;
+  color: #ffffff;
   font-weight: 600;
-  padding: 8px 16px;
-  border-radius: 8px;
-  transition: opacity 0.2s;
+  padding: 8px 18px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-primary:hover {
-  opacity: 0.8;
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
 }
 
-/* Existing Typography & UI Overrides */
-h1, h2, h3 {
+[data-theme="dark"] .btn-primary:hover {
+  box-shadow: 0 4px 12px rgba(129, 140, 248, 0.3);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
   color: var(--text-primary);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+}
+
+p, span, div, li, a {
+  font-family: var(--font-body);
 }
 
 a {
   color: var(--accent-primary);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+a:hover {
+  opacity: 0.8;
 }
 
 button {
   cursor: pointer;
   font-family: inherit;
+  border: none;
+  outline: none;
 }
+
+/* Staggered Fade-in Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+.blink {
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.9); }
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }

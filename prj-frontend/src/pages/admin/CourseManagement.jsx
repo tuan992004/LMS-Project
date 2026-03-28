@@ -4,10 +4,12 @@ import { api } from '../../lib/axios';
 import { useAuthStore } from '../../stores/userAuthStore';
 import { toast } from 'sonner';
 import { Plus, Loader2, BookOpen, CheckCircle, Trash2, Settings2 } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const CourseManagement = () => {
     const navigate = useNavigate();
     const { user } = useAuthStore();
+    const { t } = useTranslation();
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -18,7 +20,7 @@ export const CourseManagement = () => {
             setCourses(res.data);
         } catch (error) {
             console.error(error);
-            toast.error("Failed to fetch courses");
+            toast.error(t('alert_fetch_error'));
         } finally {
             setLoading(false);
         }
@@ -37,19 +39,19 @@ export const CourseManagement = () => {
             try {
                 await api.delete(`/courses/${courseId}`);
             } catch (error) {
-                toast.error("Lỗi xóa khóa học");
+                toast.error(t('alert_delete_error'));
                 setCourses(previousCourses);
             }
         }, 5000);
 
-        toast.success("Khóa học đã được đưa vào thùng rác", {
+        toast.success(t('alert_deleted_toast'), {
             duration: 5000,
             action: {
-                label: 'Hoàn tác (Undo)',
+                label: t('alert_undo'),
                 onClick: () => {
                     clearTimeout(timer);
                     setCourses(previousCourses);
-                    toast.success("Đã hoàn tác xóa khóa học!");
+                    toast.success(t('alert_undo_success'));
                 }
             }
         });
@@ -59,101 +61,117 @@ export const CourseManagement = () => {
     const handleApprove = async (courseId) => {
         try {
             await api.patch(`/courses/approve/${courseId}`, { status: 'approved' });
-            toast.success("Course approved!");
+            toast.success(t('alert_approve_success'));
             fetchCourses();
         } catch (error) {
-            toast.error("Failed to approve course");
+            toast.error(t('alert_approve_error'));
         }
     };
 
     return (
-        <div className="p-8 max-w-7xl mx-auto min-h-screen">
-            <header className="mb-10 flex justify-between items-center">
-                <div>
-                    <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tight">
-                        Course Management
-                    </h2>
-                    <p className="text-[var(--text-secondary)] mt-1 font-medium">Review and manage learning materials.</p>
-                </div>
+        <div className="p-8 max-w-7xl mx-auto min-h-screen animate-fade-in-up">
+            {/* Header Area */}
+            <header className="glass-card p-10 relative overflow-hidden group mb-12 shadow-2xl">
+                <div className="absolute top-0 right-0 w-72 h-72 bg-[var(--accent-primary)] opacity-[0.03] rounded-full -mr-36 -mt-36 transition-transform duration-1000 group-hover:scale-125" />
                 
-                <button
-                    onClick={() => navigate(user?.role === 'admin' ? '/admin/addcourse' : '/teacher/addcourse')}
-                    className="flex items-center gap-2 bg-[var(--text-primary)] text-[var(--bg-primary)] px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-lg active:scale-95"
-                >
-                    <Plus className="h-5 w-5" />
-                    Add New Course
-                </button>
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                    <div className="space-y-3">
+                        <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight italic">
+                            {t('course_catalog_title').split(' ')[0]} <span className="text-[var(--accent-primary)]">{t('course_catalog_title').split(' ')[1] || ''}</span>
+                        </h2>
+                        <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80">
+                            {t('course_catalog_subtitle')}
+                        </p>
+                    </div>
+                    
+                    <button
+                        onClick={() => navigate(user?.role === 'admin' ? '/admin/addcourse' : '/teacher/addcourse')}
+                        className="btn-primary !px-10 !py-5 text-[10px] uppercase tracking-widest group shadow-2xl"
+                    >
+                        <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
+                        {t('course_add_new')}
+                    </button>
+                </div>
             </header>
 
-            <div className="insta-card overflow-hidden">
+            {/* Table Container */}
+            <div className="insta-card overflow-hidden shadow-2xl animate-fade-in-up stagger-1 border-none">
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center p-20">
-                        <Loader2 className="h-10 w-10 animate-spin text-[var(--text-secondary)] mb-4" />
-                        <p className="text-[var(--text-secondary)] font-medium">Loading system courses...</p>
+                    <div className="flex flex-col items-center justify-center p-32 bg-white/5">
+                        <Loader2 className="h-12 w-12 animate-spin text-[var(--accent-primary)] mb-6" />
+                        <p className="text-[var(--text-secondary)] font-bold italic animate-pulse">{t('course_sync_data')}</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                        <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="border-b border-[var(--border-color)] bg-white/30 backdrop-blur-sm">
-                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Course ID</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Title</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Instructor ID</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider text-right">Actions</th>
+                                <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/50 backdrop-blur-md">
+                                    <th className="px-8 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-60">{t('table_identity')}</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-60">{t('table_title')}</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-60">{t('table_status')}</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-60">{t('table_instructor')}</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-60 text-right">{t('table_operations')}</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-[var(--border-color)]">
-                                {courses.map((c) => (
-                                    <tr key={c.courseid} className="hover:bg-white/40 transition-colors group">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-secondary)] font-mono">{c.courseid}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-9 w-9 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] font-bold">
-                                                    <BookOpen className="h-4 w-4" />
+                            <tbody className="divide-y divide-[var(--border-color)] bg-white/5">
+                                {courses.map((c, idx) => (
+                                    <tr key={c.courseid} className="hover:bg-[var(--accent-primary)]/[0.02] transition-colors group">
+                                        <td className="px-8 py-6 whitespace-nowrap text-xs text-[var(--text-secondary)] font-black tracking-widest opacity-40">#{c.courseid}</td>
+                                        <td className="px-8 py-6 whitespace-nowrap">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-12 w-12 rounded-2xl bg-[var(--text-primary)] flex items-center justify-center text-[var(--bg-primary)] group-hover:bg-[var(--accent-primary)] transition-all duration-500 shadow-xl shadow-black/10">
+                                                    <BookOpen className="h-5 w-5" />
                                                 </div>
-                                                <span className="font-bold text-[var(--text-primary)]">{c.title}</span>
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-[var(--text-primary)] text-lg leading-tight group-hover:text-[var(--accent-primary)] transition-colors">{c.title}</span>
+                                                    <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-30">{t('course_academic_module')}</span>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-8 py-6 whitespace-nowrap">
                                             <span className={`
-                                                px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase
+                                                px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border shadow-sm
                                                 ${c.status === 'approved' 
-                                                    ? 'bg-emerald-500/10 text-emerald-500' 
-                                                    : 'bg-amber-500/10 text-amber-500'}
+                                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+                                                    : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}
                                             `}>
-                                                {c.status}
+                                                {c.status === 'approved' ? t('status_approved') : t('status_pending')}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-secondary)]">{c.instructor_id}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <td className="px-8 py-6 whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-6 w-6 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)]" />
+                                                <span className="text-sm font-bold text-[var(--text-secondary)] italic opacity-80 decoration-indigo-500/30 underline-offset-4 hover:underline">ID:{c.instructor_id}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6 whitespace-nowrap text-right">
+                                            <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-500">
                                                 <button
                                                     onClick={() => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/teacher/lessons/${c.courseid}`)}
-                                                    className="p-2 text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
-                                                    title="Manage Lessons"
+                                                    className="h-10 px-4 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-500 hover:bg-indigo-500/10 border border-transparent hover:border-indigo-500/20 transition-all active:scale-95"
+                                                    title={t('course_curriculum_btn')}
                                                 >
                                                     <Settings2 className="h-4 w-4" />
-                                                    <span className="hidden sm:inline">Lessons</span>
+                                                    {t('course_curriculum_btn')}
                                                 </button>
-
+                                                
                                                 {user?.role === 'admin' && (
                                                     <>
                                                         {c.status === 'pending' && (
                                                             <button
                                                                 onClick={() => handleApprove(c.courseid)}
-                                                                className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
+                                                                className="h-10 px-4 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all active:scale-95"
                                                             >
                                                                 <CheckCircle className="h-4 w-4" />
-                                                                <span className="hidden sm:inline">Approve</span>
+                                                                {t('course_approve_btn')}
                                                             </button>
                                                         )}
                                                         <button
                                                             onClick={() => handleDeleteCourse(c.courseid)}
-                                                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold"
+                                                            className="h-10 w-10 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all active:scale-95"
+                                                            title="Delete Permanently"
                                                         >
-                                                            <Trash2 className="h-4 w-4" />
-                                                            <span className="hidden sm:inline">Delete</span>
+                                                            <Trash2 className="h-4.5 w-4.5" />
                                                         </button>
                                                     </>
                                                 )}
@@ -166,6 +184,15 @@ export const CourseManagement = () => {
                     </div>
                 )}
             </div>
+            
+            {/* Empty State */}
+            {!loading && courses.length === 0 && (
+                <div className="p-32 glass-card border-dashed border-2 flex flex-col items-center text-center bg-white/5 mt-10">
+                    <BookOpen className="h-20 w-20 text-[var(--text-secondary)] opacity-10 mb-8" />
+                    <h3 className="text-2xl font-black text-[var(--text-primary)] mb-2 italic">{t('course_none_found')}</h3>
+                    <p className="text-[var(--text-secondary)] font-medium max-w-sm italic opacity-60">{t('course_none_found_sub')}</p>
+                </div>
+            )}
         </div>
     );
 };

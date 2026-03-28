@@ -1,40 +1,56 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+// Utility/Auth/Stores
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { Toaster } from "sonner";
+import { RoleRedirect } from "./components/auth/RoleRedirect";
+import { useAuthStore } from "./stores/userAuthStore";
+import useThemeStore from "./stores/useThemeStore";
+import useLanguageStore from "./stores/useLanguageStore";
+
+// Layouts & Portals
+import { AdminLayout } from "./components/admin/AdminLayout";
+import { TeacherLayout } from "./components/teacher/TeacherLayout";
+import { StudentLayout } from "./components/student/StudentLayout";
+import { CourseLayout } from "./components/courses/CourseLayout";
+import { LessonLayout } from "./components/courses/lessons/LessonLayout";
+
+// Pages
 import { LoginPage } from "./pages/logInPage";
 import { TestPage } from "./pages/TestPage";
 import AddUserPage from "./pages/admin/AddUserPage";
 import { CourseManagement } from "./pages/admin/CourseManagement";
 import { UserManagement } from "./pages/admin/UserManagement";
-import { StudentDashboard } from "./pages/student/StudentDashboard";
-import { ProtectedRoute } from "./components/auth/ProtectedRoute";
-import { Toaster } from "sonner";
-import { RoleRedirect } from "./components/auth/RoleRedirect";
-import { useAuthStore } from "./stores/userAuthStore";
-import { AdminLayout } from "./components/admin/AdminLayout";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
+import { TeacherDashboard } from "./pages/teacher/TeacherDashboard";
+import { StudentDashboard } from "./pages/student/StudentDashboard";
+import { AssignmentDetail } from "./pages/shared/AssignmentDetail";
 import AddCoursePage from "./pages/admin/AddCoursePage";
-import { TeacherDashboard } from "./pages/teacher/teacherDashboard";
-import { TeacherLayout } from "./components/teacher/TeacherLayout";
+import { Settings } from "./pages/shared/Settings";
 import { TeacherAssignments } from "./pages/teacher/TeacherAssignments";
 import { TeacherStudents } from "./pages/teacher/TeacherStudents";
-
-// IMPORT CÁC COMPONENT MỚI Ở ĐÂY
-import { CourseLayout } from "./components/courses/CourseLayout";
-import { LessonLayout } from "./components/courses/lessons/LessonLayout";
-import { StudentLayout } from "./components/student/StudentLayout";
 import { StudentCourses } from "./pages/student/StudentCourses";
-import { Settings } from "./pages/shared/Settings";
-import { AssignmentDetail } from "./pages/shared/AssignmentDetail";
 
 function App() {
   const { refresh, loading } = useAuthStore();
+  const { theme } = useThemeStore();
+  const { language } = useLanguageStore();
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
     refresh().finally(() => setCheckingAuth(false));
   }, []);
 
-  if (checkingAuth) return <div>Khởi động ứng dụng...</div>;
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
+  if (checkingAuth) return <div>Loading Application...</div>;
 
   return (
     <>

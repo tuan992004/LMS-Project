@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-
+import { useTranslation } from '../../hooks/useTranslation';
 import logo from '../../assets/logo.png';
 
 export const Navbar = () => {
     const [isCoursesOpen, setIsCoursesOpen] = useState(false);
+    const { t } = useTranslation();
 
     return (
         <nav style={{ width: "100%", padding: "1rem 3rem", position: "relative", zIndex: 50 }}>
@@ -29,13 +30,13 @@ export const Navbar = () => {
                         to="/"
                         style={{ color: "black", textDecoration: "none", fontWeight: "bold" }}
                     >
-                        Home
+                        {t('nav_home')}
                     </Link>
                     <Link
                         to="#"
                         style={{ color: "#374151", textDecoration: "none" }}
                     >
-                        About Us
+                        {t('nav_about')}
                     </Link>
 
                     {/* Courses Dropdown */}
@@ -48,7 +49,7 @@ export const Navbar = () => {
                             to="#"
                             style={{ color: "#374151", textDecoration: "none", display: 'flex', alignItems: 'center', gap: '4px' }}
                         >
-                            Courses Introduction
+                            {t('nav_courses_intro')}
                             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M1 1L5 5L9 1" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
@@ -90,25 +91,25 @@ export const Navbar = () => {
                                         {/* Left Column - Basic */}
                                         <div>
                                             <h4 style={{ color: '#9ca3af', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '1rem' }}>
-                                                IELTS CƠ BẢN
+                                                {t('nav_ielts_basic')}
                                             </h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">PRE IELTS</Link>
-                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">IELTS 4.0+</Link>
-                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">IELTS 5.0+</Link>
-                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">IELTS 6.0+</Link>
+                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">{t('nav_pre_ielts')}</Link>
+                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">{t('nav_ielts_4')}</Link>
+                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">{t('nav_ielts_5')}</Link>
+                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">{t('nav_ielts_6')}</Link>
                                             </div>
                                         </div>
 
                                         {/* Right Column - Advanced */}
                                         <div>
                                             <h4 style={{ color: '#9ca3af', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '1rem' }}>
-                                                IELTS NÂNG CAO
+                                                {t('nav_ielts_advanced')}
                                             </h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">IELTS 6.5+</Link>
-                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">IELTS 7.0+</Link>
-                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">IELTS Writing & Speaking</Link>
+                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">{t('nav_ielts_65')}</Link>
+                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">{t('nav_ielts_7')}</Link>
+                                                <Link to="#" style={{ textDecoration: 'none', color: '#1f2937', fontSize: '0.875rem', fontWeight: 500 }} className="hover:text-black">{t('nav_ielts_ws')}</Link>
                                             </div>
                                         </div>
                                     </div>

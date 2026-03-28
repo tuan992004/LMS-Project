@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../stores/userAuthStore';
 import { api } from '../../lib/axios';
 import { toast } from 'sonner';
-import { User, Mail, Lock, Shield, Loader2, Save } from 'lucide-react';
+import { User, Mail, Lock, Shield, Loader2, Save, Sun, Moon, Globe } from 'lucide-react';
+import useThemeStore from '../../stores/useThemeStore';
+import { useTranslation } from '../../hooks/useTranslation';
+import useLanguageStore from '../../stores/useLanguageStore';
 
 export const Settings = () => {
     const { user, refresh } = useAuthStore((state) => state);
+    const { theme, setTheme } = useThemeStore();
+    const { language, setLanguage } = useLanguageStore();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
 
-    // User cannot edit their username or role.
+    // ... existing useState for form ...
     const [form, setForm] = useState({
         fullname: '',
         email: '',
@@ -35,7 +41,7 @@ export const Settings = () => {
         e.preventDefault();
 
         if (form.password && form.password !== form.confirmPassword) {
-            toast.error("Mật khẩu không khớp!");
+            toast.error(t('alert_error')); // Or specific password error key if added later
             return;
         }
 
@@ -50,14 +56,14 @@ export const Settings = () => {
             }
 
             await api.put('/users/profile/edit', dataToUpdate);
-            toast.success("Cập nhật hồ sơ thành công!");
+            toast.success(t('alert_success'));
 
             await refresh();
 
             setForm(prev => ({ ...prev, password: '', confirmPassword: '' }));
         } catch (error) {
             console.error(error);
-            toast.error(error.response?.data?.message || "Lỗi cập nhật hồ sơ!");
+            toast.error(error.response?.data?.message || t('alert_error'));
         } finally {
             setLoading(false);
         }
@@ -66,8 +72,8 @@ export const Settings = () => {
     return (
         <div className="p-8 max-w-4xl mx-auto min-h-screen">
             <header className="mb-12">
-                <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight mb-2">Account Settings</h2>
-                <p className="text-[var(--text-secondary)] font-medium">View and update your personal details and account preferences here.</p>
+                <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight mb-2">{t('settings_title')}</h2>
+                <p className="text-[var(--text-secondary)] font-medium">{t('settings_subtitle')}</p>
             </header>
 
             <div className="glass-card p-10 shadow-2xl relative overflow-hidden">
@@ -79,7 +85,7 @@ export const Settings = () => {
                     <div className="space-y-8">
                         <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
                             <User className="h-5 w-5 text-[var(--accent-primary)]" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">Personal Information</h3>
+                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{t('settings_personal_info')}</h3>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -96,7 +102,6 @@ export const Settings = () => {
                                     />
                                     <div className="absolute inset-0 rounded-2xl bg-black/5 pointer-events-none"></div>
                                 </div>
-                                <p className="text-[10px] text-[var(--text-secondary)] mt-2 font-medium italic">Unique system identifier (read-only)</p>
                             </div>
 
                             <div>
@@ -127,15 +132,72 @@ export const Settings = () => {
                                     className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-2 focus:ring-[var(--accent-primary)] outline-none transition-all text-[var(--text-primary)] font-medium"
                                 />
                             </div>
-                            <p className="text-[10px] text-[var(--text-secondary)] mt-2 font-medium">Used for notifications and account recovery.</p>
                         </div>
+                    </div>
+
+                    {/* Language Section */}
+                    <div className="space-y-8 pt-6">
+                        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
+                            <Globe className="h-5 w-5 text-[var(--accent-primary)]" />
+                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{t('settings_language')}</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <button
+                                type="button"
+                                onClick={() => setLanguage('en')}
+                                className={`
+                                    p-6 rounded-[2rem] border-2 transition-all flex items-center gap-5 group
+                                    ${language === 'en' 
+                                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
+                                        : 'border-[var(--border-color)] hover:border-[var(--text-secondary)]/30'}
+                                `}
+                            >
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-lg transition-transform duration-500 group-hover:scale-110 ${language === 'en' ? 'bg-[var(--accent-primary)] text-white' : 'bg-[var(--bg-secondary)]'}`}>
+                                    🇬🇧
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">{t('settings_lang_en')}</p>
+                                    <p className="text-[10px] text-[var(--text-secondary)] mt-1 font-medium opacity-60">English Interface</p>
+                                </div>
+                                {language === 'en' && (
+                                    <div className="ml-auto w-2 h-2 rounded-full bg-[var(--accent-primary)] blink" />
+                                )}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setLanguage('vi')}
+                                className={`
+                                    p-6 rounded-[2rem] border-2 transition-all flex items-center gap-5 group
+                                    ${language === 'vi' 
+                                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
+                                        : 'border-[var(--border-color)] hover:border-[var(--text-secondary)]/30'}
+                                `}
+                            >
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-lg transition-transform duration-500 group-hover:scale-110 ${language === 'vi' ? 'bg-[var(--accent-primary)] text-white' : 'bg-[var(--bg-secondary)]'}`}>
+                                    🇻🇳
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">{t('settings_lang_vi')}</p>
+                                    <p className="text-[10px] text-[var(--text-secondary)] mt-1 font-medium opacity-60">Giao diện Tiếng Việt</p>
+                                </div>
+                                {language === 'vi' && (
+                                    <div className="ml-auto w-2 h-2 rounded-full bg-[var(--accent-primary)] blink" />
+                                )}
+                            </button>
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-primary)] opacity-60 flex items-center gap-2">
+                             <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
+                             {t('settings_lang_preview')}
+                        </p>
                     </div>
 
                     {/* Security Section */}
                     <div className="space-y-8 pt-6">
                         <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
                             <Lock className="h-5 w-5 text-[var(--accent-primary)]" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">Security & Authentication</h3>
+                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{t('settings_security')}</h3>
                         </div>
 
                         <div className="bg-white/20 p-6 rounded-[2rem] border border-white/30 backdrop-blur-sm">
@@ -177,6 +239,60 @@ export const Settings = () => {
                         </div>
                     </div>
 
+                    {/* Appearance Section */}
+                    <div className="space-y-8 pt-6">
+                        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
+                            <Sun className="h-5 w-5 text-[var(--accent-primary)]" />
+                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{t('settings_appearance')}</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <button
+                                type="button"
+                                onClick={() => setTheme('light')}
+                                className={`
+                                    p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-4 group
+                                    ${theme === 'light' 
+                                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
+                                        : 'border-[var(--border-color)] hover:border-[var(--text-secondary)]/30'}
+                                `}
+                            >
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 scale-100 group-hover:scale-110 ${theme === 'light' ? 'bg-[var(--accent-primary)] text-white rotate-12' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
+                                    <Sun className="h-8 w-8" />
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">{t('settings_mode_light')}</p>
+                                    <p className="text-[10px] text-[var(--text-secondary)] mt-1 font-medium opacity-60">{t('settings_mode_light_sub')}</p>
+                                </div>
+                                {theme === 'light' && (
+                                    <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] blink" />
+                                )}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setTheme('dark')}
+                                className={`
+                                    p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-4 group
+                                    ${theme === 'dark' 
+                                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
+                                        : 'border-[var(--border-color)] hover:border-[var(--text-secondary)]/30'}
+                                `}
+                            >
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 scale-100 group-hover:scale-110 ${theme === 'dark' ? 'bg-[var(--accent-primary)] text-white rotate-12' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
+                                    <Moon className="h-8 w-8" />
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">{t('settings_mode_dark')}</p>
+                                    <p className="text-[10px] text-[var(--text-secondary)] mt-1 font-medium opacity-60">{t('settings_mode_dark_sub')}</p>
+                                </div>
+                                {theme === 'dark' && (
+                                    <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] blink" />
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
                     {/* Action Footer */}
                     <div className="flex justify-end pt-8 border-t border-[var(--border-color)]">
                         <button
@@ -194,7 +310,7 @@ export const Settings = () => {
                             ) : (
                                 <Save className="h-5 w-5" />
                             )}
-                            {loading ? 'Saving Changes...' : 'Save Profile'}
+                            {loading ? t('settings_saving') : t('settings_save')}
                         </button>
                     </div>
                 </form>
