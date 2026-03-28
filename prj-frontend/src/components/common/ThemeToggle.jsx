@@ -8,7 +8,7 @@ const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2.5 rounded-xl bg-secondary hover:bg-opacity-80 transition-all duration-300 flex items-center justify-center border border-border-color shadow-sm group"
+      className="p-2.5 rounded-2xl bg-[var(--bg-secondary)] hover:bg-opacity-80 transition-all duration-300 flex items-center justify-center border border-[var(--border-color)] shadow-sm group active:scale-95"
       aria-label="Toggle Theme"
     >
       <div className="relative w-5 h-5">

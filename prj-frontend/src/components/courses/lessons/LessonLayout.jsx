@@ -129,12 +129,12 @@ export const LessonLayout = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500 p-4 sm:p-0">
+    <article className="max-w-4xl mx-auto pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500 p-4 sm:p-0">
       {/* Header Actions */}
-      <div className="flex items-center justify-between mb-10 glass-nav p-4 rounded-3xl sticky top-24 z-30 shadow-xl border border-[var(--border-color)]">
+      <header className="flex items-center justify-between mb-10 glass-nav p-4 rounded-3xl sticky top-24 z-30 shadow-xl border border-[var(--border-color)]">
         <button 
           onClick={goBack} 
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/40 border border-[var(--border-color)] text-[var(--text-secondary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-white transition-all shadow-sm group active:scale-95"
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[var(--bg-primary)]/40 border border-[var(--border-color)] text-[var(--text-secondary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all shadow-sm group active:scale-95"
         >
            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
            Back to Course
@@ -148,10 +148,10 @@ export const LessonLayout = () => {
             Edit Lesson Content
           </button>
         )}
-      </div>
+      </header>
 
       {/* Lesson Document Card */}
-      <div className="glass-card p-10 md:p-16 shadow-2xl relative overflow-hidden">
+      <section className="glass-card p-10 md:p-16 shadow-2xl relative overflow-hidden" aria-labelledby="lesson-title">
         <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--accent-primary)] opacity-[0.02] rounded-full -mr-40 -mt-40 pointer-events-none transition-transform group-hover:scale-110" />
         
         <div className="relative z-10 space-y-16">
@@ -162,10 +162,12 @@ export const LessonLayout = () => {
                 Lesson Module
               </span>
             </div>
+            <h1 id="lesson-title" className="sr-only">{title}</h1>
             <input 
               disabled={!isEditMode}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              aria-label={t?.('lesson_title_label') || "Lesson Title"}
               className={`
                 w-full bg-transparent text-5xl sm:text-6xl font-black text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--text-secondary)]/20 leading-tight tracking-tighter
                 ${isEditMode ? 'border-b-4 border-dashed border-[var(--border-color)] focus:border-[var(--accent-primary)]' : 'border-none'}
@@ -175,21 +177,21 @@ export const LessonLayout = () => {
           </div>
 
           {/* Blocks Area */}
-          <div className="space-y-16 relative">
+          <section className="space-y-16 relative" aria-label="Lesson Content Blocks">
             {blocks.map((block, index) => (
               <div key={block.id} className="group relative">
                 <div className={`
                   relative rounded-[2.5rem] transition-all duration-500
-                  ${isEditMode ? 'hover:bg-white/30 backdrop-blur-sm p-4 -m-4' : ''}
+                  ${isEditMode ? 'hover:bg-[var(--bg-primary)]/30 backdrop-blur-sm p-4 -m-4' : ''}
                 `}>
                   {/* Block Controls */}
                   {isEditMode && (
                     <div className="absolute -left-12 top-0 bottom-0 flex flex-col items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <button onClick={() => moveBlock(index, -1)} className="p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-white shadow-sm transition-all active:scale-90" title="Move Up">
+                      <button onClick={() => moveBlock(index, -1)} className="p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] shadow-sm transition-all active:scale-90" title="Move Up">
                         <ChevronUp className="h-5 w-5" />
                       </button>
                       <div className="h-8 w-px bg-[var(--border-color)] opacity-40"></div>
-                      <button onClick={() => moveBlock(index, 1)} className="p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-white shadow-sm transition-all active:scale-90" title="Move Down">
+                      <button onClick={() => moveBlock(index, 1)} className="p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] shadow-sm transition-all active:scale-90" title="Move Down">
                         <ChevronDown className="h-5 w-5" />
                       </button>
                     </div>
@@ -198,7 +200,7 @@ export const LessonLayout = () => {
                   {isEditMode && (
                     <button 
                       onClick={() => deleteBlock(block.id)} 
-                      className="absolute -right-4 -top-4 h-12 w-12 bg-white border border-[var(--border-color)] text-rose-500 rounded-2xl flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-50 z-10 hover:scale-110 active:scale-90"
+                      className="absolute -right-4 -top-4 h-12 w-12 bg-[var(--bg-primary)] border border-[var(--border-color)] text-rose-500 rounded-2xl flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-50 z-10 hover:scale-110 active:scale-90"
                     >
                       <Trash2 className="h-6 w-6" />
                     </button>
@@ -211,7 +213,7 @@ export const LessonLayout = () => {
                       <textarea 
                         value={block.value} 
                         onChange={(e) => updateBlock(block.id, e.target.value)} 
-                        className="w-full bg-white/40 p-10 rounded-[2rem] border-2 border-transparent focus:border-[var(--accent-primary)] outline-none transition-all text-xl leading-relaxed text-[var(--text-primary)] min-h-[250px] font-medium shadow-inner placeholder:text-[var(--text-secondary)]/20 resize-none" 
+                        className="w-full bg-[var(--bg-primary)]/40 p-10 rounded-[2rem] border-2 border-transparent focus:border-[var(--accent-primary)] outline-none transition-all text-xl leading-relaxed text-[var(--text-primary)] min-h-[250px] font-medium shadow-inner placeholder:text-[var(--text-secondary)]/20 resize-none" 
                         placeholder="Share your expert knowledge here..."
                       /> : <p className="text-2xl leading-relaxed text-[var(--text-primary)] font-medium whitespace-pre-wrap">{block.value}</p>
                     )}
@@ -219,20 +221,20 @@ export const LessonLayout = () => {
                     {(block.type === 'video' || block.type === 'image') && (
                       <div className="space-y-6">
                         {isEditMode ? (
-                          <div className="bg-white/30 border-2 border-dashed border-[var(--border-color)] rounded-[3rem] p-16 flex flex-col items-center justify-center gap-6 transition-all hover:border-[var(--accent-primary)]/50 hover:bg-white/40 group/media shadow-inner">
+                          <div className="bg-[var(--bg-primary)]/30 border-2 border-dashed border-[var(--border-color)] rounded-[3rem] p-16 flex flex-col items-center justify-center gap-6 transition-all hover:border-[var(--accent-primary)]/50 hover:bg-[var(--bg-primary)]/40 group/media shadow-inner">
                             {block.value && (
-                              <div className="relative max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-white group-hover/media:scale-[1.02] transition-transform duration-500">
+                              <div className="relative max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-[var(--bg-primary)] group-hover/media:scale-[1.02] transition-transform duration-500">
                                 {block.type === 'video' ? 
-                                  <div className="bg-slate-900 aspect-video flex items-center justify-center text-white"><Video className="h-12 w-12 opacity-40" /></div> : 
+                                  <div className="bg-slate-900 aspect-video flex items-center justify-center text-[var(--bg-primary)]"><Video className="h-12 w-12 opacity-40" /></div> : 
                                   <img src={`${import.meta.env.VITE_API_URL}${block.value}`} className="w-full h-auto" />
                                 }
-                                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover/media:opacity-100 transition-opacity">
-                                  <p className="text-white font-black text-[10px] uppercase tracking-widest bg-black/60 px-6 py-2 rounded-full border border-white/20">Thay thế tệp tin</p>
+                                <div className="absolute inset-0 bg-[var(--text-primary)]/60 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover/media:opacity-100 transition-opacity">
+                                  <p className="text-[var(--bg-primary)] font-black text-[10px] uppercase tracking-widest bg-[var(--text-primary)]/60 px-6 py-2 rounded-full border border-[var(--bg-primary)]/20">Thay thế tệp tin</p>
                                 </div>
                               </div>
                             )}
                             <div className="flex flex-col items-center gap-4">
-                              <div className="h-16 w-16 rounded-[1.5rem] bg-white border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] group-hover/media:text-[var(--accent-primary)] group-hover/media:shadow-lg transition-all duration-300">
+                              <div className="h-16 w-16 rounded-[1.5rem] bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] group-hover/media:text-[var(--accent-primary)] group-hover/media:shadow-lg transition-all duration-300">
                                 {block.type === 'video' ? <Video className="h-8 w-8" /> : <ImageIcon className="h-8 w-8" />}
                               </div>
                               <div className="text-center">
@@ -248,7 +250,7 @@ export const LessonLayout = () => {
                             </div>
                           </div>
                         ) : (
-                          <div className="rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] border-[12px] border-white/40">
+                          <div className="rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.15)] border-[12px] border-[var(--bg-primary)]/40">
                             {block.type === 'video' ? (
                               <video src={`${import.meta.env.VITE_API_URL}${block.value}`} controls className="w-full h-auto bg-black max-h-[700px]" />
                             ) : (
@@ -262,27 +264,27 @@ export const LessonLayout = () => {
                 </div>
               </div>
             ))}
-          </div>
+          </section>
 
           {/* Builder Toolbar */}
           {isEditMode && (
             <div className="pt-20 mt-20 border-t-4 border-dashed border-[var(--border-color)] opacity-60">
-              <div className="flex flex-wrap items-center justify-center gap-6 p-10 bg-white/30 rounded-[3rem] border border-[var(--border-color)] backdrop-blur-md">
+              <div className="flex flex-wrap items-center justify-center gap-6 p-10 bg-[var(--bg-primary)]/30 rounded-[3rem] border border-[var(--border-color)] backdrop-blur-md">
                 <button 
                   onClick={() => addBlock('text')} 
-                  className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-white border border-[var(--border-color)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-white transition-all shadow-sm active:scale-95"
+                  className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all shadow-sm active:scale-95"
                 >
                   <Type className="h-5 w-5" /> Thêm Văn Bản
                 </button>
                 <button 
                   onClick={() => addBlock('video')} 
-                  className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-white border border-[var(--border-color)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-white transition-all shadow-sm active:scale-95"
+                  className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all shadow-sm active:scale-95"
                 >
                   <Video className="h-5 w-5" /> Thêm Video
                 </button>
                 <button 
                   onClick={() => addBlock('image')} 
-                  className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-white border border-[var(--border-color)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-white transition-all shadow-sm active:scale-95"
+                  className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all shadow-sm active:scale-95"
                 >
                   <ImageIcon className="h-5 w-5" /> Thêm Hình Ảnh
                 </button>
@@ -290,11 +292,11 @@ export const LessonLayout = () => {
             </div>
           )}
         </div>
-      </div>
+      </section>
 
       {/* Editor Footer Actions */}
       {isEditMode && (
-        <div className="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-6 bg-white/70 backdrop-blur-2xl p-4 rounded-[2.5rem] border border-white/40 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] z-[100] animate-in slide-in-from-bottom-12 duration-700">
+        <div className="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-6 bg-[var(--bg-primary)]/70 backdrop-blur-2xl p-4 rounded-[2.5rem] border border-[var(--bg-primary)]/40 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] z-[100] animate-in slide-in-from-bottom-12 duration-700">
           <button 
             onClick={handleCancel} 
             className="px-10 py-4 rounded-2xl bg-[var(--bg-secondary)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:opacity-80 transition-all active:scale-95 shadow-sm"
@@ -310,6 +312,6 @@ export const LessonLayout = () => {
           </button>
         </div>
       )}
-    </div>
+    </article>
   );
 };

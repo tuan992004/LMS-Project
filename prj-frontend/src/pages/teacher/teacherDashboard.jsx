@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { courseService } from "../../service/courseService";
 import { toast } from "sonner";
 import { useAuthStore } from "../../stores/userAuthStore";
-import { BookOpen, CheckCircle, Plus, LayoutDashboard, Loader2 } from "lucide-react";
+import { BookOpen, CheckCircle, Plus, LayoutDashboard, Loader2, ArrowUpRight, GraduationCap, Users } from "lucide-react";
 import { useTranslation } from "../../hooks/useTranslation";
+import { StatCard } from "../../components/shared/StatCard";
+import { MobileDashboard } from "../shared/MobileDashboard";
 
 export const TeacherDashboard = () => {
     const [courses, setCourses] = useState([]);
@@ -29,153 +31,182 @@ export const TeacherDashboard = () => {
 
     const activeCoursesCount = courses.filter(c => c.status === 'approved').length;
 
-    return (
-        <div className="p-8 max-w-7xl mx-auto min-h-screen animate-fade-in-up">
-            {/* Header / Hero */}
-            <header className="glass-card p-12 relative overflow-hidden group mb-12 shadow-2xl">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--accent-primary)] opacity-[0.03] rounded-full -mr-40 -mt-40 transition-transform duration-1000 group-hover:scale-125" />
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center space-y-4">
+            <Loader2 className="h-10 w-10 animate-spin text-[var(--accent-primary)] opacity-20" />
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] animate-pulse">
+                {t('dashboard_syncing')}
+            </p>
+        </div>
+    );
 
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                            <div className="h-14 w-14 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)] shadow-inner">
-                                <LayoutDashboard className="h-8 w-8" />
+    return (
+        <div className="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto min-h-screen">
+            {/* Mobile View */}
+            <div className="md:hidden">
+                <MobileDashboard />
+            </div>
+
+            {/* Desktop View */}
+            <main 
+                className="hidden md:block animate-fade-in-up" 
+                aria-labelledby="dashboard-title"
+            >
+                {/* Header / Hero Section */}
+                <header className="glass-card p-8 md:p-14 lg:p-16 relative overflow-hidden group mb-8 md:mb-12 shadow-2xl">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--accent-primary)] opacity-[0.03] rounded-full -mr-40 -mt-40 transition-transform duration-1000 group-hover:scale-125 pointer-events-none" />
+
+                <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8 md:gap-12">
+                    <div className="space-y-4 md:space-y-6">
+                        <div className="flex items-center gap-4 md:gap-6">
+                            <div className="h-14 w-14 rounded-2xl bg-[var(--accent-primary)] flex items-center justify-center text-[var(--bg-primary)] shadow-xl">
+                                <GraduationCap className="h-6 w-6" strokeWidth={1.5} />
                             </div>
-                            <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight italic">
-                                {t('portal_teacher')}
-                            </h2>
+                            <div className="flex flex-col">
+                                <h1 id="dashboard-title" className="text-3xl md:text-5xl lg:text-6xl font-black text-[var(--text-primary)] tracking-tighter italic leading-none">
+                                    {t('portal_teacher')}
+                                </h1>
+                                <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-[var(--text-secondary)] opacity-40 italic">{t('portal_teacher_sub')}</span>
+                            </div>
                         </div>
-                        <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80">
+                        <p className="text-[var(--text-secondary)] font-medium text-base md:text-xl italic opacity-80 leading-relaxed max-w-2xl">
                             {t('dash_welcome', { name: user?.fullname || t('portal_teacher_sub') })}
                         </p>
                     </div>
                     <button
                         onClick={() => navigate("/teacher/addcourse")}
-                        className="btn-primary !px-10 !py-5 text-[10px] uppercase tracking-widest group shadow-2xl"
+                        aria-label={t('course_create_aria') || "Initialize new academic curriculum"}
+                        className="btn-primary flex items-center justify-center gap-3 !px-8 md:!px-12 h-14 md:h-16 text-[10px] md:text-xs font-black uppercase tracking-widest group shadow-2xl active:scale-95 transition-all w-full md:w-auto"
                     >
-                        <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
+                        <Plus className="h-5 md:h-6 w-5 md:w-6 group-hover:rotate-90 transition-transform duration-500" />
                         {t('course_create')}
                     </button>
                 </div>
             </header>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-                <div className="animate-fade-in-up stagger-1">
-                    <div className="insta-card p-8 border-l-4 border-l-[var(--accent-primary)] group h-full transition-all hover:translate-y-[-4px]">
-                        <h3 className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 opacity-50">{t('dash_total_courses')}</h3>
-                        <div className="flex items-end justify-between">
-                            <p className="text-5xl font-black text-[var(--text-primary)] tracking-tighter">
-                                {loading ? <Loader2 className="h-10 w-10 animate-spin text-[var(--accent-primary)]" /> : courses.length}
-                            </p>
-                            <BookOpen className="h-10 w-10 text-[var(--text-secondary)] opacity-10 group-hover:text-[var(--accent-primary)] group-hover:opacity-20 transition-all duration-500" />
-                        </div>
-                    </div>
-                </div>
+            {/* Quick Stats Grid */}
+            <section 
+                aria-label="Executive Statistics"
+                className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10 mb-12 md:mb-20"
+            >
+                <StatCard 
+                    label={t('dash_total_courses')} 
+                    value={loading ? "..." : courses.length} 
+                    icon={BookOpen}
+                />
+                <StatCard 
+                    label={t('dash_active_courses')} 
+                    value={loading ? "..." : activeCoursesCount} 
+                    icon={CheckCircle}
+                    color="accent"
+                />
 
-                <div className="animate-fade-in-up stagger-2">
-                    <div className="insta-card p-8 border-l-4 border-l-emerald-500 group h-full transition-all hover:translate-y-[-4px]">
-                        <h3 className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] mb-4 opacity-50">{t('dash_active_courses')}</h3>
-                        <div className="flex items-end justify-between">
-                            <p className="text-5xl font-black text-[var(--text-primary)] tracking-tighter">
-                                {loading ? <Loader2 className="h-10 w-10 animate-spin text-emerald-500" /> : activeCoursesCount}
-                            </p>
-                            <CheckCircle className="h-10 w-10 text-emerald-500 opacity-10 group-hover:opacity-20 transition-all duration-500" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Engagement Placeholder */}
-                <div className="animate-fade-in-up stagger-3 lg:col-span-2">
-                    <div className="insta-card p-8 bg-[var(--text-primary)] text-[var(--bg-primary)] overflow-hidden relative group h-full">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 pointer-events-none" />
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-4 text-[var(--bg-primary)] relative z-10">{t('dash_system_status')}</h3>
-                        <div className="flex items-center gap-6 relative z-10">
-                            <div className="flex items-end gap-2">
-                                <span className="text-4xl font-black tracking-tighter">100%</span>
-                                <span className="text-[10px] font-bold mb-1.5 uppercase opacity-60">Uptime</span>
+                {/* Engagement / Students Placeholder */}
+                <div className="animate-fade-in-up stagger-3 sm:col-span-2">
+                    <div className="insta-card p-6 md:p-8 bg-[var(--text-primary)] text-[var(--bg-primary)] overflow-hidden relative group h-full border-none">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 pointer-events-none" />
+                        <h3 className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] opacity-60 mb-6 text-[var(--bg-primary)] relative z-10 flex items-center gap-2">
+                            <Users className="h-4 w-4" /> {t('dash_scholar_engagement') || "SCHOLAR ENGAGEMENT"}
+                        </h3>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-8 md:gap-12 relative z-10">
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-4xl md:text-6xl font-black tracking-tighter italic">98%</span>
+                                <span className="text-[10px] font-bold uppercase opacity-60 tracking-widest">{t('dash_uptime') || "Optimal"}</span>
                             </div>
-                            <div className="h-10 w-px bg-[var(--bg-primary)]/20" />
-                            <p className="text-xs font-medium italic opacity-80 max-w-xs">{t('system_status_desc') || "All services are performing at peak capacity."}</p>
+                            <div className="hidden sm:block h-12 w-px bg-[var(--bg-primary)]/20" />
+                            <p className="text-sm md:text-base font-medium italic opacity-80 max-w-sm leading-relaxed">
+                                {t('system_status_desc') || "All academic infrastructure is performing at peak heuristic capacity."}
+                            </p>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* My Courses Section */}
-            <section className="space-y-10 animate-fade-in-up stagger-4">
-                <div className="flex items-end justify-between px-2">
-                    <div className="space-y-1">
-                        <h3 className="text-2xl font-black text-[var(--text-primary)] tracking-tight italic">{t('dash_my_courses')}</h3>
-                        <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60">{t('dash_manage_curriculum_sub') || "Manage content and scholars"}</p>
+            {/* My Curricula Content Section */}
+            <section className="space-y-8 md:space-y-12 animate-fade-in-up stagger-4">
+                <div className="flex flex-col md:flex-row items-baseline justify-between gap-4 md:px-2">
+                    <div className="space-y-2">
+                        <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-[var(--text-primary)] tracking-tight italic">{t('dash_my_courses')}</h3>
+                        <p className="text-[10px] md:text-xs font-black text-[var(--text-secondary)] uppercase tracking-[0.4em] opacity-50 italic">
+                            {t('dash_manage_curriculum_sub') || "SYNCHRONIZING ACADEMIC ASSETS"}
+                        </p>
                     </div>
-                    <div className="h-px flex-1 mx-8 bg-[var(--border-color)] hidden md:block opacity-50"></div>
+                    <div className="h-px flex-1 mx-0 md:mx-10 bg-[var(--border-color)] opacity-20 w-full md:w-auto"></div>
                 </div>
 
                 {loading ? (
-                    <div className="py-32 flex flex-col items-center justify-center glass-card border-dashed bg-white/5">
-                        <Loader2 className="h-12 w-12 animate-spin text-[var(--accent-primary)] mb-4" />
-                        <p className="text-[var(--text-secondary)] font-bold italic animate-pulse">{t('dash_teaching_sync') || "Synchronizing data..."}</p>
+                    <div className="py-24 md:py-40 flex flex-col items-center justify-center glass-card border-dashed border-2 bg-white/5">
+                        <Loader2 className="h-16 w-16 animate-spin text-[var(--accent-primary)] mb-6" />
+                        <p className="text-[var(--text-secondary)] font-black uppercase tracking-widest md:text-sm animate-pulse">{t('dash_teaching_sync') || "SYNCHRONIZING..."}</p>
                     </div>
                 ) : courses.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                         {courses.map((course, idx) => (
                             <div
                                 key={course.courseid}
-                                className={`animate-fade-in-up stagger-${(idx % 4) + 1}`}
+                                className={`animate-fade-in-up stagger-${(idx % 4) + 1} h-full`}
                             >
-                                <div
-                                    className="insta-card p-8 group cursor-pointer flex flex-col h-full active:scale-[0.98] transition-all"
+                                <article
+                                    className="insta-card p-6 md:p-10 group cursor-pointer flex flex-col h-full active:scale-[0.98] transition-all hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] border-transparent hover:border-[var(--accent-primary)]/20"
                                     onClick={() => navigate(`/teacher/lessons/${course.courseid}`)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => e.key === 'Enter' && navigate(`/teacher/lessons/${course.courseid}`)}
+                                    aria-label={`${t('course_manage_aria') || "Manage curriculum"}: ${course.title}`}
                                 >
-                                    <div className="flex justify-between items-start mb-8">
+                                    <div className="flex justify-between items-start mb-10 md:mb-12">
                                         <span className={`
-                                            px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border shadow-sm
+                                            px-4 md:px-5 py-2 rounded-2xl text-[10px] font-black tracking-widest uppercase border shadow-sm backdrop-blur-md
                                             ${course.status === 'approved'
-                                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                                                : 'bg-amber-500/10 text-amber-500 border-amber-500/20'}
+                                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 shadow-emerald-500/5'
+                                                : 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-amber-500/5'}
                                         `}>
                                             {course.status === 'approved' ? t('status_approved') : t('status_pending')}
                                         </span>
-                                        <span className="text-[10px] font-black text-[var(--text-secondary)] opacity-30 tracking-widest">ID:{course.courseid}</span>
+                                        <span className="text-[10px] font-black text-[var(--text-secondary)] opacity-30 tracking-[0.2em] font-mono">#{course.courseid}</span>
                                     </div>
 
-                                    <h4 className="text-2xl font-bold text-[var(--text-primary)] mb-4 group-hover:text-[var(--accent-primary)] transition-colors leading-tight">
-                                        {course.title}
-                                    </h4>
+                                    <div className="space-y-4 md:space-y-6 flex-1 mb-10 md:mb-12">
+                                        <h4 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors leading-[1.1] italic tracking-tight">
+                                            {course.title}
+                                        </h4>
+                                        <p className="text-sm md:text-base text-[var(--text-secondary)] font-medium line-clamp-3 italic opacity-70 leading-relaxed hyphens-auto break-words">
+                                            {course.description || t('course_empty_teacher_sub')}
+                                        </p>
+                                    </div>
 
-                                    <p className="text-sm text-[var(--text-secondary)] font-medium line-clamp-3 mb-10 flex-1 italic opacity-80 leading-relaxed">
-                                        {course.description || t('course_empty_teacher_sub')}
-                                    </p>
-
-                                    <div className="flex items-center justify-between pt-8 border-t border-[var(--border-color)] group-hover:border-[var(--accent-primary)]/20 transition-all duration-500">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors">{t('course_manage')}</span>
-                                        <div className="h-10 w-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] group-hover:bg-[var(--accent-primary)] group-hover:text-white transition-all duration-500 shadow-inner">
-                                            <Plus className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
+                                    <div className="flex items-center justify-between pt-8 md:pt-10 border-t border-[var(--border-color)] group-hover:border-[var(--accent-primary)]/20 transition-all duration-700">
+                                        <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors italic">
+                                            {t('course_manage')}
+                                        </span>
+                                        <div className="h-12 md:h-14 w-12 md:w-14 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] group-hover:bg-[var(--accent-primary)] group-hover:text-white transition-all duration-500 shadow-inner group-hover:rotate-12">
+                                            <ArrowUpRight className="h-7 md:h-8 w-7 md:w-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                         </div>
                                     </div>
-                                </div>
+                                </article>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="glass-card p-24 text-center flex flex-col items-center bg-white/5 border-dashed border-2">
-                        <div className="w-24 h-24 bg-[var(--bg-secondary)] rounded-[2.5rem] flex items-center justify-center mb-10 shadow-inner">
-                            <BookOpen className="h-12 w-12 text-[var(--text-secondary)] opacity-10" />
+                    <div className="glass-card p-16 md:p-32 text-center flex flex-col items-center bg-white/5 border-dashed border-2 transition-all hover:bg-white/10 group">
+                        <div className="w-20 md:w-28 h-20 md:h-28 bg-[var(--bg-secondary)] rounded-[2.5rem] md:rounded-[3rem] flex items-center justify-center mb-10 shadow-inner group-hover:scale-110 transition-transform duration-700">
+                            <BookOpen className="h-10 md:h-14 w-10 md:w-14 text-[var(--text-secondary)] opacity-10" />
                         </div>
-                        <h3 className="text-3xl font-black text-[var(--text-primary)] mb-4 tracking-tighter">{t('course_empty_teacher')}</h3>
-                        <p className="text-[var(--text-secondary)] max-w-md mb-12 font-medium italic opacity-60 leading-relaxed">
+                        <h3 className="text-3xl md:text-5xl font-black text-[var(--text-primary)] mb-6 tracking-tighter italic">{t('course_empty_teacher')}</h3>
+                        <p className="text-[var(--text-secondary)] text-base md:text-xl max-w-lg mb-12 font-medium italic opacity-60 leading-relaxed">
                             {t('course_empty_teacher_sub')}
                         </p>
                         <button
                             onClick={() => navigate("/teacher/addcourse")}
-                            className="btn-primary px-12 py-5 text-[10px] uppercase tracking-widest shadow-2xl active:scale-95 transition-all"
+                            aria-label={t('course_create_aria') || "Initialize first curriculum"}
+                            className="btn-primary !px-12 md:!px-16 py-5 md:py-6 text-[10px] md:text-xs font-black uppercase tracking-widest shadow-3xl active:scale-95 transition-all"
                         >
                             {t('course_create')}
                         </button>
                     </div>
                 )}
             </section>
+        </main>
         </div>
     );
 };

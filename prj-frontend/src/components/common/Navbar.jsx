@@ -20,9 +20,9 @@ export const Navbar = () => {
                 }}
             >
                 {/* Logo */}
-                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <header style={{ display: "flex", justifyContent: "flex-start" }}>
                     <img src={logo} alt="The Academic Hood" style={{ height: "50px", objectFit: "contain" }} />
-                </div>
+                </header>
 
                 {/* Navigation Links */}
                 <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', fontSize: '0.875rem', fontWeight: 500 }}>
@@ -44,10 +44,26 @@ export const Navbar = () => {
                         style={{ position: 'relative' }}
                         onMouseEnter={() => setIsCoursesOpen(true)}
                         onMouseLeave={() => setIsCoursesOpen(false)}
+                        onBlur={(e) => {
+                            if (!e.currentTarget.contains(e.relatedTarget)) {
+                                setIsCoursesOpen(false);
+                            }
+                        }}
                     >
                         <Link
                             to="#"
                             style={{ color: "#374151", textDecoration: "none", display: 'flex', alignItems: 'center', gap: '4px' }}
+                            aria-haspopup="true"
+                            aria-expanded={isCoursesOpen}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setIsCoursesOpen(!isCoursesOpen);
+                                }
+                                if (e.key === 'Escape') {
+                                    setIsCoursesOpen(false);
+                                }
+                            }}
                         >
                             {t('nav_courses_intro')}
                             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -90,7 +106,7 @@ export const Navbar = () => {
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
                                         {/* Left Column - Basic */}
                                         <div>
-                                            <h4 style={{ color: '#9ca3af', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '1rem' }}>
+                                            <h4 style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '1rem' }}>
                                                 {t('nav_ielts_basic')}
                                             </h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -103,7 +119,7 @@ export const Navbar = () => {
 
                                         {/* Right Column - Advanced */}
                                         <div>
-                                            <h4 style={{ color: '#9ca3af', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '1rem' }}>
+                                            <h4 style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '1rem' }}>
                                                 {t('nav_ielts_advanced')}
                                             </h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -120,7 +136,7 @@ export const Navbar = () => {
                 </div>
 
                 {/* Empty Spacer to balance the grid */}
-                <div></div>
+                <div aria-hidden="true" />
             </div>
         </nav>
     );

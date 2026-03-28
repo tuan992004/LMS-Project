@@ -2,11 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../stores/userAuthStore';
 import { api } from '../../lib/axios';
 import { toast } from 'sonner';
-import { User, Mail, Lock, Shield, Loader2, Save, Sun, Moon, Globe } from 'lucide-react';
+import { 
+  User, 
+  Mail, 
+  Lock, 
+  Shield, 
+  Loader2, 
+  Save, 
+  Sun, 
+  Moon, 
+  Globe,
+  Settings as SettingsIcon,
+  ShieldCheck
+} from 'lucide-react';
 import useThemeStore from '../../stores/useThemeStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import useLanguageStore from '../../stores/useLanguageStore';
+import { SettingRow } from '../../components/shared/SettingRow';
+import { Input } from '../../components/ui/Input';
 
+/**
+ * Settings Page - Refactored for Overlap Prevention and Monochrome Inversion.
+ * Standardizes layout using SettingRow and high-contrast Input component.
+ */
 export const Settings = () => {
     const { user, refresh } = useAuthStore((state) => state);
     const { theme, setTheme } = useThemeStore();
@@ -14,7 +32,6 @@ export const Settings = () => {
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
 
-    // ... existing useState for form ...
     const [form, setForm] = useState({
         fullname: '',
         email: '',
@@ -22,7 +39,6 @@ export const Settings = () => {
         confirmPassword: ''
     });
 
-    // Populate initial form data
     useEffect(() => {
         if (user) {
             setForm(prev => ({
@@ -39,9 +55,8 @@ export const Settings = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (form.password && form.password !== form.confirmPassword) {
-            toast.error(t('alert_error')); // Or specific password error key if added later
+            toast.error(t('alert_error'));
             return;
         }
 
@@ -57,9 +72,7 @@ export const Settings = () => {
 
             await api.put('/users/profile/edit', dataToUpdate);
             toast.success(t('alert_success'));
-
             await refresh();
-
             setForm(prev => ({ ...prev, password: '', confirmPassword: '' }));
         } catch (error) {
             console.error(error);
@@ -70,251 +83,144 @@ export const Settings = () => {
     };
 
     return (
-        <div className="p-8 max-w-4xl mx-auto min-h-screen">
-            <header className="mb-12">
-                <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight mb-2">{t('settings_title')}</h2>
-                <p className="text-[var(--text-secondary)] font-medium">{t('settings_subtitle')}</p>
+        <main className="p-4 md:p-8 lg:p-12 max-w-4xl mx-auto min-h-screen animate-fade-in" aria-labelledby="settings-title">
+            <header className="mb-12 space-y-2">
+                <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-zinc-50 dark:text-black shadow-xl">
+                        <SettingsIcon size={24} strokeWidth={1.5} className="shrink-0" />
+                    </div>
+                    <h1 id="settings-title" className="text-3xl md:text-5xl font-medium text-zinc-900 dark:text-zinc-300 tracking-tighter italic leading-relaxed">
+                        {t('settings_title')}
+                    </h1>
+                </div>
+                <p className="text-zinc-500 font-medium italic opacity-80 leading-relaxed max-w-2xl px-1">
+                    {t('settings_subtitle')}
+                </p>
             </header>
 
-            <div className="glass-card p-10 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent-primary)] opacity-[0.03] rounded-full -mr-32 -mt-32"></div>
+            <div className="space-y-12 pb-32">
                 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-10 relative z-10">
+                {/* 1. Interactive Summary Rows (The "Thumb-Reach" Hub) */}
+                <section className="space-y-4" aria-label="Quick Preferences">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <SettingRow 
+                            icon={theme === 'light' ? Sun : Moon}
+                            label={t('settings_appearance')}
+                            value={theme === 'light' ? t('settings_mode_light') : t('settings_mode_dark')}
+                            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                        />
+                        
+                        <SettingRow 
+                            icon={Globe}
+                            label={t('settings_lang')}
+                            value={language === 'en' ? t('settings_lang_en') : t('settings_lang_vi')}
+                            onClick={() => setLanguage(language === 'en' ? 'vi' : 'en')}
+                        />
+                    </div>
+                </section>
+
+                {/* 2. Comprehensive Configuration Form */}
+                <section className="glass-card p-6 md:p-12 relative overflow-hidden bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 shadow-2xl">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-zinc-900 dark:bg-zinc-100 opacity-[0.02] rounded-full -mr-32 -mt-32 pointer-events-none" />
                     
-                    {/* Basic Info Section */}
-                    <div className="space-y-8">
-                        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
-                            <User className="h-5 w-5 text-[var(--accent-primary)]" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{t('settings_personal_info')}</h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Read-only Username Field */}
-                            <div>
-                                <label className="block text-xs font-black uppercase tracking-widest mb-2 text-[var(--text-secondary)]">Username</label>
-                                <div className="relative group">
-                                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5 opacity-40" />
-                                    <input
-                                        type="text"
-                                        value={user?.username || ''}
-                                        disabled
-                                        className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] font-mono text-sm cursor-not-allowed opacity-60"
-                                    />
-                                    <div className="absolute inset-0 rounded-2xl bg-black/5 pointer-events-none"></div>
-                                </div>
+                    <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
+                        
+                        {/* Personal Information */}
+                        <div className="space-y-10">
+                            <div className="flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-900 pb-4">
+                                <User className="h-5 w-5 text-zinc-900 dark:text-zinc-100 shrink-0" strokeWidth={1.5} />
+                                <h2 className="text-xl font-medium text-zinc-900 dark:text-zinc-300 italic">{t('settings_personal_info')}</h2>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-black uppercase tracking-widest mb-2 text-[var(--text-secondary)]">Full Name <span className="text-rose-500">*</span></label>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5" />
-                                    <input
-                                        name="fullname"
-                                        value={form.fullname}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-2 focus:ring-[var(--accent-primary)] outline-none transition-all text-[var(--text-primary)] font-medium"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <Input
+                                    label={t('login_username_label')}
+                                    value={user?.username || ''}
+                                    disabled
+                                    icon={ShieldCheck}
+                                    className="bg-zinc-100/50 dark:bg-zinc-900/30"
+                                />
 
-                        <div>
-                            <label className="block text-xs font-black uppercase tracking-widest mb-2 text-[var(--text-secondary)]">Email Address <span className="text-rose-500">*</span></label>
-                            <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5" />
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={form.email}
+                                <Input
+                                    label={t('label_full_name')}
+                                    name="fullname"
+                                    value={form.fullname}
                                     onChange={handleChange}
                                     required
-                                    className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-2 focus:ring-[var(--accent-primary)] outline-none transition-all text-[var(--text-primary)] font-medium"
+                                    icon={User}
                                 />
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Language Section */}
-                    <div className="space-y-8 pt-6">
-                        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
-                            <Globe className="h-5 w-5 text-[var(--accent-primary)]" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{t('settings_language')}</h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <button
-                                type="button"
-                                onClick={() => setLanguage('en')}
-                                className={`
-                                    p-6 rounded-[2rem] border-2 transition-all flex items-center gap-5 group
-                                    ${language === 'en' 
-                                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
-                                        : 'border-[var(--border-color)] hover:border-[var(--text-secondary)]/30'}
-                                `}
-                            >
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-lg transition-transform duration-500 group-hover:scale-110 ${language === 'en' ? 'bg-[var(--accent-primary)] text-white' : 'bg-[var(--bg-secondary)]'}`}>
-                                    🇬🇧
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">{t('settings_lang_en')}</p>
-                                    <p className="text-[10px] text-[var(--text-secondary)] mt-1 font-medium opacity-60">English Interface</p>
-                                </div>
-                                {language === 'en' && (
-                                    <div className="ml-auto w-2 h-2 rounded-full bg-[var(--accent-primary)] blink" />
-                                )}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setLanguage('vi')}
-                                className={`
-                                    p-6 rounded-[2rem] border-2 transition-all flex items-center gap-5 group
-                                    ${language === 'vi' 
-                                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
-                                        : 'border-[var(--border-color)] hover:border-[var(--text-secondary)]/30'}
-                                `}
-                            >
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-lg transition-transform duration-500 group-hover:scale-110 ${language === 'vi' ? 'bg-[var(--accent-primary)] text-white' : 'bg-[var(--bg-secondary)]'}`}>
-                                    🇻🇳
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">{t('settings_lang_vi')}</p>
-                                    <p className="text-[10px] text-[var(--text-secondary)] mt-1 font-medium opacity-60">Giao diện Tiếng Việt</p>
-                                </div>
-                                {language === 'vi' && (
-                                    <div className="ml-auto w-2 h-2 rounded-full bg-[var(--accent-primary)] blink" />
-                                )}
-                            </button>
-                        </div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--accent-primary)] opacity-60 flex items-center gap-2">
-                             <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                             {t('settings_lang_preview')}
-                        </p>
-                    </div>
-
-                    {/* Security Section */}
-                    <div className="space-y-8 pt-6">
-                        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
-                            <Lock className="h-5 w-5 text-[var(--accent-primary)]" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{t('settings_security')}</h3>
+                            <Input
+                                label={t('label_email')}
+                                name="email"
+                                type="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                required
+                                icon={Mail}
+                            />
                         </div>
 
-                        <div className="bg-white/20 p-6 rounded-[2rem] border border-white/30 backdrop-blur-sm">
-                            <p className="text-sm text-[var(--text-secondary)] font-medium mb-6">
-                                Update your password regularly to keep your account secure. <strong>Leave blank to keep current password.</strong>
-                            </p>
+                        {/* Security */}
+                        <div className="space-y-10 pt-4">
+                            <div className="flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-900 pb-4">
+                                <Lock className="h-5 w-5 text-zinc-900 dark:text-zinc-100 shrink-0" strokeWidth={1.5} />
+                                <h2 className="text-xl font-medium text-zinc-900 dark:text-zinc-300 italic">{t('settings_security')}</h2>
+                            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest mb-2 text-[var(--text-secondary)]">New Password</label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5" />
-                                        <input
-                                            type="password"
-                                            name="password"
-                                            value={form.password}
-                                            onChange={handleChange}
-                                            placeholder="••••••••"
-                                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-2 focus:ring-[var(--accent-primary)] outline-none transition-all text-[var(--text-primary)] font-medium"
-                                        />
-                                    </div>
-                                </div>
+                            <div className="p-6 md:p-10 rounded-[2.5rem] bg-zinc-100/30 dark:bg-zinc-900/20 border border-zinc-200 dark:border-zinc-800 space-y-10">
+                                <p className="text-xs text-zinc-500 font-medium italic leading-relaxed max-w-lg">
+                                    Update your access credentials regularly. Leave fields blank to retain your current identity tokens.
+                                </p>
 
-                                <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest mb-2 text-[var(--text-secondary)]">Confirm Password</label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] h-5 w-5" />
-                                        <input
-                                            type="password"
-                                            name="confirmPassword"
-                                            value={form.confirmPassword}
-                                            onChange={handleChange}
-                                            placeholder="••••••••"
-                                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-[var(--border-color)] bg-white/40 focus:bg-white/60 focus:ring-2 focus:ring-[var(--accent-primary)] outline-none transition-all text-[var(--text-primary)] font-medium"
-                                        />
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <Input
+                                        label={t('label_password')}
+                                        type="password"
+                                        name="password"
+                                        value={form.password}
+                                        onChange={handleChange}
+                                        placeholder={t('placeholder_password')}
+                                        icon={Lock}
+                                    />
+
+                                    <Input
+                                        label={`${t('settings_security')} (Confirm)`}
+                                        type="password"
+                                        name="confirmPassword"
+                                        value={form.confirmPassword}
+                                        onChange={handleChange}
+                                        placeholder={t('placeholder_password')}
+                                        icon={Shield}
+                                    />
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Appearance Section */}
-                    <div className="space-y-8 pt-6">
-                        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
-                            <Sun className="h-5 w-5 text-[var(--accent-primary)]" />
-                            <h3 className="text-xl font-bold text-[var(--text-primary)]">{t('settings_appearance')}</h3>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Action Footer */}
+                        <div className="flex justify-end pt-8 border-t border-zinc-100 dark:border-zinc-900">
                             <button
-                                type="button"
-                                onClick={() => setTheme('light')}
+                                type="submit"
+                                disabled={loading}
                                 className={`
-                                    p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-4 group
-                                    ${theme === 'light' 
-                                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
-                                        : 'border-[var(--border-color)] hover:border-[var(--text-secondary)]/30'}
+                                    flex items-center gap-3 px-10 h-16 rounded-2xl font-medium text-[10px] uppercase tracking-[0.3em] transition-all shadow-2xl active:scale-95 italic
+                                    ${loading 
+                                        ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed' 
+                                        : 'bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-black hover:opacity-90'}
                                 `}
                             >
-                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 scale-100 group-hover:scale-110 ${theme === 'light' ? 'bg-[var(--accent-primary)] text-white rotate-12' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
-                                    <Sun className="h-8 w-8" />
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">{t('settings_mode_light')}</p>
-                                    <p className="text-[10px] text-[var(--text-secondary)] mt-1 font-medium opacity-60">{t('settings_mode_light_sub')}</p>
-                                </div>
-                                {theme === 'light' && (
-                                    <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] blink" />
+                                {loading ? (
+                                    <Loader2 className="h-5 w-5 animate-spin" strokeWidth={1.5} />
+                                ) : (
+                                    <Save className="h-5 w-5" strokeWidth={1.5} />
                                 )}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setTheme('dark')}
-                                className={`
-                                    p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-4 group
-                                    ${theme === 'dark' 
-                                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
-                                        : 'border-[var(--border-color)] hover:border-[var(--text-secondary)]/30'}
-                                `}
-                            >
-                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 scale-100 group-hover:scale-110 ${theme === 'dark' ? 'bg-[var(--accent-primary)] text-white rotate-12' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
-                                    <Moon className="h-8 w-8" />
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-sm font-black uppercase tracking-widest text-[var(--text-primary)]">{t('settings_mode_dark')}</p>
-                                    <p className="text-[10px] text-[var(--text-secondary)] mt-1 font-medium opacity-60">{t('settings_mode_dark_sub')}</p>
-                                </div>
-                                {theme === 'dark' && (
-                                    <div className="mt-2 w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] blink" />
-                                )}
+                                {loading ? t('settings_saving') : t('settings_save')}
                             </button>
                         </div>
-                    </div>
-
-                    {/* Action Footer */}
-                    <div className="flex justify-end pt-8 border-t border-[var(--border-color)]">
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className={`
-                                flex items-center gap-2 px-10 py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all shadow-2xl active:scale-95
-                                ${loading 
-                                    ? 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] cursor-not-allowed' 
-                                    : 'bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-90'}
-                            `}
-                        >
-                            {loading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                                <Save className="h-5 w-5" />
-                            )}
-                            {loading ? t('settings_saving') : t('settings_save')}
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </section>
             </div>
-        </div>
+        </main>
     );
 };

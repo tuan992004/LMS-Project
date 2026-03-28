@@ -22,14 +22,21 @@ export const StudentCourses = () => {
 
     return (
         <div className="p-8 max-w-7xl mx-auto min-h-screen animate-fade-in-up">
-            <header className="mb-12 glass-card p-10 relative overflow-hidden group">
+            <header className="mb-12 glass-card p-10 relative overflow-hidden group shadow-2xl">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent-primary)] opacity-[0.03] rounded-full -mr-32 -mt-32 transition-transform duration-700 group-hover:scale-110" />
-                <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight mb-3">
-                    Course <span className="text-[var(--accent-primary)] italic">Library</span>
-                </h2>
-                <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80">
-                    Your personalized curriculum. Continue your journey to excellence.
-                </p>
+                <div className="relative z-10 flex items-center gap-6">
+                    <div className="h-14 w-14 rounded-2xl bg-[var(--accent-primary)] flex items-center justify-center text-[var(--bg-primary)] shadow-xl">
+                        <BookOpen className="h-6 w-6" strokeWidth={1.5} />
+                    </div>
+                    <div className="space-y-1">
+                        <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight">
+                            Course <span className="text-[var(--accent-primary)] italic">Library</span>
+                        </h2>
+                        <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80">
+                            Your personalized curriculum. Continue your journey to excellence.
+                        </p>
+                    </div>
+                </div>
             </header>
 
             {loading ? (
@@ -52,7 +59,7 @@ export const StudentCourses = () => {
                                     <span className="px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20 shadow-sm">
                                         Enrolled
                                     </span>
-                                    <div className="h-10 w-10 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] group-hover:bg-[var(--accent-primary)] group-hover:text-white transition-all shadow-sm">
+                                    <div className="h-10 w-10 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] group-hover:bg-[var(--accent-primary)] group-hover:text-[var(--bg-primary)] transition-all shadow-sm">
                                         <BookOpen className="h-5 w-5" />
                                     </div>
                                 </div>

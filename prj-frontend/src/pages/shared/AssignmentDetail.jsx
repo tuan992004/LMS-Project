@@ -3,9 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/axios';
 import { useAuthStore } from '../../stores/userAuthStore';
 import { toast } from 'sonner';
-import { ArrowLeft, CheckCircle, FileText, Upload, Clock, GraduationCap, X, ChevronRight, File } from 'lucide-react';
+import { ArrowLeft, CheckCircle, FileText, Upload, Clock, GraduationCap, X, ChevronRight, File, Loader2, User, Mail, Star } from 'lucide-react';
+import { DataCard } from "../../components/shared/DataCard";
+import MobileListItem from "../../components/shared/MobileListItem";
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const AssignmentDetail = () => {
+    const { t } = useTranslation();
     const { assignment_id } = useParams();
     const { user } = useAuthStore();
     const navigate = useNavigate();
@@ -44,7 +48,7 @@ export const AssignmentDetail = () => {
             }
         } catch (error) {
             if (error.response?.status !== 404) {
-                toast.error("Lỗi khi tải dữ liệu bài tập");
+                toast.error(t('alert_load_assignment_error'));
             }
         } finally {
             setLoading(false);
@@ -53,7 +57,7 @@ export const AssignmentDetail = () => {
 
     const handleStudentSubmit = async () => {
         if (!submitContent && !submitFile) {
-            toast.error("Vui lòng nhập nội dung hoặc đính kèm link bài làm.");
+            toast.error(t('alert_content_required'));
             return;
         }
         try {
@@ -65,16 +69,16 @@ export const AssignmentDetail = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            toast.success("Nộp bài thành công!");
+            toast.success(t('alert_submit_success'));
             fetchAssignmentData();
         } catch (e) {
-            toast.error("Lỗi nộp bài");
+            toast.error(t('alert_submit_error'));
         }
     };
 
     const handleInstructorGrade = async () => {
         if (!gradeScore) {
-            toast.error("Vui lòng nhập điểm.");
+            toast.error(t('alert_score_required'));
             return;
         }
         try {
@@ -82,13 +86,13 @@ export const AssignmentDetail = () => {
                 grade: gradeScore,
                 feedback: gradeFeedback
             });
-            toast.success("Đã chấm điểm thành công!");
+            toast.success(t('alert_grade_success'));
             setGradingTarget(null);
             setGradeScore("");
             setGradeFeedback("");
             fetchAssignmentData();
         } catch (e) {
-            toast.error("Lỗi khi chấm điểm");
+            toast.error(t('alert_grade_error'));
         }
     };
 
@@ -98,37 +102,37 @@ export const AssignmentDetail = () => {
                 <div className="absolute inset-0 rounded-full border-4 border-[var(--accent-primary)] opacity-10 blur-sm" />
                 <Loader2 className="h-20 w-20 animate-spin text-[var(--accent-primary)] relative z-10" />
             </div>
-            <p className="text-[var(--text-secondary)] font-black uppercase tracking-[0.3em] text-xs animate-pulse">Synchronizing Academic Records</p>
+            <p className="text-[var(--text-secondary)] font-black uppercase tracking-[0.3em] text-xs animate-pulse">{t('assign_sync_records')}</p>
         </div>
     );
 
     return (
-        <div className="p-8 max-w-6xl mx-auto min-h-screen animate-fade-in-up">
+        <div className="p-4 md:p-8 max-w-6xl mx-auto min-h-screen animate-fade-in-up pb-32">
             <button
                 onClick={() => navigate(-1)}
                 className="flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] font-black text-[var(--text-secondary)] hover:text-[var(--accent-primary)] mb-10 transition-all group"
             >
                 <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" /> 
-                Return to Modules
+                {t('assign_ret_modules')}
             </button>
 
-            <header className="glass-card p-12 mb-12 relative overflow-hidden group shadow-2xl">
+            <header className="glass-card p-8 md:p-12 mb-8 md:mb-12 relative overflow-hidden group shadow-2xl">
                 <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--accent-primary)] opacity-[0.03] rounded-full -mr-40 -mt-40 transition-transform duration-[2000ms] group-hover:scale-125" />
                 
                 <div className="relative z-10 flex flex-col md:flex-row justify-between items-end md:items-center gap-8">
                     <div className="space-y-4">
                         <div className="flex items-center gap-4">
-                            <div className="h-14 w-14 rounded-2xl bg-[var(--accent-primary)] flex items-center justify-center text-white shadow-xl shadow-indigo-500/20">
-                                <FileText className="h-8 w-8" />
+                            <div className="h-14 w-14 rounded-2xl bg-[var(--accent-primary)] flex items-center justify-center text-[var(--bg-primary)] shadow-xl">
+                                <FileText className="h-6 w-6" strokeWidth={1.5} />
                             </div>
                             <h1 className="text-4xl font-black text-[var(--text-primary)] tracking-tight italic">
-                                Assignment <span className="text-[var(--accent-primary)]">Intelligence</span>
+                                {t('assign_intelligence').split(' ')[0]} <span className="text-[var(--accent-primary)]">{t('assign_intelligence').split(' ')[1]}</span>
                             </h1>
                         </div>
                         <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80 leading-relaxed max-w-2xl">
                             {isStudent 
-                                ? "Cổng thông tin nộp bài và theo dõi tiến độ học thuật cá nhân." 
-                                : "Hệ thống quản lý, đánh giá và phản hồi kết quả học tập của sinh viên."}
+                                ? t('assign_student_detail_sub')
+                                : t('assign_teacher_detail_sub')}
                         </p>
                     </div>
                 </div>
@@ -139,7 +143,7 @@ export const AssignmentDetail = () => {
                 <div className="space-y-12">
                     <section className="animate-fade-in-up stagger-1">
                         <div className="flex items-center gap-4 mb-8">
-                            <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight italic">Submission Status</h3>
+                            <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight italic">{t('assign_sub_status')}</h3>
                             <div className="h-px flex-1 bg-[var(--border-color)] opacity-40"></div>
                         </div>
 
@@ -149,16 +153,16 @@ export const AssignmentDetail = () => {
                                 <div className="relative z-10 flex flex-col md:flex-row gap-10 items-start md:items-center">
                                     <div className="flex-1 space-y-6">
                                         <div className="flex items-center gap-3 px-3 py-1 rounded-full bg-white/10 w-fit text-[10px] font-black tracking-widest uppercase mb-4">
-                                            <CheckCircle className="h-3 w-3" /> Evaluation Complete
+                                            <CheckCircle className="h-3 w-3" /> {t('assign_eval_complete')}
                                         </div>
                                         <div className="flex items-baseline gap-3">
                                             <span className="text-7xl font-black tracking-tighter italic">{mySubmission.grade}</span>
                                             <span className="text-xl font-bold opacity-40">/ 100</span>
                                         </div>
                                         <div className="space-y-2">
-                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Instructor Feedback</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-40">{t('label_feedback')}</span>
                                             <p className="text-lg font-medium italic opacity-90 leading-relaxed border-l-2 border-white/20 pl-6">
-                                                "{mySubmission.feedback || "Tài năng của bạn thật ấn tượng, hãy tiếp tục phát huy!"}"
+                                                "{mySubmission.feedback || t('assign_def_feedback')}"
                                             </p>
                                         </div>
                                     </div>
@@ -167,9 +171,9 @@ export const AssignmentDetail = () => {
                                             href={mySubmission.file_url} 
                                             target="_blank" 
                                             rel="noreferrer" 
-                                            className="px-8 py-4 rounded-2xl bg-white text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest transition-all shadow-2xl active:scale-95 flex items-center gap-3 hover:translate-y-[-2px]"
+                                            className="px-8 py-4 rounded-2xl bg-[var(--bg-primary)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest transition-all shadow-2xl active:scale-95 flex items-center gap-3 hover:translate-y-[-2px]"
                                         >
-                                            <File className="h-4 w-4" /> Download Appendix
+                                            <File className="h-4 w-4" /> {t('assign_down_appendix')}
                                         </a>
                                     )}
                                 </div>
@@ -180,9 +184,9 @@ export const AssignmentDetail = () => {
                                     <Clock className="h-8 w-8" />
                                 </div>
                                 <div>
-                                    <h3 className="text-amber-600 font-black uppercase tracking-[0.2em] text-[10px] mb-2">Submitted & Pending</h3>
+                                    <h3 className="text-amber-600 font-black uppercase tracking-[0.2em] text-[10px] mb-2">{t('assign_stat_sub_pending')}</h3>
                                     <p className="text-[var(--text-secondary)] font-medium italic opacity-80 decoration-amber-500/20 underline underline-offset-8 decoration-2">
-                                        Bài làm đang được lưu trữ trong hàng đợi đánh giá của giảng viên. Bạn vẫn có khả năng cập nhật lại bản thảo nếu cần.
+                                        {t('assign_sub_pending_sub')}
                                     </p>
                                 </div>
                             </div>
@@ -192,9 +196,9 @@ export const AssignmentDetail = () => {
                                     <FileText className="h-8 w-8" />
                                 </div>
                                 <div>
-                                    <h3 className="text-[var(--text-secondary)] font-black uppercase tracking-[0.2em] text-[10px] mb-2">No Active Submission</h3>
+                                    <h3 className="text-[var(--text-secondary)] font-black uppercase tracking-[0.2em] text-[10px] mb-2">{t('assign_stat_no_sub')}</h3>
                                     <p className="text-[var(--text-secondary)] font-medium italic leading-relaxed">
-                                        Bạn chưa thực hiện nộp bài cho học phần này. Hãy lưu ý thời hạn nộp bài để đảm bảo tiến độ học tập.
+                                        {t('assign_no_sub_sub')}
                                     </p>
                                 </div>
                             </div>
@@ -205,7 +209,7 @@ export const AssignmentDetail = () => {
                         <section className="animate-fade-in-up stagger-2">
                             <div className="flex items-center gap-4 mb-10">
                                 <h3 className="text-xl font-black text-[var(--text-primary)] tracking-tight italic">
-                                    {mySubmission ? 'Refine Submission' : 'Initial Submission'}
+                                    {mySubmission ? t('assign_refine_sub') : t('assign_initial_sub')}
                                 </h3>
                                 <div className="h-px flex-1 bg-[var(--border-color)] opacity-40"></div>
                             </div>
@@ -214,12 +218,12 @@ export const AssignmentDetail = () => {
                                 <div className="space-y-4">
                                     <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] opacity-60 ml-1">
                                         <FileText className="h-3 w-3" />
-                                        Nội dung bài làm / Digital Abstract
+                                        {t('assign_label_abstract')}
                                     </label>
                                     <textarea
                                         value={submitContent}
                                         onChange={(e) => setSubmitContent(e.target.value)}
-                                        placeholder="Trình bày tóm tắt kết quả hoặc dán mã nguồn bài làm tại đây..."
+                                        placeholder={t('assign_place_abstract')}
                                         className="w-full h-56 px-8 py-6 rounded-[2.5rem] border border-[var(--border-color)] bg-white/5 focus:bg-white/10 focus:ring-4 focus:ring-[var(--accent-primary)]/20 outline-none transition-all text-[var(--text-primary)] font-medium italic leading-[1.8] resize-none custom-scrollbar"
                                     />
                                 </div>
@@ -227,7 +231,7 @@ export const AssignmentDetail = () => {
                                 <div className="space-y-4">
                                     <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] opacity-60 ml-1">
                                         <Upload className="h-3 w-3" />
-                                        Phụ lục đính kèm / Attached Portfolio
+                                        {t('assign_label_portfolio')}
                                     </label>
                                     <div className="relative group overflow-hidden rounded-[2.5rem]">
                                         <input
@@ -240,9 +244,9 @@ export const AssignmentDetail = () => {
                                                 <Upload className="h-8 w-8" />
                                             </div>
                                             <span className="text-sm font-black tracking-widest uppercase text-[var(--text-primary)] opacity-60 group-hover:opacity-100">
-                                                {submitFile ? submitFile.name : 'Drag & drop academic portfolio'}
+                                                {submitFile ? submitFile.name : t('assign_place_portfolio')}
                                             </span>
-                                            <span className="text-[10px] mt-2 italic text-[var(--text-secondary)] opacity-40">PDF, ZIP, or DOCX accepted</span>
+                                            <span className="text-[10px] mt-2 italic text-[var(--text-secondary)] opacity-40">{t('assign_port_hint')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -253,7 +257,7 @@ export const AssignmentDetail = () => {
                                         className="btn-primary !px-16 !py-5 text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 shadow-2xl group active:scale-95"
                                     >
                                         <Upload className="h-4 w-4 group-hover:translate-y-[-2px] transition-transform" />
-                                        {mySubmission ? 'Execute Resubmission' : 'Execute Final Submission'}
+                                        {mySubmission ? t('assign_action_resubmit') : t('assign_action_final_submit')}
                                     </button>
                                 </div>
                             </div>
@@ -268,23 +272,24 @@ export const AssignmentDetail = () => {
                             <div className="space-y-1">
                                 <h2 className="text-2xl font-black text-[var(--text-primary)] tracking-tight italic flex items-center gap-3">
                                     <FileText className="h-6 w-6 text-[var(--accent-primary)]" />
-                                    Submissions Ledger
+                                    {t('assign_ledger')}
                                 </h2>
-                                <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-40">Danh sách kết quả học thuật</p>
+                                <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-40">{t('assign_ledger_sub')}</p>
                             </div>
                             <div className="h-10 px-5 rounded-full bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black tracking-widest uppercase flex items-center justify-center shadow-2xl">
-                                {allSubmissions.length} Registered Records
+                                {t('assign_reg_records', { count: allSubmissions.length })}
                             </div>
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            {/* Desktop View: Table */}
+                            <table className="hidden md:table w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-[var(--bg-secondary)]/50 border-b border-[var(--border-color)]">
-                                        <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60">Scholar Identity</th>
-                                        <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60 text-center">Status</th>
-                                        <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60 text-center">Evaluation</th>
-                                        <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60 text-right">Operations</th>
+                                        <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60">{t('label_scholar_id')}</th>
+                                        <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60 text-center">{t('table_status')}</th>
+                                        <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60 text-center">{t('label_evaluation')}</th>
+                                        <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60 text-right">{t('label_actions')}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[var(--border-color)] bg-white/5">
@@ -295,7 +300,7 @@ export const AssignmentDetail = () => {
                                                     <div className="h-20 w-20 rounded-[2rem] bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] opacity-10 mb-6">
                                                         <FileText className="h-10 w-10" />
                                                     </div>
-                                                    <p className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-xs opacity-30 italic">Nulla Records Identified</p>
+                                                    <p className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-xs opacity-30 italic">{t('assign_nulla_records')}</p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -322,7 +327,7 @@ export const AssignmentDetail = () => {
                                                             : 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_20px_-5px_rgba(245,158,11,0.3)]'}
                                                     `}>
                                                         <div className={`h-1.5 w-1.5 rounded-full ${sub.status === 'graded' ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
-                                                        {sub.status === 'graded' ? 'Evaluated' : 'Pending Review'}
+                                                        {sub.status === 'graded' ? t('assign_stat_evaluated') : t('assign_stat_pending_rev')}
                                                     </span>
                                                 </td>
                                                 <td className="px-10 py-8 text-center font-black text-[var(--text-primary)]">
@@ -331,7 +336,7 @@ export const AssignmentDetail = () => {
                                                             <span className="text-3xl tracking-tighter decoration-[var(--accent-primary)]/30 underline underline-offset-4">{sub.grade}</span>
                                                             <span className="text-[10px] text-[var(--text-secondary)] opacity-40">/ 100</span>
                                                         </div>
-                                                    ) : <span className="text-[var(--text-secondary)] opacity-20 italic">Unprocessed</span>}
+                                                    ) : <span className="text-[var(--text-secondary)] opacity-20 italic">{t('assign_stat_unprocessed')}</span>}
                                                 </td>
                                                 <td className="px-10 py-8 text-right">
                                                     <button
@@ -340,9 +345,9 @@ export const AssignmentDetail = () => {
                                                             setGradeScore(sub.grade || "");
                                                             setGradeFeedback(sub.feedback || "");
                                                         }}
-                                                        className="px-6 py-3 rounded-xl bg-[var(--bg-secondary)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-white transition-all shadow-inner active:scale-95 group/btn"
+                                                        className="px-6 py-3 rounded-xl bg-[var(--bg-secondary)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all shadow-inner active:scale-95 group/btn"
                                                     >
-                                                        Review Submission
+                                                        {t('assign_action_review')}
                                                         <ChevronRight className="h-3 w-3 inline ml-2 group-hover/btn:translate-x-1 transition-transform" />
                                                     </button>
                                                 </td>
@@ -351,6 +356,74 @@ export const AssignmentDetail = () => {
                                     )}
                                 </tbody>
                             </table>
+
+                            {/* Mobile Summary-to-Detail View (< md) */}
+                            <div className="md:hidden">
+                                {allSubmissions.length === 0 ? (
+                                    <div className="flex flex-col items-center py-20 px-8 text-center bg-[var(--bg-secondary)]/10 rounded-[2rem] mx-4 my-8">
+                                        <div className="h-16 w-16 rounded-2xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] opacity-10 mb-6">
+                                            <FileText className="h-8 w-8" />
+                                        </div>
+                                        <p className="text-[var(--text-secondary)] font-black uppercase tracking-widest text-[10px] opacity-30 italic">{t('assign_nulla_records')}</p>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-[var(--border-color)]/30">
+                                        {allSubmissions.map((sub) => (
+                                            <MobileListItem
+                                                key={sub.id}
+                                                title={sub.fullname}
+                                                subtitle={sub.status === 'graded' ? `${t('assign_stat_evaluated')} • ${sub.grade}/100` : t('assign_stat_pending_rev')}
+                                                avatar={sub.fullname.charAt(0).toUpperCase()}
+                                                isExpanded={gradingTarget?.id === sub.id}
+                                                onToggle={() => {
+                                                    if (gradingTarget?.id === sub.id) {
+                                                        setGradingTarget(null);
+                                                    } else {
+                                                        setGradingTarget(sub);
+                                                        setGradeScore(sub.grade || "");
+                                                        setGradeFeedback(sub.feedback || "");
+                                                    }
+                                                }}
+                                                actions={[
+                                                    {
+                                                        label: t('assign_action_process'),
+                                                        icon: GraduationCap,
+                                                        onClick: () => {
+                                                            setGradingTarget(sub);
+                                                            setGradeScore(sub.grade || "");
+                                                            setGradeFeedback(sub.feedback || "");
+                                                        },
+                                                        variant: 'primary'
+                                                    }
+                                                ]}
+                                            >
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center">
+                                                            <Mail className="h-3 w-3 text-[var(--text-secondary)]" />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] opacity-40">{t('assign_label_email')}</p>
+                                                            <p className="font-bold text-[var(--text-primary)] truncate">{sub.email}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center">
+                                                            <Star className={`h-3 w-3 ${sub.status === 'graded' ? 'text-emerald-500' : 'text-amber-500'}`} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-secondary)] opacity-40">{t('label_evaluation')}</p>
+                                                            <p className={`font-bold ${sub.status === 'graded' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                                                {sub.status === 'graded' ? t('assign_stat_finalized', { grade: sub.grade }) : t('assign_stat_awaiting')}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </MobileListItem>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -365,11 +438,11 @@ export const AssignmentDetail = () => {
                         <div className="p-10 pb-0 flex justify-between items-start z-10">
                             <div className="space-y-2">
                                 <h3 className="text-4xl font-black text-[var(--text-primary)] tracking-tight italic">
-                                    Digital <span className="text-[var(--accent-primary)]">Evaluation</span>
+                                    {t('assign_digital_eval').split(' ')[0]} <span className="text-[var(--accent-primary)]">{t('assign_digital_eval').split(' ')[1]}</span>
                                 </h3>
                                 <div className="flex items-center gap-3">
                                     <div className="h-3 w-3 rounded-full bg-emerald-500" />
-                                    <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80">Sinh viên: <span className="text-[var(--text-primary)] font-black not-italic ml-2">{gradingTarget.fullname}</span></p>
+                                    <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80">{t('assign_scholar_label')} <span className="text-[var(--text-primary)] font-black not-italic ml-2">{gradingTarget.fullname}</span></p>
                                 </div>
                             </div>
                             <button 
@@ -384,14 +457,14 @@ export const AssignmentDetail = () => {
                             <section className="space-y-6">
                                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] opacity-60">
                                     <FileText className="h-3 w-3" />
-                                    Submission Artifact
+                                    {t('assign_artifact')}
                                 </label>
                                 <div className="bg-[var(--bg-secondary)]/[0.3] border border-[var(--border-color)] p-8 rounded-[2.5rem] relative group/artifact">
                                     <div className="absolute top-6 right-6 opacity-10 group-hover/artifact:opacity-20 transition-opacity">
                                         <FileText className="h-10 w-10" />
                                     </div>
                                     <p className="text-[var(--text-primary)] font-medium text-lg leading-[1.8] italic whitespace-pre-wrap decoration-[var(--accent-primary)]/10 underline decoration-2 underline-offset-8">
-                                        {gradingTarget.content || "Học viên không cung cấp chú thích văn bản cho bài tập này."}
+                                        {gradingTarget.content || t('assign_no_art_content')}
                                     </p>
                                     {gradingTarget.file_url && (
                                         <div className="mt-10 pt-10 border-t border-[var(--border-color)]/50">
@@ -401,7 +474,7 @@ export const AssignmentDetail = () => {
                                                 rel="noreferrer" 
                                                 className="inline-flex items-center gap-4 px-10 py-4 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] font-black text-[10px] uppercase tracking-widest transition-all shadow-2xl hover:scale-[1.02] active:scale-98"
                                             >
-                                                <Upload className="h-4 w-4" /> Download Portfolio Artifact
+                                                <Upload className="h-4 w-4" /> {t('assign_down_artifact')}
                                             </a>
                                         </div>
                                     )}
@@ -410,7 +483,7 @@ export const AssignmentDetail = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-end">
                                 <div className="md:col-span-3 space-y-4">
-                                    <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] opacity-60">Academic Grade</label>
+                                    <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] opacity-60">{t('label_grade')}</label>
                                     <div className="relative group">
                                         <input
                                             type="number"
@@ -418,17 +491,18 @@ export const AssignmentDetail = () => {
                                             onChange={(e) => setGradeScore(e.target.value)}
                                             placeholder="0"
                                             className="w-full h-24 px-8 rounded-3xl border border-[var(--border-color)] bg-white/5 focus:bg-white/10 focus:ring-4 focus:ring-[var(--accent-primary)]/20 outline-none transition-all text-5xl font-black text-[var(--text-primary)] text-center tracking-tighter"
+                                            style={{ fontSize: '3rem' }}
                                         />
                                         <div className="absolute top-1/2 -right-3 -translate-y-1/2 text-[10px] font-black text-[var(--text-secondary)] opacity-40">/ 100</div>
                                     </div>
                                 </div>
                                 <div className="md:col-span-9 space-y-4">
-                                    <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] opacity-60">Instructor Evaluation Note</label>
+                                    <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-secondary)] opacity-60">{t('assign_label_eval_note')}</label>
                                     <textarea
                                         value={gradeFeedback}
                                         onChange={(e) => setGradeFeedback(e.target.value)}
-                                        placeholder="Cung cấp phản hồi chuyên môn để định hướng học viên..."
-                                        className="w-full h-24 px-8 py-5 rounded-3xl border border-[var(--border-color)] bg-white/5 focus:bg-white/10 focus:ring-4 focus:ring-[var(--accent-primary)]/20 outline-none transition-all text-lg font-medium text-[var(--text-primary)] italic resize-none"
+                                        placeholder={t('assign_place_eval_note')}
+                                        className="w-full h-32 px-8 py-6 rounded-3xl border border-[var(--border-color)] bg-white/5 focus:bg-white/10 focus:ring-4 focus:ring-[var(--accent-primary)]/20 outline-none transition-all text-base font-medium text-[var(--text-primary)] italic resize-none custom-scrollbar"
                                     />
                                 </div>
                             </div>
@@ -439,14 +513,14 @@ export const AssignmentDetail = () => {
                                 onClick={() => setGradingTarget(null)} 
                                 className="flex-1 py-5 rounded-2xl bg-[var(--bg-secondary)] text-[var(--text-primary)] text-[10px] font-black uppercase tracking-widest hover:bg-[var(--border-color)] transition-all active:scale-95 shadow-inner"
                             >
-                                Abandon Review
+                                {t('assign_action_abandon_rev')}
                             </button>
                             <button 
                                 onClick={handleInstructorGrade} 
                                 className="flex-[2] py-5 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest transition-all shadow-2xl active:scale-95 hover:opacity-95 flex items-center justify-center gap-3 group"
                             >
                                 <CheckCircle className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                                Commemorate Score & Observations
+                                {t('assign_action_commemorate')}
                             </button>
                         </div>
                     </div>
@@ -456,6 +530,3 @@ export const AssignmentDetail = () => {
     );
 };
 
-const Loader2 = ({ className }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
-);

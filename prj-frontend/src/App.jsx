@@ -25,12 +25,14 @@ import { UserManagement } from "./pages/admin/UserManagement";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { TeacherDashboard } from "./pages/teacher/TeacherDashboard";
 import { StudentDashboard } from "./pages/student/StudentDashboard";
+import { StudentAssignments } from "./pages/student/StudentAssignments";
 import { AssignmentDetail } from "./pages/shared/AssignmentDetail";
 import AddCoursePage from "./pages/admin/AddCoursePage";
 import { Settings } from "./pages/shared/Settings";
 import { TeacherAssignments } from "./pages/teacher/TeacherAssignments";
 import { TeacherStudents } from "./pages/teacher/TeacherStudents";
 import { StudentCourses } from "./pages/student/StudentCourses";
+import { NotificationsPage } from "./pages/shared/NotificationsPage";
 
 function App() {
   const { refresh, loading } = useAuthStore();
@@ -47,7 +49,7 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    document.documentElement.lang = language;
+    document.documentElement.lang = language || 'en';
   }, [language]);
 
   if (checkingAuth) return <div>Loading Application...</div>;
@@ -71,6 +73,7 @@ function App() {
               <Route path="/admin/courses" element={<CourseManagement />} />
               <Route path="/admin/addcourse" element={<AddCoursePage />} />
               <Route path="/admin/settings" element={<Settings />} />
+              <Route path="/admin/notifications" element={<NotificationsPage />} />
               <Route path="/adduser" element={<AddUserPage />} />
 
               {/* 1. Trang quản lý danh sách bài giảng của 1 khóa học */}
@@ -86,6 +89,7 @@ function App() {
               <Route path="/teacher/courses" element={<CourseManagement />} />
               <Route path="/teacher/addcourse" element={<AddCoursePage />} />
               <Route path="/teacher/settings" element={<Settings />} />
+              <Route path="/teacher/notifications" element={<NotificationsPage />} />
               {/* Thêm Route quản lý khóa học và bài học cho Giảng viên */}
               <Route path="/teacher/course/:courseid" element={<CourseLayout />} />
               <Route path="/teacher/course/:courseid/lesson/:lessonid" element={<LessonLayout />} />
@@ -106,9 +110,11 @@ function App() {
             <Route element={<StudentLayout />}>
               <Route path="/student" element={<StudentDashboard />} />
               <Route path="/student/courses" element={<StudentCourses />} />
+              <Route path="/student/assignments" element={<StudentAssignments />} />
               <Route path="/student/course/:courseid" element={<CourseLayout />} />
               <Route path="/student/assignment/:assignment_id" element={<AssignmentDetail />} />
               <Route path="/student/settings" element={<Settings />} />
+              <Route path="/student/notifications" element={<NotificationsPage />} />
             </Route>
           </Route>
 
