@@ -31,6 +31,11 @@ const addUser = async (req, res) => {
       return res.status(409).json({ message: 'Username đã tồn tại' })
     }
 
+    const existingEmail = await User.findByEmail(email)
+    if (existingEmail) {
+      return res.status(409).json({ message: 'Email already exists' })
+    }
+
     const result = await User.addUser({
       fullname,
       username,

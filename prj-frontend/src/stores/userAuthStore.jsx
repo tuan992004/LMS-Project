@@ -35,7 +35,7 @@ export const useAuthStore = create((set, get) => ({
       set({ loading: false })
 
       toast.error(
-        error?.response?.data?.message || "Đăng nhập thất bại"
+        error?.response?.data?.message || "Invalid username or password"
       )
 
       throw error

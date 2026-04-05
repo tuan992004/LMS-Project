@@ -9,6 +9,10 @@ const User = {
         console.log(rows)
         return rows[0];
     },
+    findByEmail: async (email) => {
+        const [rows] = await db.execute("SELECT * FROM users WHERE email = ?", [email]);
+        return rows[0];
+    },
     findById: async (userid) => {
         console.log(userid)
         const [rows] = await db.execute("SELECT * FROM users WHERE userid = ?", [userid]);

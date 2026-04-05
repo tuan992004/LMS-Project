@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { userSchema } from "../../type/userSchema";
-import { User, Mail, Lock, Shield, Loader2, Edit2, Trash2, UserPlus, BookOpen, X, ChevronRight, Fingerprint } from "lucide-react";
+import { User, Mail, Lock, Shield, Loader2, Edit2, Trash2, UserPlus, BookOpen, X, ChevronRight, Fingerprint, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { DataCard } from "../../components/shared/DataCard";
 import { useTranslation } from "../../hooks/useTranslation";
 import MobileListItem from "../../components/shared/MobileListItem";
@@ -20,6 +20,10 @@ export const UserManagement = () => {
     // Edit Modal State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Delete Confirmation Modal State
+    const [confirmDeleteUser, setConfirmDeleteUser] = useState(null);
 
     const {
         register,
@@ -53,32 +57,24 @@ export const UserManagement = () => {
         fetchUsers();
     }, []);
 
-    // Delete User (Optimistic with Undo)
-    const handleDeleteUser = (userId) => {
-        const previousUsers = [...users];
-        setUsers(prev => prev.filter(u => u.userid !== userId));
+    // Open Confirmation Dialog Before Delete
+    const openConfirmDelete = (user) => {
+        setConfirmDeleteUser(user);
+    };
 
-        const timer = setTimeout(async () => {
-            try {
-                await api.delete(`/users/${userId}`);
-            } catch (error) {
-                console.error(error);
-                toast.error(t('alert_error'));
-                setUsers(previousUsers);
-            }
-        }, 5000);
-
-        toast.success(t('alert_deleted_toast') || "Tài khoản đã được đưa vào thùng rác", {
-            duration: 5000,
-            action: {
-                label: t('alert_undo') || 'Hoàn tác (Undo)',
-                onClick: () => {
-                    clearTimeout(timer);
-                    setUsers(previousUsers);
-                    toast.success(t('alert_undo_success') || "Đã hoàn tác xóa tài khoản!");
-                }
-            }
-        });
+    // Delete User (after confirmation)
+    const handleDeleteUser = async () => {
+        if (!confirmDeleteUser) return;
+        const userId = confirmDeleteUser.userid;
+        setConfirmDeleteUser(null);
+        try {
+            await api.delete(`/users/${userId}`);
+            setUsers(prev => prev.filter(u => u.userid !== userId));
+            toast.success(t('alert_deleted_toast') || "User deleted successfully");
+        } catch (error) {
+            console.error(error);
+            toast.error(t('alert_error') || "Failed to delete user");
+        }
     };
 
     const handleEditClick = (user) => {
@@ -187,6 +183,7 @@ export const UserManagement = () => {
                                 <thead>
                                     <tr className="bg-[var(--bg-secondary)]/50 border-b border-[var(--border-color)]">
                                         <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60">{t('label_scholar_id')}</th>
+                                        <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60">{t('label_email')}</th>
                                         <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60 text-center">{t('label_system_authority')}</th>
                                         <th className="px-10 py-6 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-60 text-right">{t('label_actions')}</th>
                                     </tr>
@@ -205,6 +202,9 @@ export const UserManagement = () => {
                                                     </div>
                                                 </div>
                                             </td>
+                                            <td className="px-10 py-8">
+                                                <div className="text-sm text-[var(--text-secondary)] font-medium">{u.email}</div>
+                                            </td>
                                             <td className="px-10 py-8 text-center">
                                                 <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase bg-[var(--bg-secondary)] text-[var(--text-secondary)]">
                                                     {u.role === 'admin' ? t('role_admin') : u.role === 'instructor' ? t('role_instructor') : t('role_student')}
@@ -213,7 +213,7 @@ export const UserManagement = () => {
                                             <td className="px-10 py-8 text-right">
                                                 <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
                                                     <button onClick={() => handleEditClick(u)} className="h-10 w-10 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all"><Edit2 className="h-4 w-4" /></button>
-                                                    <button onClick={() => handleDeleteUser(u.userid)} className="h-10 w-10 bg-rose-500/10 text-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"><Trash2 className="h-4 w-4" /></button>
+                                                    <button onClick={() => openConfirmDelete(u)} className="h-10 w-10 bg-rose-500/10 text-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"><Trash2 className="h-4 w-4" /></button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -248,7 +248,7 @@ export const UserManagement = () => {
                                         {
                                             label: t('user_delete'),
                                             icon: Trash2,
-                                            onClick: () => handleDeleteUser(u.userid),
+                                            onClick: () => openConfirmDelete(u),
                                             variant: 'danger'
                                         }
                                     ]}
@@ -299,12 +299,21 @@ export const UserManagement = () => {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-2">{t('label_email')}</label>
-                                <input {...register("email")} className="w-full text-base p-5 rounded-2xl bg-white/5 border border-[var(--border-color)] outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all font-medium italic"/>
+                                <input {...register("email")} type="email" className="w-full text-base p-5 rounded-2xl bg-white/5 border border-[var(--border-color)] outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all font-medium italic"/>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-2">{t('user_cred_refresh')}</label>
-                                    <input {...register("password")} type="password" placeholder="••••••••" className="w-full text-base p-5 rounded-2xl bg-white/5 border border-[var(--border-color)] outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all font-medium"/>
+                                    <div className="relative">
+                                        <input {...register("password")} type={showPassword ? "text" : "password"} placeholder="••••••••" className="w-full text-base p-5 rounded-2xl bg-white/5 border border-[var(--border-color)] outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all font-medium pr-14"/>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(v => !v)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-xl hover:bg-white/10 text-[var(--text-secondary)] transition-all"
+                                        >
+                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-2">{t('label_system_authority')}</label>
@@ -322,6 +331,41 @@ export const UserManagement = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {confirmDeleteUser && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[200] flex items-center justify-center p-4 animate-fade-in">
+                    <div className="glass-card p-8 md:p-10 w-full max-w-md relative animate-fade-in-up shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border-none">
+                        <div className="flex items-start gap-4 mb-6">
+                            <div className="h-12 w-12 rounded-2xl bg-rose-500/10 flex items-center justify-center shrink-0">
+                                <AlertTriangle className="h-6 w-6 text-rose-500" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-[var(--text-primary)] mb-1">Delete User</h3>
+                                <p className="text-sm text-[var(--text-secondary)] opacity-70">
+                                    Are you sure you want to delete <span className="font-bold text-[var(--text-primary)]">{confirmDeleteUser.fullname}</span>? This action cannot be undone.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setConfirmDeleteUser(null)}
+                                className="flex-1 py-4 rounded-2xl bg-[var(--bg-secondary)] font-black text-[10px] uppercase tracking-widest shadow-inner active:scale-95 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDeleteUser}
+                                className="flex-[2] py-4 rounded-2xl bg-rose-500 text-white font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-rose-500/30 active:scale-95 transition-all hover:bg-rose-600"
+                            >
+                                Delete User
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

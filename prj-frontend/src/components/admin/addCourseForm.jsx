@@ -82,6 +82,7 @@ export default function AddCourseForm() {
               placeholder="Trình bày mục tiêu đào tạo, đối tượng hướng tới và kết quả đầu ra dự kiến..." 
               onChange={handleChange} 
               rows="6"
+              required
               className="w-full px-6 py-5 rounded-2xl border border-[var(--border-color)] bg-white/5 focus:bg-white/10 focus:ring-4 focus:ring-[var(--accent-primary)]/20 outline-none transition-all text-lg font-medium text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/30 placeholder:italic leading-relaxed resize-none"
             />
           </div>
