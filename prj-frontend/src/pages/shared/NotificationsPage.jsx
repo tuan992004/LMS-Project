@@ -49,14 +49,14 @@ export const NotificationsPage = () => {
     switch (type) {
       case 'assignment_graded':
       case 'grade':
-        return { icon: CheckCircle, color: 'text-zinc-900 dark:text-zinc-100' };
+        return { icon: CheckCircle, color: 'text-[var(--text-primary)]' };
       case 'assignment_due':
       case 'security':
-        return { icon: AlertTriangle, color: 'text-zinc-900 dark:text-zinc-100' };
+        return { icon: AlertTriangle, color: 'text-[var(--text-primary)]' };
       case 'enrollment_request':
         return { icon: UserPlus, color: 'text-violet-500' };
       default:
-        return { icon: Info, color: 'text-zinc-900 dark:text-zinc-100' };
+        return { icon: Info, color: 'text-[var(--text-primary)]' };
     }
   };
 
@@ -167,7 +167,7 @@ export const NotificationsPage = () => {
                       <div className="space-y-1">
                         <div className="flex items-center justify-between gap-4">
                            <p className={`text-base md:text-lg leading-relaxed break-words font-medium italic ${n.is_read ? 'text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}>
-                             {n.message}
+                             {n.message?.length > 240 ? n.message.substring(0, 240) + "..." : n.message}
                            </p>
                            {!n.is_read && (
                              <div className="h-2 w-2 rounded-full bg-[var(--accent-primary)] shrink-0 shadow-[0_0_8px_var(--accent-primary)]" />

@@ -17,7 +17,8 @@ import {
     Menu,
     X,
     ChevronDown,
-    Shield
+    Shield,
+    Megaphone
 } from 'lucide-react';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -46,6 +47,7 @@ export const AdminLayout = () => {
         { path: '/admin', label: t('nav_dashboard'), icon: LayoutDashboard },
         { path: '/admin/users', label: t('nav_users'), icon: Users },
         { path: '/admin/courses', label: t('nav_courses'), icon: BookOpen },
+        { path: '/admin/announcements', label: t('nav_broadcast'), icon: Megaphone },
     ];
 
     const handleLogout = () => {
@@ -131,7 +133,10 @@ export const AdminLayout = () => {
 
                 {/* Sidebar User Profile - Muted Hierarchy */}
                 <footer className="p-4 border-t border-[var(--border-color)]/50 bg-[var(--bg-secondary)] flex-none overflow-hidden">
-                    <div className={`flex items-center gap-3 p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)]/50 transition-all group cursor-pointer hover:bg-[var(--text-primary)] hover:border-[var(--text-primary)] ${!isSidebarOpen ? 'justify-center' : ''}`}>
+                    <Link 
+                        to="/admin/settings"
+                        className={`flex items-center gap-3 p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)]/50 transition-all group cursor-pointer hover:bg-[var(--text-primary)] hover:border-[var(--text-primary)] ${!isSidebarOpen ? 'justify-center' : ''}`}
+                    >
                         <div className="w-10 h-10 shrink-0 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] flex items-center justify-center shadow-md relative overflow-hidden group-hover:bg-[var(--bg-primary)] group-hover:text-[var(--text-primary)] transition-colors">
                             <UserIcon className="h-5 w-5" strokeWidth={1.5} />
                         </div>
@@ -145,7 +150,7 @@ export const AdminLayout = () => {
                                 </p>
                             </div>
                         )}
-                    </div>
+                    </Link>
                 </footer>
             </aside>
 
@@ -164,11 +169,14 @@ export const AdminLayout = () => {
                     {/* Global Top Navbar for Desktop - Moved out for full width */}
                     <header className="h-24 glass-nav fixed top-0 left-0 w-full z-[120] px-8 sm:px-12 hidden lg:flex items-center justify-between">
                         {/* Brand / Logo Space (Dynamic width to balance sidebar) */}
-                        <div className={`${isSidebarOpen ? 'w-72' : 'w-20'} transition-all duration-500 flex items-center gap-4`}>
+                        <Link 
+                            to="/admin"
+                            className={`${isSidebarOpen ? 'w-72' : 'w-20'} transition-all duration-500 flex items-center gap-4`}
+                        >
                              <div className="w-10 h-10 shrink-0 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl flex items-center justify-center shadow-lg transition-transform duration-500 hover:rotate-12">
                                 <Shield className="h-5 w-5" strokeWidth={1.5} />
                             </div>
-                        </div>
+                        </Link>
 
                         {/* Right Side Actions */}
                         <div className="flex items-center gap-4 sm:gap-8 pr-4">

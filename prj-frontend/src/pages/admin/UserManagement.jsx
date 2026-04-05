@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../lib/axios';
 import { toast } from 'sonner';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { userSchema } from "../../type/userSchema";
-import { User, Mail, Lock, Shield, Loader2, Edit2, Trash2, UserPlus, BookOpen, X, ChevronRight, Fingerprint, Eye, EyeOff, AlertTriangle, Filter, Search } from "lucide-react";
+import { Home, User, Users, Mail, Lock, Shield, Loader2, Edit2, Trash2, UserPlus, BookOpen, X, ChevronRight, Fingerprint, Eye, EyeOff, AlertTriangle, Filter, Search } from "lucide-react";
 import { DataCard } from "../../components/shared/DataCard";
 import { useTranslation } from "../../hooks/useTranslation";
 import MobileListItem from "../../components/shared/MobileListItem";
@@ -182,17 +182,26 @@ export const UserManagement = () => {
             {/* Minimal Header Action Bar */}
             <header className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
                 <div className="flex flex-1 items-center gap-4 w-full md:w-auto">
+                    <Link 
+                        to="/admin"
+                        className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0 hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all duration-300 group/header-icon"
+                    >
+                        <Home className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
+                    </Link>
+
                     {/* Search Bar */}
-                    <div className="relative flex-1 group/search">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] opacity-40 group-focus-within/search:opacity-100 group-focus-within/search:text-[var(--accent-primary)] transition-all">
-                            <Search className="h-4 w-4" />
-                        </div>
+                    <div className="relative w-full md:max-w-md group/search">
                         <input 
                             type="text"
-                            placeholder="Search users by name, email, or username..."
+                            data-region="input"
+                            data-action="search"
+                            id="searchinput"
+                            name="search"
+                            autoComplete="off"
+                            placeholder={t('nav_search_placeholder') || "Search users..."}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-medium text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/30 outline-none focus:ring-4 focus:ring-[var(--accent-primary)]/10 focus:border-[var(--accent-primary)]/50 transition-all shadow-inner"
+                            className="form-control withclear pl-6 focus:ring-4 focus:ring-[var(--accent-primary)]/10"
                         />
                         {searchTerm && (
                             <button 
@@ -286,29 +295,63 @@ export const UserManagement = () => {
                                 <tbody className="divide-y divide-[var(--border-color)] bg-white/5">
                                     {filteredUsers.map((u) => (
                                         <tr key={u.userid} className="hover:bg-[var(--accent-primary)]/[0.02] transition-colors group">
-                                            <td className="px-10 py-8">
+                                            <td 
+                                                className="px-10 py-8 cursor-pointer group/identity"
+                                                onClick={() => handleEditClick(u)}
+                                            >
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-12 w-12 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] flex items-center justify-center font-black text-lg group-hover:bg-[var(--bg-primary)] group-hover:text-[var(--text-primary)] border border-transparent group-hover:border-[var(--text-primary)]/20 transition-all">
+                                                    <div className="h-12 w-12 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] flex items-center justify-center font-black text-lg group-hover/identity:bg-[var(--bg-primary)] group-hover/identity:text-[var(--text-primary)] border border-transparent group-hover/identity:border-[var(--text-primary)]/20 transition-all">
                                                         {u.fullname.charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <div className="font-bold text-[var(--text-primary)] text-lg">{u.fullname}</div>
+                                                        <div className="font-bold text-[var(--text-primary)] text-lg group-hover/identity:text-[var(--accent-primary)] transition-colors">{u.fullname}</div>
                                                         <div className="text-[10px] text-[var(--text-secondary)] font-black uppercase tracking-widest opacity-40 italic">@{u.username}</div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-10 py-8">
+                                            <td 
+                                                className="px-10 py-8 cursor-pointer"
+                                                onClick={() => handleEditClick(u)}
+                                            >
                                                 <div className="text-sm text-[var(--text-secondary)] font-medium">{u.email}</div>
                                             </td>
-                                            <td className="px-10 py-8 text-center">
+                                            <td 
+                                                className="px-10 py-8 text-center cursor-pointer"
+                                                onClick={() => handleEditClick(u)}
+                                            >
                                                 <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase bg-[var(--bg-secondary)] text-[var(--text-secondary)]">
                                                     {u.role === 'admin' ? t('role_admin') : u.role === 'instructor' ? t('role_instructor') : t('role_student')}
                                                 </span>
                                             </td>
-                                            <td className="px-10 py-8 text-right">
+                                            <td 
+                                                className="px-10 py-8 text-right cursor-pointer"
+                                                onClick={() => handleEditClick(u)}
+                                            >
                                                 <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
-                                                    <button onClick={() => handleEditClick(u)} className="h-10 w-10 bg-blue-500/10 text-blue-500 rounded-xl flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all"><Edit2 className="h-4 w-4" /></button>
-                                                    <button onClick={() => openConfirmDelete(u)} className="h-10 w-10 bg-rose-500/10 text-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"><Trash2 className="h-4 w-4" /></button>
+                                                    {/* US-18: Enroll Students Button (if applicable) */}
+                                                    {u.role === 'student' && (
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleAssignClick(u);
+                                                            }}
+                                                            className="h-10 px-4 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all active:scale-95"
+                                                            title={t('course_enroll')}
+                                                        >
+                                                            <BookOpen className="h-4 w-4" />
+                                                            Courses
+                                                        </button>
+                                                    )}
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openConfirmDelete(u);
+                                                        }} 
+                                                        className="h-10 w-10 bg-rose-500/10 text-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all active:scale-95" 
+                                                        title={t('user_delete')}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -413,9 +456,9 @@ export const UserManagement = () => {
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest opacity-60 ml-2">{t('label_system_authority')}</label>
                                     <select {...register("role")} className="w-full text-base p-5 rounded-2xl bg-white/5 border border-[var(--border-color)] outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/10 transition-all font-black uppercase tracking-widest italic appearance-none cursor-pointer">
-                                        <option value="student">{t('user_student_acc')}</option>
-                                        <option value="instructor">{t('user_instructor_acc')}</option>
-                                        <option value="admin">{t('role_admin_architect')}</option>
+                                        <option value="student">{t('role_student')}</option>
+                                        <option value="instructor">{t('role_instructor')}</option>
+                                        <option value="admin">{t('role_admin')}</option>
                                     </select>
                                 </div>
                             </div>

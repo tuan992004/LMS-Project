@@ -113,10 +113,34 @@ const deleteAnnouncement = async (req, res) => {
   }
 };
 
+// Get a single announcement by ID
+const getAnnouncementById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [announcement] = await db.execute(`
+      SELECT a.*, u.fullname as author_name 
+      FROM announcements a 
+      JOIN users u ON a.author_id = u.userid 
+      WHERE a.id = ?
+    `, [id]);
+
+    if (announcement.length === 0) {
+      return res.status(404).json({ message: "Announcement not found" });
+    }
+
+    res.status(200).json(announcement[0]);
+  } catch (error) {
+    console.error("Get Announcement Detail Error:", error);
+    res.status(500).json({ message: "Failed to fetch announcement details" });
+  }
+};
+
 module.exports = {
   createAnnouncement,
   getAnnouncements,
   getPendingAnnouncements,
   approveAnnouncement,
-  deleteAnnouncement
+  deleteAnnouncement,
+  getAnnouncementById
 };

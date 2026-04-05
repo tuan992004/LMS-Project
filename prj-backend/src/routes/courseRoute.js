@@ -10,6 +10,7 @@ const authorize = require('../middlewares/authorization');
 // Route này dùng để upload file (Video + Docs)
 router.post('/lessons', authorize(['admin', 'instructor']), upload.any(), courseCtrl.upsertLesson);
 router.put('/lessons', authorize(['admin', 'instructor']), upload.any(), courseCtrl.upsertLesson);
+router.delete('/lessons/:lesson_id', authorize(['admin', 'instructor']), courseCtrl.deleteLesson);
 
 
 // --- QUẢN LÝ KHÓA HỌC (COURSES) ---

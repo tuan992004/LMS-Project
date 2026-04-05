@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const assignmentController = require('../controllers/assignmentController');
+const upload = require('../middlewares/uploadMiddleware');
 
 // All routes here should already be authenticated via server.js authMiddleware
 
 // === INSTRUCTOR / ADMIN ===
 // Create an assignment
-router.post('/course/:course_id', assignmentController.createAssignment);
+router.post('/course/:course_id', upload.single('file'), assignmentController.createAssignment);
 
 // Get all assignments for a course (Can be accessed by Students too)
 router.get('/course/:course_id', assignmentController.getAssignments);
@@ -26,7 +27,7 @@ router.patch('/submissions/:submission_id/grade', assignmentController.gradeSubm
 
 // === STUDENT ===
 // Submit an assignment
-router.post('/:assignment_id/submit', assignmentController.submitAssignment);
+router.post('/:assignment_id/submit', upload.single('file'), assignmentController.submitAssignment);
 
 // Get their own submission for an assignment
 router.get('/:assignment_id/my-submission', assignmentController.getMySubmission);

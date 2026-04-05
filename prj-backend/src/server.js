@@ -67,8 +67,11 @@ app.get('/hashPassword', async (req, res) => {
     }
 })
 
+const { initScheduler } = require('./libs/scheduler');
+
 app.listen(PORT, () => {
     console.log(`Server bắt đầu trên cổng ${PORT}`)
+    initScheduler();
 });
 
 // Error handling middleware
@@ -77,7 +80,7 @@ app.use((err, req, res, next) => {
     console.error("Global Error Handler:", err);
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ message: "File too large. Maximum size is 25MB." });
+            return res.status(400).json({ message: "File too large. Maximum size is 500MB." });
         }
         return res.status(400).json({ message: "File upload error", error: err.message });
     }

@@ -5,19 +5,20 @@ const {
   getAnnouncements, 
   getPendingAnnouncements, 
   approveAnnouncement, 
-  deleteAnnouncement 
+  deleteAnnouncement,
+  getAnnouncementById 
 } = require("../controllers/announcementController");
 // All routes require auth (applied in server.js)
 
 
 // Public announcements for everyone
 router.get("/", getAnnouncements);
-
-// Create an announcement (Admin/Teacher)
 router.post("/", createAnnouncement);
 
 // Get pending (Admin only)
 router.get("/pending", getPendingAnnouncements);
+
+router.get("/:id", getAnnouncementById);
 
 // Approve (Admin only)
 router.patch("/:id/approve", approveAnnouncement);

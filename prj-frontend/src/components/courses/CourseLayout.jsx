@@ -14,8 +14,11 @@ import {
   Upload,
   Loader2,
   Layers,
-  Info
+  Info,
+  Trash2,
+  Users
 } from "lucide-react";
+import { ConfirmModal } from "../shared/ConfirmModal";
 import { courseService } from "../../service/courseService";
 import { api } from "../../lib/axios";
 import { toast } from "sonner";
@@ -31,11 +34,16 @@ export const CourseLayout = () => {
   const [course, setCourse] = useState({ title: "", description: "", id: courseid });
   const [lessons, setLessons] = useState([]);
   const [assignments, setAssignments] = useState([]);
-  const [activeTab, setActiveTab] = useState('lessons'); // 'lessons' | 'assignments'
+  const [students, setStudents] = useState([]);
+  const [activeTab, setActiveTab] = useState('lessons'); // 'lessons' | 'assignments' | 'students'
   const [loading, setLoading] = useState(true);
 
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
   const [newAssignment, setNewAssignment] = useState({ title: '', description: '', due_date: '', file: null });
+
+  // Delete handling state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null); // { type: 'lesson' | 'assignment', id: string, title: string }
 
   const modalRef = useRef(null);
   useFocusTrap(modalRef, isAssignmentModalOpen);
@@ -56,6 +64,13 @@ export const CourseLayout = () => {
 
       const assignRes = await api.get(`/assignments/course/${courseid}`);
       setAssignments(assignRes.data);
+
+      try {
+        const stdRes = await api.get(`/enrollments/course/${courseid}/students`);
+        setStudents(stdRes.data);
+      } catch (err) {
+        console.error("Failed to load students", err);
+      }
     } catch (e) {
       toast.error(t('alert_course_data_error'));
     } finally {
@@ -82,7 +97,11 @@ export const CourseLayout = () => {
       const formData = new FormData();
       formData.append('title', newAssignment.title);
       formData.append('description', newAssignment.description);
-      if (newAssignment.due_date) formData.append('due_date', newAssignment.due_date);
+      if (newAssignment.due_date) {
+        // Fix for MySQL datetime strict format: from 'YYYY-MM-DDTHH:mm' to 'YYYY-MM-DD HH:mm:00'
+        const safeMySQLDate = newAssignment.due_date.replace('T', ' ') + ':00';
+        formData.append('due_date', safeMySQLDate);
+      }
       if (newAssignment.file) formData.append('file', newAssignment.file);
 
       await api.post(`/assignments/course/${courseid}`, formData, {
@@ -96,6 +115,29 @@ export const CourseLayout = () => {
     } catch (e) {
       toast.error(t('alert_assign_error'));
     }
+  };
+
+  const performDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      if (itemToDelete.type === 'lesson') {
+        await api.delete(`/courses/lessons/${itemToDelete.id}`);
+        toast.success(t('alert_delete_lesson_success'));
+      } else {
+        await api.delete(`/assignments/${itemToDelete.id}`);
+        toast.success(t('alert_delete_assignment_success'));
+      }
+      fetchData();
+    } catch (e) {
+      toast.error(t('alert_error'));
+    }
+  };
+
+  const confirmDelete = (e, type, id, title) => {
+    e.stopPropagation();
+    setItemToDelete({ type, id, title });
+    setIsDeleteModalOpen(true);
   };
 
   const isInstructorOrAdmin = user?.role === 'admin' || user?.role === 'instructor';
@@ -182,6 +224,20 @@ export const CourseLayout = () => {
             {t('course_tab_assignments')}
             {activeTab === 'assignments' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--text-primary)]" />}
           </button>
+          
+          {(isInstructorOrAdmin || user?.role === 'admin') && (
+            <button
+              onClick={() => setActiveTab('students')}
+              className={`
+                flex flex-none items-center gap-3 px-8 md:px-12 py-6 transition-all duration-300 relative font-medium text-[10px] md:text-xs uppercase tracking-widest
+                ${activeTab === 'students' ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] opacity-40 hover:opacity-100'}
+              `}
+            >
+              <Users size={18} strokeWidth={activeTab === 'students' ? 2 : 1.5} />
+              {t('nav_students') || 'Scholars'}
+              {activeTab === 'students' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--text-primary)]" />}
+            </button>
+          )}
         </nav>
 
         {/* Tab View Content */}
@@ -228,8 +284,19 @@ export const CourseLayout = () => {
                             <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-[0.3em] font-medium opacity-60 truncate">{t('course_section_module')} {(index + 1).toString().padStart(2, '0')}</p>
                             </div>
                         </div>
-                        <div className="h-12 md:h-16 w-12 md:w-16 flex-none rounded-full border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] group-hover:bg-[var(--text-primary)] group-hover:text-[var(--bg-primary)] transition-all duration-500 group-hover:rotate-12">
-                            <ChevronRight size={24} strokeWidth={1.5} />
+                        <div className="flex items-center gap-4">
+                            {isInstructorOrAdmin && (
+                                <button 
+                                    onClick={(e) => confirmDelete(e, 'lesson', lesson.lesson_id, lesson.title)}
+                                    className="h-12 w-12 rounded-full border border-[var(--border-color)] flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300 z-10"
+                                    title={t('user_delete')}
+                                >
+                                    <Trash2 size={20} strokeWidth={1.5} />
+                                </button>
+                            )}
+                            <div className="h-12 md:h-16 w-12 md:w-16 flex-none rounded-full border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)] group-hover:bg-[var(--text-primary)] group-hover:text-[var(--bg-primary)] transition-all duration-500 group-hover:rotate-12">
+                                <ChevronRight size={24} strokeWidth={1.5} />
+                            </div>
                         </div>
                         </div>
                     </article>
@@ -277,7 +344,18 @@ export const CourseLayout = () => {
                                 <div className="h-14 md:h-16 w-14 md:w-16 rounded-2xl border border-[var(--text-primary)]/10 flex items-center justify-center text-[var(--text-primary)] shadow-sm group-hover:bg-[var(--text-primary)] group-hover:text-[var(--bg-primary)] transition-all duration-500">
                                     <ClipboardList size={24} strokeWidth={1.5} />
                                 </div>
-                                <span className="text-[9px] font-medium tracking-[0.3em] text-[var(--text-secondary)] uppercase opacity-40">#{assignment.id}</span>
+                                <div className="flex items-center gap-3">
+                                    {isInstructorOrAdmin && (
+                                        <button 
+                                            onClick={(e) => confirmDelete(e, 'assignment', assignment.id, assignment.title)}
+                                            className="h-10 w-10 rounded-xl border border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300 z-10"
+                                            title={t('user_delete')}
+                                        >
+                                            <Trash2 size={16} strokeWidth={1.5} />
+                                        </button>
+                                    )}
+                                    <span className="text-[9px] font-medium tracking-[0.3em] text-[var(--text-secondary)] uppercase opacity-40">#{assignment.id}</span>
+                                </div>
                             </div>
                             <div className="space-y-4">
                                 <h3 className="text-xl md:text-3xl font-medium text-[var(--text-primary)] leading-relaxed italic break-words">{assignment.title}</h3>
@@ -289,7 +367,7 @@ export const CourseLayout = () => {
                                     {assignment.due_date && (
                                     <span className="text-[10px] text-[var(--text-primary)] font-medium uppercase tracking-[0.2em] flex items-center gap-2 bg-[var(--bg-secondary)] px-4 py-2 rounded-xl border border-[var(--border-color)] w-fit">
                                         <Clock size={12} strokeWidth={1.5} />
-                                        {t('course_assignment_due')}: {new Date(assignment.due_date).toLocaleDateString()}
+                                        {t('course_assignment_due')}: {new Date(assignment.due_date).toLocaleString([], { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                     )}
                                 </div>
@@ -305,6 +383,54 @@ export const CourseLayout = () => {
                 )}
               </section>
             </div>
+          )}
+
+          {activeTab === 'students' && (
+            <div className="space-y-10 md:space-y-16 animate-fade-in-up">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+                <div className="space-y-2">
+                  <h2 className="text-3xl md:text-4xl font-medium text-[var(--text-primary)] italic tracking-tight">{t('nav_students') || 'Scholars Directory'}</h2>
+                  <p className="text-[var(--text-secondary)] font-medium text-sm md:text-base leading-relaxed break-words">Manage and view enrolled scholars in this course</p>
+                </div>
+                <div className="px-6 py-3 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] font-medium text-[10px] uppercase tracking-widest">
+                  Total: {students.length}
+                </div>
+              </div>
+
+              <section aria-label="Students List" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {students.length === 0 ? (
+                  <div className="py-24 md:py-40 col-span-full flex flex-col items-center justify-center text-center rounded-[2rem] border-2 border-dashed border-[var(--border-color)]">
+                    <Users size={48} strokeWidth={1} className="text-[var(--text-secondary)] opacity-20 mb-8" />
+                    <p className="text-[var(--text-primary)] font-medium uppercase tracking-[0.3em] text-[10px] md:text-xs">No students enrolled</p>
+                    <p className="text-[var(--text-secondary)] text-sm mt-4 font-medium italic opacity-60 max-w-sm px-6 leading-relaxed">Admin must assign students to this course</p>
+                  </div>
+                ) : (
+                  students.map((student, index) => (
+                    <article
+                      key={student.student_id || student.userid || index}
+                      className={`animate-fade-in-up stagger-${(index % 4) + 1} h-full`}
+                    >
+                        <div className="group insta-card p-6 md:p-8 flex items-center gap-6 cursor-default border-[var(--border-color)] hover:border-[var(--text-primary)] transition-all h-full bg-[var(--bg-primary)]">
+                            <div className="h-16 w-16 rounded-full border border-[var(--text-primary)]/10 bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] shadow-inner text-xl font-medium uppercase overflow-hidden shrink-0">
+                                {student.avatar ? (
+                                    <img src={student.avatar} alt={student.fullname} className="w-full h-full object-cover" />
+                                ) : (
+                                    (student.fullname?.charAt(0) || student.username?.charAt(0) || "U")
+                                )}
+                            </div>
+                            <div className="space-y-1.5 overflow-hidden flex-1 min-w-0">
+                                <h3 className="text-lg font-medium text-[var(--text-primary)] truncate">{student.fullname || student.username}</h3>
+                                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-medium opacity-60 truncate">{student.email}</p>
+                            </div>
+                            <div className="h-8 w-8 rounded-full border border-[var(--border-color)] flex items-center justify-center group-hover:bg-[var(--text-primary)] group-hover:text-[var(--bg-primary)] transition-all">
+                                <ChevronRight size={14} strokeWidth={2} />
+                            </div>
+                        </div>
+                    </article>
+                  ))
+                )}
+              </section>
+             </div>
           )}
         </div>
       </section>
@@ -406,6 +532,17 @@ export const CourseLayout = () => {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={performDelete}
+        title={itemToDelete?.type === 'lesson' ? t('course_academic_module') : t('nav_assignments')}
+        message={itemToDelete?.type === 'lesson' ? t('delete_lesson_confirm') : t('delete_assignment_confirm')}
+        confirmText={t('user_delete')}
+        variant="danger"
+      />
     </main>
   );
 };

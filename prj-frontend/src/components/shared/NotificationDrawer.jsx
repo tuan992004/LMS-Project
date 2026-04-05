@@ -61,12 +61,12 @@ export const NotificationDrawer = () => {
     switch (type) {
       case 'assignment_graded':
       case 'grade':
-        return { icon: CheckCircle, color: 'text-zinc-900 dark:text-zinc-100' };
+        return { icon: CheckCircle, color: 'text-[var(--text-primary)]' };
       case 'assignment_due':
       case 'security':
-        return { icon: AlertTriangle, color: 'text-zinc-900 dark:text-zinc-100' };
+        return { icon: AlertTriangle, color: 'text-[var(--text-primary)]' };
       default:
-        return { icon: Info, color: 'text-zinc-900 dark:text-zinc-100' };
+        return { icon: Info, color: 'text-[var(--text-primary)]' };
     }
   };
 
@@ -89,9 +89,9 @@ export const NotificationDrawer = () => {
         <div className="flex flex-col h-full overflow-hidden">
           
           {/* Header */}
-          <header className="px-8 pt-12 pb-8 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-900">
+          <header className="px-8 pt-12 pb-8 flex items-center justify-between border-b border-[var(--border-color)]">
             <div className="flex flex-col">
-              <span className="text-[10px] font-medium uppercase tracking-[0.4em] text-zinc-500 italic mb-1">
+              <span className="text-[10px] font-medium uppercase tracking-[0.4em] text-[var(--text-secondary)] italic mb-1">
                 UPDATES
               </span>
               <h2 className="text-2xl font-medium text-[var(--text-primary)] tracking-tighter italic uppercase">
@@ -100,7 +100,7 @@ export const NotificationDrawer = () => {
             </div>
             <button
               onClick={toggleNotifications}
-              className="h-12 w-12 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-zinc-800 text-[var(--text-secondary)] active:scale-90 transition-all"
+              className="h-12 w-12 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] dark:bg-white/5 border border-[var(--border-color)] text-[var(--text-secondary)] active:scale-90 transition-all"
             >
               <X strokeWidth={1} className="h-6 w-6" />
             </button>
@@ -108,13 +108,13 @@ export const NotificationDrawer = () => {
 
           {/* Quick Actions */}
           {unreadCount > 0 && (
-            <div className="px-8 py-4 bg-zinc-100 dark:bg-white/5 flex justify-between items-center">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-zinc-500 italic">
+            <div className="px-8 py-4 bg-[var(--bg-secondary)] dark:bg-white/5 flex justify-between items-center">
+              <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--text-secondary)] italic">
                 {unreadCount} {t('notif_new_count')}
               </span>
               <button 
                 onClick={handleMarkAllAndNavigate}
-                className="text-[10px] font-medium uppercase tracking-widest text-zinc-900 dark:text-zinc-100 italic"
+                className="text-[10px] font-medium uppercase tracking-widest text-[var(--text-primary)] italic"
               >
                 {t('notif_mark_all')}
               </button>
@@ -125,14 +125,14 @@ export const NotificationDrawer = () => {
           <div className="flex-1 overflow-y-auto no-scrollbar pb-12">
             {notifications.length === 0 ? (
               <div className="py-32 px-12 flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 rounded-[2.5rem] bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center mb-8 border border-zinc-200 dark:border-zinc-800 shadow-inner">
-                  <BellOff className="h-10 w-10 text-zinc-400 opacity-20" />
+                <div className="w-20 h-20 rounded-[2.5rem] bg-[var(--bg-secondary)] flex items-center justify-center mb-8 border border-[var(--border-color)] shadow-inner">
+                  <BellOff className="h-10 w-10 text-[var(--text-secondary)] opacity-20" />
                 </div>
                 <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2 italic">{t('notif_empty')}</h3>
-                <p className="text-sm text-zinc-500 font-medium opacity-60 italic">{t('notif_empty_sub')}</p>
+                <p className="text-sm text-[var(--text-secondary)] font-medium opacity-60 italic">{t('notif_empty_sub')}</p>
               </div>
             ) : (
-              <ul className="divide-y divide-zinc-100 dark:divide-zinc-900">
+              <ul className="divide-y divide-[var(--border-color)]">
                 {notifications.map((n) => {
                   const { icon: Icon, color } = getIcon(n.type);
                   return (
@@ -140,19 +140,19 @@ export const NotificationDrawer = () => {
                       key={n.id} 
                       className={`
                         group relative px-8 py-8 flex gap-6 transition-all duration-300
-                        ${n.is_read ? 'opacity-40 grayscale-[0.5]' : 'bg-zinc-100/50 dark:bg-white/5'}
+                        ${n.is_read ? 'opacity-40 grayscale-[0.5]' : 'bg-[var(--bg-secondary)]/30 dark:bg-white/5'}
                       `}
                     >
-                      <div className={`mt-1 h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center shadow-sm bg-zinc-100 dark:bg-white/10 ${color}`}>
+                      <div className={`mt-1 h-12 w-12 shrink-0 rounded-2xl flex items-center justify-center shadow-sm bg-[var(--bg-secondary)] dark:bg-white/10 ${color}`}>
                         <Icon size={20} strokeWidth={1.5} />
                       </div>
                       
                       <div className="flex-1 min-w-0 space-y-4">
-                        <p className={`text-sm leading-relaxed break-words font-medium italic ${n.is_read ? 'text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                        <p className={`text-sm leading-relaxed break-words font-medium italic ${n.is_read ? 'text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}>
                           {n.message}
                         </p>
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-[0.2em] opacity-40">
+                          <span className="text-[10px] text-[var(--text-secondary)] font-medium uppercase tracking-[0.2em] opacity-40">
                             {timeAgo(n.created_at)}
                           </span>
                           
@@ -160,7 +160,7 @@ export const NotificationDrawer = () => {
                             {!n.is_read && (
                               <button 
                                 onClick={() => markAsRead(n.id)}
-                                className="h-11 w-11 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-black active:scale-90 transition-all flex items-center justify-center shadow-sm"
+                                className="h-11 w-11 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] active:scale-90 transition-all flex items-center justify-center shadow-sm"
                               >
                                 <CheckCircle2 size={18} strokeWidth={1.5} />
                               </button>
@@ -182,11 +182,11 @@ export const NotificationDrawer = () => {
           </div>
 
           {/* Footer (Always Visible) */}
-          <footer className="p-4 bg-zinc-50 dark:bg-zinc-900/30 border-t border-zinc-100 dark:border-zinc-900 grid grid-cols-1">
+          <footer className="p-4 bg-[var(--bg-secondary)]/30 border-t border-[var(--border-color)] grid grid-cols-1">
             <Link 
               to={getNotificationPath()}
               onClick={toggleNotifications}
-              className="w-full h-14 flex items-center justify-center rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-black font-medium text-[10px] uppercase tracking-[0.4em] italic shadow-xl active:scale-95 transition-all"
+              className="w-full h-14 flex items-center justify-center rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] font-medium text-[10px] uppercase tracking-[0.4em] italic shadow-xl active:scale-95 transition-all"
             >
               {t('notif_view_all')}
             </Link>

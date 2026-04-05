@@ -1,6 +1,7 @@
 const Assignment = require('../modules/Assignment');
 const Course = require('../modules/Course');
 const Notification = require('../modules/Notification');
+const Enrollment = require('../modules/Enrollment');
 
 const assignmentController = {
     // ---------------- INSTRUCTOR/ADMIN ACTIONS ----------------
@@ -29,6 +30,26 @@ const assignmentController = {
             }
 
             const id = await Assignment.create(course_id, title, description, due_date, finalFileUrl);
+
+            // --- Notify All Enrolled Students ---
+            try {
+                const students = await Enrollment.getStudentsByCourseId(course_id);
+                if (students && students.length > 0) {
+                    const notifyPromises = students.map(s => 
+                        Notification.insert(
+                            s.userid, 
+                            'new_assignment', 
+                            `Bài tập mới được đăng trong khóa học ${course.title}: ${title}`,
+                            { courseId: course_id, assignmentId: id }
+                        )
+                    );
+                    await Promise.all(notifyPromises);
+                }
+            } catch (notifyError) {
+                console.error("New Assignment Notification Error:", notifyError);
+                // Don't fail the request if notification fails
+            }
+
             res.status(201).json({ message: "Assignment created successfully", id, file_url: finalFileUrl });
         } catch (error) {
             console.error("Create Assignment Error:", error);

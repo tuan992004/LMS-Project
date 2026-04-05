@@ -78,14 +78,14 @@ export const NotificationDropdown = () => {
     switch (type) {
       case 'assignment_graded':
       case 'grade':
-        return { icon: CheckCircle, color: 'text-zinc-900 dark:text-zinc-100' };
+        return { icon: CheckCircle, color: 'text-[var(--text-primary)]' };
       case 'assignment_due':
       case 'security':
-        return { icon: AlertTriangle, color: 'text-zinc-900 dark:text-zinc-100' };
+        return { icon: AlertTriangle, color: 'text-[var(--text-primary)]' };
       case 'enrollment_request':
         return { icon: UserPlus, color: 'text-violet-500' };
       default:
-        return { icon: Info, color: 'text-zinc-900 dark:text-zinc-100' };
+        return { icon: Info, color: 'text-[var(--text-primary)]' };
     }
   };
 
@@ -120,19 +120,19 @@ export const NotificationDropdown = () => {
                    key={n.id} 
                    className={`
                     group relative px-6 py-5 flex flex-col gap-3 transition-all duration-300
-                    ${n.is_read ? 'opacity-50 grayscale-[0.5]' : 'bg-zinc-100 dark:bg-white/5'}
+                    ${n.is_read ? 'opacity-50 grayscale-[0.5]' : 'bg-[var(--bg-secondary)]/50 dark:bg-white/5'}
                   `}
                 >
                   <div className="flex gap-4">
-                    <div className={`mt-1 h-8 w-8 shrink-0 rounded-lg flex items-center justify-center bg-zinc-100 dark:bg-white/10 ${color}`}>
+                    <div className={`mt-1 h-8 w-8 shrink-0 rounded-lg flex items-center justify-center bg-[var(--bg-secondary)] dark:bg-white/10 ${color}`}>
                       <Icon size={16} strokeWidth={1.5} />
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs leading-relaxed break-words font-medium italic ${n.is_read ? 'text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
-                        {n.message}
+                      <p className={`text-xs leading-relaxed break-words font-medium italic ${n.is_read ? 'text-[var(--text-secondary)]' : 'text-[var(--text-primary)]'}`}>
+                        {n.message?.length > 120 ? n.message.substring(0, 120) + "..." : n.message}
                       </p>
-                      <span className="text-[9px] text-zinc-500 font-medium mt-2 block uppercase tracking-widest opacity-40">
+                      <span className="text-[9px] text-[var(--text-secondary)] font-medium mt-2 block uppercase tracking-widest opacity-40">
                         {timeAgo(n.created_at)}
                       </span>
                     </div>
@@ -141,7 +141,7 @@ export const NotificationDropdown = () => {
                       {!n.is_read && !isApproval && (
                         <button 
                           onClick={() => markAsRead(n.id)}
-                          className="h-8 w-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-black transition-all flex items-center justify-center shadow-sm"
+                          className="h-8 w-8 rounded-lg bg-[var(--text-primary)] text-[var(--bg-primary)] transition-all flex items-center justify-center shadow-sm"
                         >
                           <CheckCircle2 size={14} strokeWidth={1.5} />
                         </button>

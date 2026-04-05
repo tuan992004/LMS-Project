@@ -136,6 +136,22 @@ const Assignment = {
         `;
         const [rows] = await db.execute(query, [submission_id]);
         return rows[0];
+    },
+
+    // 9. Fetch assignments due within the next X hours with students who haven't submitted
+    getUpcomingDeadlinesWithPendingStudents: async (hours = 24) => {
+        const query = `
+            SELECT e.student_id, a.id as assignment_id, a.title as assignment_title, c.title as course_title, a.due_date
+            FROM assignments a
+            JOIN enrollments e ON a.course_id = e.course_id
+            JOIN courses c ON a.course_id = c.courseid
+            LEFT JOIN assignment_submissions sub ON a.id = sub.assignment_id AND e.student_id = sub.student_id
+            WHERE a.due_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ? HOUR)
+              AND e.status = 'enrolled'
+              AND sub.id IS NULL
+        `;
+        const [rows] = await db.execute(query, [hours]);
+        return rows;
     }
 };
 

@@ -118,9 +118,9 @@ export default function AddUserForm() {
                             ${errors.role ? "border-rose-500 bg-rose-500/5 ring-4 ring-rose-500/10" : "border-[var(--border-color)] focus:bg-white/60 focus:ring-4 focus:ring-[var(--accent-primary)]/20 focus:border-[var(--accent-primary)]"}
                         `}
                     >
-                        <option value="student">{t('role_student_alt')}</option>
-                        <option value="instructor">{t('role_instructor_alt')}</option>
-                        <option value="admin">{t('role_admin_alt')}</option>
+                        <option value="student">{t('role_student')}</option>
+                        <option value="instructor">{t('role_instructor')}</option>
+                        <option value="admin">{t('role_admin')}</option>
                     </select>
                 </div>
                 {errors.role && <p className="text-rose-500 text-[10px] font-bold mt-2 px-1 italic">{errors.role.message}</p>}

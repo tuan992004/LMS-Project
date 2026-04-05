@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/axios';
 import { Megaphone, Calendar, User, ArrowRight, Loader2, Bookmark } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export const AnnouncementList = ({ announcements = [], loading = false }) => {
     const { t } = useTranslation();
+    const location = useLocation();
+    
+    // Determine the base path (e.g., /admin, /teacher, /student)
+    const basePath = location.pathname.split('/')[1];
 
     if (loading) {
         return (
@@ -39,9 +44,6 @@ export const AnnouncementList = ({ announcements = [], loading = false }) => {
 
     return (
         <div className="space-y-8 animate-fade-in-up">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--text-secondary)] opacity-40 ml-4 flex items-center gap-3">
-                <Megaphone className="h-3.5 w-3.5" /> Synchronized Broadcast Feed
-            </h3>
             
             <div className="space-y-6">
                 {announcements.map((ann, idx) => (
@@ -72,9 +74,12 @@ export const AnnouncementList = ({ announcements = [], loading = false }) => {
                         </p>
 
                         <div className="mt-8 pt-8 border-t border-[var(--border-color)] flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent-primary)] group/btn">
+                            <Link 
+                                to={`/${basePath}/announcements/${ann.id}`} 
+                                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent-primary)] group/btn"
+                            >
                                 Details <ArrowRight className="h-3 w-3 group-hover/btn:translate-x-1 transition-transform" />
-                            </button>
+                            </Link>
                         </div>
                     </article>
                 ))}

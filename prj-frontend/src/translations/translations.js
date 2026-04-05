@@ -5,6 +5,7 @@ export const translations = {
     nav_search_placeholder: "Search...",
     nav_courses: "Course Management",
     nav_users: "User Management",
+    nav_broadcast: "Broadcast Hub",
     nav_settings: "Settings",
     nav_assignments: "Assignments",
     nav_students: "Students",
@@ -196,6 +197,10 @@ export const translations = {
     alert_score_required: "Please enter a score.",
     alert_grade_success: "Graded successfully!",
     alert_grade_error: "Error while grading",
+    alert_delete_lesson_success: "Lesson deleted successfully",
+    alert_delete_assignment_success: "Assignment deleted successfully",
+    delete_lesson_confirm: "Are you sure you want to delete this lesson? This action cannot be undone.",
+    delete_assignment_confirm: "Are you sure you want to delete this assignment? All student submissions will be lost.",
 
     // Assignments
     assign_title: "My Assignments",
@@ -340,6 +345,8 @@ export const translations = {
     notif_clear_all: "Clear all",
     notif_deleted: "Notification removed",
     notif_marked_read: "Marked as read",
+    notif_new_assignment: "A new assignment has been posted: {title}",
+    notif_assignment_due: "Reminder: Your assignment '{title}' is due in less than 24 hours!",
     action_undo: "Undo",
     
     // Time-Ago
@@ -357,6 +364,7 @@ export const translations = {
     nav_search_placeholder: "Tìm kiếm...",
     nav_courses: "Quản lý khóa học",
     nav_users: "Quản lý người dùng",
+    nav_broadcast: "Trung tâm phát sóng",
     nav_settings: "Cài đặt",
     nav_assignments: "Bài tập",
     nav_students: "Học viên",
@@ -548,6 +556,10 @@ export const translations = {
     alert_score_required: "Vui lòng nhập điểm.",
     alert_grade_success: "Đã chấm điểm thành công!",
     alert_grade_error: "Lỗi khi chấm điểm",
+    alert_delete_lesson_success: "Đã xóa bài giảng thành công",
+    alert_delete_assignment_success: "Đã xóa bài tập thành công",
+    delete_lesson_confirm: "Bạn có chắc chắn muốn xóa bài giảng này không? Hành động này không thể hoàn tác.",
+    delete_assignment_confirm: "Bạn có chắc chắn muốn xóa bài tập này không? Tất cả bài nộp của học viên sẽ bị mất.",
 
     // Assignments
     assign_title: "Bài tập của tôi",
@@ -692,6 +704,8 @@ export const translations = {
     notif_clear_all: "Xóa tất cả",
     notif_deleted: "Đã xóa thông báo",
     notif_marked_read: "Đã đánh dấu đã đọc",
+    notif_new_assignment: "Bài tập mới được đăng: {title}",
+    notif_assignment_due: "Hạn chót sắp tới: Bài tập '{title}' sẽ hết hạn trong 24 giờ!",
     action_undo: "Hoàn tác",
     
     // Time-Ago

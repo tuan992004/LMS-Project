@@ -20,6 +20,7 @@ import { api } from "../../../lib/axios";
 import { toast } from "sonner";
 import { useAuthStore } from "../../../stores/userAuthStore";
 import { useTranslation } from "../../../hooks/useTranslation";
+import { ConfirmModal } from "../../shared/ConfirmModal";
 
 export const LessonLayout = () => {
   const { t } = useTranslation();
@@ -30,6 +31,7 @@ export const LessonLayout = () => {
   const [title, setTitle] = useState("Untitled Lesson");
   const [loading, setLoading] = useState(true);
   const [blocks, setBlocks] = useState([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const listPath = user?.role === 'admin' ? `/admin/lessons/${courseid}` : `/teacher/lessons/${courseid}`;
 
@@ -115,13 +117,25 @@ export const LessonLayout = () => {
          navigate(listPath, { replace: true });
       }
     } catch (error) {
-      toast.error("Failed to save lesson");
+      console.error("Save Error Details:", error.response?.data || error);
+      const msg = error.response?.data?.message || "Failed to save lesson. File might be too large.";
+      toast.error(msg);
     }
   };
 
   const handleCancel = () => {
       if (lessonid === "new") goBack();
       else setIsEditMode(false);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await api.delete(`/courses/lessons/${lessonid}`);
+      toast.success(t('alert_delete_lesson_success'));
+      navigate(listPath, { replace: true });
+    } catch (e) {
+      toast.error(t('alert_error'));
+    }
   };
 
   if (loading) return (
@@ -148,14 +162,25 @@ export const LessonLayout = () => {
                Back to Course
             </button>
             
-            {!isEditMode && (user?.role === 'admin' || user?.role === 'instructor') && (
-              <button 
-                onClick={() => setIsEditMode(true)} 
-                className="flex items-center gap-2 bg-[var(--text-primary)] text-[var(--bg-primary)] px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all active:scale-95"
-              >
-                Edit Lesson Content
-              </button>
-            )}
+            <div className="flex items-center gap-4">
+              {!isEditMode && lessonid !== 'new' && (user?.role === 'admin' || user?.role === 'instructor') && (
+                <button 
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="flex items-center gap-2 bg-rose-500/10 text-rose-500 border border-rose-500/20 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all active:scale-95"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {t('user_delete')}
+                </button>
+              )}
+              {!isEditMode && (user?.role === 'admin' || user?.role === 'instructor') && (
+                <button 
+                  onClick={() => setIsEditMode(true)} 
+                  className="flex items-center gap-2 bg-[var(--text-primary)] text-[var(--bg-primary)] px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all active:scale-95"
+                >
+                  Edit Lesson Content
+                </button>
+              )}
+            </div>
           </header>
 
           {/* Title Area */}
@@ -346,6 +371,17 @@ export const LessonLayout = () => {
           )}
         </div>
       </section>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title={t('course_academic_module')}
+        message={t('delete_lesson_confirm')}
+        confirmText={t('user_delete')}
+        variant="danger"
+      />
     </article>
   );
 };

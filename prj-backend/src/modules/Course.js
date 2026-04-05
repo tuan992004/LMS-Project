@@ -64,6 +64,10 @@ const Course = {
     getLessonsByCourse: async (courseid) => {
         const [rows] = await db.execute("SELECT * FROM lessons WHERE course_id = ?", [courseid]);
         return rows;
+    },
+
+    deleteLesson: async (lesson_id) => {
+        return await db.execute("DELETE FROM lessons WHERE lesson_id = ?", [lesson_id]);
     }
 };
 

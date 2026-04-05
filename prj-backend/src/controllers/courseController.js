@@ -188,6 +188,16 @@ const getMyEnrolledCourses = async (req, res) => {
     }
 };
 
+const deleteLesson = async (req, res) => {
+    try {
+        const { lesson_id } = req.params;
+        await Course.deleteLesson(lesson_id);
+        res.json({ message: "Xóa bài giảng thành công" });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi khi xóa bài giảng", error: error.message });
+    }
+};
+
 const deleteCourse = async (req, res) => {
     try {
         const { courseid } = req.params;
@@ -207,5 +217,6 @@ module.exports = {
     getCourseContent,
     deleteCourse,
     getLessonDetail,
-    getMyEnrolledCourses
+    getMyEnrolledCourses,
+    deleteLesson
 };

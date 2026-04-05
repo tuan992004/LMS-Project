@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../lib/axios';
 import { useAuthStore } from '../../stores/userAuthStore';
 import { toast } from 'sonner';
-import { Plus, Loader2, BookOpen, CheckCircle, Trash2, Settings2, Users, X, Search, UserPlus, UserMinus, Mail, Fingerprint, ExternalLink } from 'lucide-react';
+import { Home, Plus, Loader2, BookOpen, CheckCircle, Trash2, Settings2, Users, X, Search, UserPlus, UserMinus, Mail, Fingerprint, ExternalLink } from 'lucide-react';
 import { DataCard } from "../../components/shared/DataCard";
 import MobileListItem from "../../components/shared/MobileListItem";
 import { useTranslation } from '../../hooks/useTranslation';
@@ -182,21 +182,26 @@ export const CourseManagement = () => {
             {/* Minimal Header Action Bar */}
             <header className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
                 <div className="flex flex-1 items-center gap-4 w-full md:w-auto">
-                    <div className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0">
-                        <BookOpen className="h-5 w-5 opacity-60" strokeWidth={1.5} />
-                    </div>
+                    <Link 
+                        to="/admin"
+                        className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0 hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all duration-300 group/header-icon"
+                    >
+                        <Home className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
+                    </Link>
 
                     {/* Search Bar */}
-                    <div className="relative flex-1 group/search">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] opacity-40 group-focus-within/search:opacity-100 group-focus-within/search:text-[var(--accent-primary)] transition-all">
-                            <Search className="h-4 w-4" />
-                        </div>
+                    <div className="relative w-full md:max-w-md group/search">
                         <input 
                             type="text"
-                            placeholder="Search courses by title, ID, or instructor..."
+                            data-region="input"
+                            data-action="search"
+                            id="searchinput"
+                            name="search"
+                            autoComplete="off"
+                            placeholder={t('nav_search_placeholder') || "Search courses..."}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-medium text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/30 outline-none focus:ring-4 focus:ring-[var(--accent-primary)]/10 focus:border-[var(--accent-primary)]/50 transition-all shadow-inner"
+                            className="form-control withclear pl-6 focus:ring-4 focus:ring-[var(--accent-primary)]/10"
                         />
                         {searchTerm && (
                             <button 
@@ -243,19 +248,30 @@ export const CourseManagement = () => {
                     <tbody className="divide-y divide-[var(--border-color)] bg-white/5">
                         {filteredCourses.map((c, idx) => (
                             <tr key={c.courseid} className="hover:bg-[var(--accent-primary)]/[0.02] transition-colors group">
-                                <td className="px-8 py-6 whitespace-nowrap text-xs text-[var(--text-secondary)] font-black tracking-widest opacity-40">#{c.courseid}</td>
-                                <td className="px-8 py-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-12 w-12 rounded-2xl bg-[var(--text-primary)] flex items-center justify-center text-[var(--bg-primary)] group-hover:bg-[var(--bg-primary)] group-hover:text-[var(--text-primary)] border border-transparent group-hover:border-[var(--text-primary)]/20 transition-all duration-500 shadow-xl shadow-black/10">
-                                                        <BookOpen className="h-5 w-5" />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-bold text-[var(--text-primary)] text-lg leading-tight group-hover:text-[var(--accent-primary)] transition-colors">{c.title}</span>
-                                                        <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-30">{t('course_academic_module')}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 whitespace-nowrap">
+                                <td 
+                                    className="px-8 py-6 whitespace-nowrap text-xs text-[var(--text-secondary)] font-black tracking-widest opacity-40 cursor-pointer"
+                                    onClick={() => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/teacher/course/${c.courseid}`)}
+                                >
+                                    #{c.courseid}
+                                </td>
+                                <td 
+                                    className="px-8 py-6 cursor-pointer group/title"
+                                    onClick={() => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/teacher/course/${c.courseid}`)}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-2xl bg-[var(--text-primary)] flex items-center justify-center text-[var(--bg-primary)] group-hover/title:bg-[var(--bg-primary)] group-hover/title:text-[var(--text-primary)] border border-transparent group-hover/title:border-[var(--text-primary)]/20 transition-all duration-500 shadow-xl shadow-black/10">
+                                            <BookOpen className="h-5 w-5" />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-[var(--text-primary)] text-lg leading-tight group-hover/title:text-[var(--accent-primary)] transition-colors">{c.title}</span>
+                                            <span className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest opacity-30">{t('course_academic_module')}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                            <td 
+                                                className="px-8 py-6 whitespace-nowrap cursor-pointer"
+                                                onClick={() => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/teacher/course/${c.courseid}`)}
+                                            >
                                                 <span className={`
                                                     px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border shadow-sm
                                                     ${c.status === 'approved' 
@@ -265,37 +281,41 @@ export const CourseManagement = () => {
                                                     {c.status === 'approved' ? t('status_approved') : t('status_pending')}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-6 whitespace-nowrap">
+                                            <td 
+                                                className="px-8 py-6 whitespace-nowrap cursor-pointer"
+                                                onClick={() => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/teacher/course/${c.courseid}`)}
+                                            >
                                                 <div className="flex items-center gap-2">
                                                     <div className="h-6 w-6 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)]" />
                                                     <span className="text-sm font-bold text-[var(--text-secondary)] italic opacity-80 decoration-indigo-500/30 underline-offset-4 hover:underline">ID:{c.instructor_id}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 whitespace-nowrap text-right">
+                                            <td 
+                                                className="px-8 py-6 whitespace-nowrap text-right cursor-pointer"
+                                                onClick={() => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/teacher/course/${c.courseid}`)}
+                                            >
                                                 <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-500">
                                                     {/* US-18: Manage Students Button */}
                                                     <button
-                                                        onClick={() => handleManageStudents(c)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleManageStudents(c);
+                                                        }}
                                                         className="h-10 px-4 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-violet-500 hover:bg-violet-500/10 border border-transparent hover:border-violet-500/20 transition-all active:scale-95"
                                                         title="Manage Students"
                                                     >
                                                         <Users className="h-4 w-4" />
                                                         Students
                                                     </button>
-                                                    <button
-                                                        onClick={() => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/teacher/lessons/${c.courseid}`)}
-                                                        className="h-10 px-4 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-500 hover:bg-indigo-500/10 border border-transparent hover:border-indigo-500/20 transition-all active:scale-95"
-                                                        title={t('course_curriculum_btn')}
-                                                    >
-                                                        <Settings2 className="h-4 w-4" />
-                                                        {t('course_curriculum_btn')}
-                                                    </button>
                                                     
                                                     {user?.role === 'admin' && (
                                                         <>
                                                             {c.status === 'pending' && (
                                                                 <button
-                                                                    onClick={() => handleApprove(c.courseid)}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleApprove(c.courseid);
+                                                                    }}
                                                                     className="h-10 px-4 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all active:scale-95"
                                                                 >
                                                                     <CheckCircle className="h-4 w-4" />
@@ -303,7 +323,10 @@ export const CourseManagement = () => {
                                                                 </button>
                                                             )}
                                                             <button
-                                                                onClick={() => handleDeleteCourse(c.courseid)}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDeleteCourse(c.courseid);
+                                                                }}
                                                                 className="h-10 w-10 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all active:scale-95"
                                                                 title="Delete Permanently"
                                                             >
@@ -337,9 +360,9 @@ export const CourseManagement = () => {
                                             variant: 'primary'
                                         },
                                         {
-                                            label: t('course_curriculum_btn'),
-                                            icon: Settings2,
-                                            onClick: () => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/teacher/lessons/${c.courseid}`),
+                                            label: t('course_curriculum_btn') || 'View Course',
+                                            icon: BookOpen,
+                                            onClick: () => navigate(user?.role === 'admin' ? `/admin/lessons/${c.courseid}` : `/teacher/course/${c.courseid}`),
                                             variant: 'primary'
                                         },
                                         ...(user?.role === 'admin' && c.status === 'pending' ? [{

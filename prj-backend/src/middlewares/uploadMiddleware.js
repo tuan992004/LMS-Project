@@ -36,7 +36,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ 
     storage: storage,
     fileFilter: fileFilter,
-    limits: { fileSize: 25 * 1024 * 1024 } // 25MB limit to support large PPTs / Docs
+    limits: { fileSize: 500 * 1024 * 1024 } // 500MB limit to support High-Quality Video Lectures
 });
 
 module.exports = upload;

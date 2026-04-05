@@ -5,7 +5,7 @@ export const assignmentSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   due_date: z.string().nullable().optional(),
-  course_id: z.number(),
+  course_id: z.string(),
   course_title: z.string().optional(),
   status: z.enum(["pending", "submitted", "late", "graded"]).default("pending"),
   grade: z.number().nullable().optional(),

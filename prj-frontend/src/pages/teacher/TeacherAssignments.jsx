@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/axios';
-import { useNavigate } from 'react-router-dom';
-import { ClipboardList, BookOpen, Calendar, Clock, Loader2, ChevronRight, FileText, ArrowRight } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ClipboardList, BookOpen, Calendar, Clock, Loader2, ChevronRight, FileText, ArrowRight, Home, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import MobileListItem from '../../components/shared/MobileListItem';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -10,8 +10,14 @@ export const TeacherAssignments = () => {
     const { t } = useTranslation();
     const [assignments, setAssignments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
     const [expandedAssignmentId, setExpandedAssignmentId] = useState(null);
     const navigate = useNavigate();
+
+    const filteredAssignments = assignments.filter(a => 
+        a.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.course_title?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     useEffect(() => {
         const fetchAssignments = async () => {
@@ -37,13 +43,37 @@ export const TeacherAssignments = () => {
 
     return (
         <div className="max-w-7xl mx-auto space-y-12 p-4 sm:p-8 animate-in fade-in duration-700">
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div className="space-y-2">
-                    <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight flex items-center gap-3">
-                        <ClipboardList className="h-10 w-10 text-[var(--accent-primary)]" />
-                        {t('assign_global')}
-                    </h2>
-                    <p className="text-[var(--text-secondary)] font-medium">{t('assign_teacher_sub')}</p>
+            <header className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+                <div className="flex flex-1 items-center gap-4 w-full md:w-auto">
+                    <Link 
+                        to="/teacher"
+                        className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0 hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all duration-300 group/header-icon"
+                    >
+                        <Home className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
+                    </Link>
+
+                    {/* Search Bar */}
+                    <div className="relative w-full md:max-w-md group/search">
+                        <input 
+                            type="text"
+                            data-region="input"
+                            data-action="search"
+                            id="searchinput"
+                            autoComplete="off"
+                            placeholder={t('search_projects') || "Search projects..."}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="form-control withclear pl-6 focus:ring-4 focus:ring-[var(--accent-primary)]/10"
+                        />
+                        {searchTerm && (
+                            <button 
+                                onClick={() => setSearchTerm("")}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] opacity-40 hover:opacity-100 transition-all"
+                            >
+                                <X className="h-3 w-3" />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -58,7 +88,7 @@ export const TeacherAssignments = () => {
                     <>
                         {/* Desktop List View (≥ md) */}
                         <div className="hidden md:grid gap-6">
-                            {assignments.map((assignment) => (
+                            {filteredAssignments.map((assignment) => (
                                 <div 
                                     key={assignment.id} 
                                     onClick={() => navigate(`/teacher/course/${assignment.course_id}/assignment/${assignment.id}`)}
@@ -100,7 +130,7 @@ export const TeacherAssignments = () => {
 
                         {/* Mobile Summary-to-Detail View (< md) */}
                         <div className="md:hidden divide-y divide-[var(--border-color)]/30">
-                            {assignments.map((assignment) => (
+                            {filteredAssignments.map((assignment) => (
                                 <MobileListItem
                                     key={assignment.id}
                                     title={assignment.title}

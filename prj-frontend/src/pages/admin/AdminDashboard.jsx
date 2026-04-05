@@ -5,7 +5,6 @@ import { Users, BookOpen, Loader2, Shield, ArrowUpRight, Activity, Zap, Megaphon
 import { useTranslation } from '../../hooks/useTranslation';
 import { StatCard } from '../../components/shared/StatCard';
 import { MobileDashboard } from '../shared/MobileDashboard';
-import { AnnouncementWriter } from '../../components/dashboard/AnnouncementWriter';
 import { AnnouncementList } from '../../components/dashboard/AnnouncementList';
 import { useNavigate } from 'react-router-dom';
 
@@ -137,10 +136,6 @@ export const AdminDashboard = () => {
                 {/* Strategic Insights Placeholders */}
                 <section className="mt-12 md:mt-24 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12 pb-32" aria-label="Strategic Insights">
                     <div className="lg:col-span-2 space-y-12">
-                        <AnnouncementWriter onPublished={() => {
-                            fetchAnnouncements();
-                            fetchData();
-                        }} />
                         <AnnouncementList announcements={announcements} loading={loadingAnnouncements} />
                     </div>
 

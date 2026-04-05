@@ -35,6 +35,9 @@ import { TeacherStudents } from "./pages/teacher/TeacherStudents";
 import { StudentCourses } from "./pages/student/StudentCourses";
 import { NotificationsPage } from "./pages/shared/NotificationsPage";
 import { AnnouncementApproval } from "./pages/admin/AnnouncementApproval";
+import CreateAnnouncementPage from "./pages/shared/CreateAnnouncementPage";
+import AnnouncementFeedPage from "./pages/admin/AnnouncementFeedPage";
+import AnnouncementDetailPage from "./pages/shared/AnnouncementDetailPage";
 
 function App() {
   const { refresh, loading } = useAuthStore();
@@ -77,6 +80,9 @@ function App() {
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/admin/notifications" element={<NotificationsPage />} />
               <Route path="/admin/announcements/approve" element={<AnnouncementApproval />} />
+              <Route path="/admin/announcements/new" element={<CreateAnnouncementPage />} />
+              <Route path="/admin/announcements" element={<AnnouncementFeedPage />} />
+              <Route path="/admin/announcements/:id" element={<AnnouncementDetailPage />} />
               <Route path="/adduser" element={<AddUserPage />} />
 
               {/* 1. Trang quản lý danh sách bài giảng của 1 khóa học */}
@@ -101,6 +107,9 @@ function App() {
               {/* 1. Trang quản lý danh sách bài giảng của 1 khóa học */}
               <Route path="/teacher/lessons/:courseid" element={<CourseLayout />} />
               <Route path="/teacher/course/:courseid/assignment/:assignment_id" element={<AssignmentDetail />} />
+              <Route path="/teacher/announcements/new" element={<CreateAnnouncementPage />} />
+              <Route path="/teacher/announcements" element={<AnnouncementFeedPage />} />
+              <Route path="/teacher/announcements/:id" element={<AnnouncementDetailPage />} />
             </Route>
           </Route>
 
@@ -120,6 +129,8 @@ function App() {
               <Route path="/student/assignment/:assignment_id" element={<AssignmentDetail />} />
               <Route path="/student/settings" element={<Settings />} />
               <Route path="/student/notifications" element={<NotificationsPage />} />
+              <Route path="/student/announcements" element={<AnnouncementFeedPage />} />
+              <Route path="/student/announcements/:id" element={<AnnouncementDetailPage />} />
             </Route>
           </Route>
 

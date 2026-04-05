@@ -8,7 +8,6 @@ import { BookOpen, CheckCircle, Plus, LayoutDashboard, Loader2, ArrowUpRight, Gr
 import { useTranslation } from "../../hooks/useTranslation";
 import { StatCard } from "../../components/shared/StatCard";
 import { MobileDashboard } from "../shared/MobileDashboard";
-import { AnnouncementWriter } from "../../components/dashboard/AnnouncementWriter";
 import { AnnouncementList } from "../../components/dashboard/AnnouncementList";
 
 export const TeacherDashboard = () => {
@@ -89,15 +88,16 @@ export const TeacherDashboard = () => {
                 className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10 mb-12 md:mb-20"
             >
                 <StatCard 
-                    label={t('dash_total_courses')} 
                     value={loading ? "..." : courses.length} 
                     icon={BookOpen}
+                    to="/teacher/courses"
+                    delayClass="stagger-1"
                 />
                 <StatCard 
-                    label={t('dash_active_courses')} 
                     value={loading ? "..." : activeCoursesCount} 
                     icon={CheckCircle}
                     color="accent"
+                    delayClass="stagger-2"
                 />
 
                 {/* Engagement / Students Placeholder */}
@@ -173,7 +173,6 @@ export const TeacherDashboard = () => {
                 </div>
 
                 <div className="space-y-12">
-                    <AnnouncementWriter onPublished={fetchAnnouncements} />
                     <AnnouncementList announcements={announcements} loading={loadingAnnouncements} />
                 </div>
             </div>
