@@ -14,8 +14,11 @@ const protectedRoute = require('./middlewares/authMiddleware.js')
 const bcrypt = require('bcrypt')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
+const { ensureDirs } = require('./libs/ensureDirs');
 require("dotenv").config()
 const path = require('path');
+
+ensureDirs();
 
 const app = express()
 const PORT = 5001
