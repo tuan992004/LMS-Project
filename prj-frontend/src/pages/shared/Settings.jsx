@@ -186,7 +186,7 @@ export const Settings = () => {
                                     />
 
                                     <Input
-                                        label={`${t('settings_security')} (Confirm)`}
+                                        label={`${t('settings_security')}`}
                                         type="password"
                                         name="confirmPassword"
                                         value={form.confirmPassword}

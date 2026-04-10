@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../lib/axios';
 import { useAuthStore } from '../../stores/userAuthStore';
 import { toast } from 'sonner';
-import { Home, Plus, Loader2, BookOpen, CheckCircle, Trash2, Settings2, Users, X, Search, UserPlus, UserMinus, Mail, Fingerprint, ExternalLink } from 'lucide-react';
+import { House, Plus, Loader2, BookOpen, CheckCircle, Trash2, Settings2, Users, X, Search, UserPlus, UserMinus, Mail, Fingerprint, ExternalLink } from 'lucide-react';
 import { DataCard } from "../../components/shared/DataCard";
 import MobileListItem from "../../components/shared/MobileListItem";
 import { useTranslation } from '../../hooks/useTranslation';
@@ -186,7 +186,7 @@ export const CourseManagement = () => {
                         to="/admin"
                         className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0 hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all duration-300 group/header-icon"
                     >
-                        <Home className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
+                        <House className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
                     </Link>
 
                     {/* Search Bar */}

@@ -90,6 +90,9 @@ const AnnouncementDetailPage = () => {
 
                 {/* Content Card */}
                 <article className="insta-card p-12 md:p-20 relative overflow-hidden group border-none shadow-[0_50px_100px_-20px_rgba(0,0,0,0.2)] bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl">
+                    {/* Broadcast Indicator Line */}
+                    <div className="absolute left-0 top-0 bottom-0 w-[8px] bg-[var(--accent-primary)] opacity-60 group-hover:opacity-100 transition-opacity" />
+
                     <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
                         <Megaphone className="h-32 w-32" />
                     </div>

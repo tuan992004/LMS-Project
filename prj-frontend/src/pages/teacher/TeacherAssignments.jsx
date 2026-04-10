@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { ClipboardList, BookOpen, Calendar, Clock, Loader2, ChevronRight, FileText, ArrowRight, Home, Search, X } from 'lucide-react';
+import { ClipboardList, BookOpen, Calendar, Clock, Loader2, ChevronRight, FileText, ArrowRight, House, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import MobileListItem from '../../components/shared/MobileListItem';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -49,7 +49,7 @@ export const TeacherAssignments = () => {
                         to="/teacher"
                         className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0 hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all duration-300 group/header-icon"
                     >
-                        <Home className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
+                        <House className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
                     </Link>
 
                     {/* Search Bar */}

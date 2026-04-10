@@ -100,25 +100,7 @@ export const TeacherDashboard = () => {
                     delayClass="stagger-2"
                 />
 
-                {/* Engagement / Students Placeholder */}
-                <div className="animate-fade-in-up stagger-3 sm:col-span-2">
-                    <div className="insta-card p-6 md:p-8 bg-[var(--text-primary)] text-[var(--bg-primary)] overflow-hidden relative group h-full border-none">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 pointer-events-none" />
-                        <h3 className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] opacity-60 mb-6 text-[var(--bg-primary)] relative z-10 flex items-center gap-2">
-                            <Users className="h-4 w-4" /> {t('dash_scholar_engagement') || "SCHOLAR ENGAGEMENT"}
-                        </h3>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-8 md:gap-12 relative z-10">
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-4xl md:text-6xl font-black tracking-tighter italic">98%</span>
-                                <span className="text-[10px] font-bold uppercase opacity-60 tracking-widest">{t('dash_uptime') || "Optimal"}</span>
-                            </div>
-                            <div className="hidden sm:block h-12 w-px bg-[var(--bg-primary)]/20" />
-                            <p className="text-sm md:text-base font-medium italic opacity-80 max-w-sm leading-relaxed">
-                                {t('system_status_desc') || "All academic infrastructure is performing at peak heuristic capacity."}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+
             </section>
 
             {/* Content Split: Announcements & My Curricula */}

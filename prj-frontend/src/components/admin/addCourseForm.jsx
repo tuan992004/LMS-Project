@@ -4,8 +4,10 @@ import { courseService } from "../../service/courseService";
 import { toast } from "sonner";
 import { useAuthStore } from "../../stores/userAuthStore";
 import { Save, X, BookOpen, FileText, Sparkles, PlusCircle } from "lucide-react";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export default function AddCourseForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [form, setForm] = useState({
@@ -26,12 +28,12 @@ export default function AddCourseForm() {
     setIsSubmitting(true);
     try {
       await courseService.createCourse(form);
-      toast.success("Khởi tạo học phần thành công!", {
-        description: "Khóa học đã được thêm vào hệ thống lưu trữ."
+      toast.success(t('alert_course_create_success'), {
+        description: t('alert_course_create_success_sub')
       });
       navigate(successPath);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Lỗi khi cấu trúc học phần");
+      toast.error(error.response?.data?.message || t('alert_course_create_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -49,11 +51,11 @@ export default function AddCourseForm() {
               <PlusCircle className="h-6 w-6" />
             </div>
             <h2 className="text-4xl font-black text-[var(--text-primary)] tracking-tight italic">
-              New <span className="text-[var(--accent-primary)]">Curriculum</span>
+              {t('course_add_title')}
             </h2>
           </div>
           <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80 leading-relaxed">
-            Thiết kế lộ trình học thuật mới. Hãy bắt đầu với những thông tin cơ bản nhất.
+            {t('course_add_subtitle')}
           </p>
         </header>
         
@@ -61,11 +63,11 @@ export default function AddCourseForm() {
           <div className="space-y-4">
             <label className="flex items-center gap-2 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-60 ml-1">
               <BookOpen className="h-3 w-3" />
-              Tên khóa học / Course Title
+              {t('course_label_title')}
             </label>
             <input 
               name="title" 
-              placeholder="Ví dụ: Advanced Quantum Computing 2024..." 
+              placeholder={t('course_place_title')} 
               onChange={handleChange} 
               required 
               className="w-full px-6 py-5 rounded-2xl border border-[var(--border-color)] bg-white/5 focus:bg-white/10 focus:ring-4 focus:ring-[var(--accent-primary)]/20 outline-none transition-all text-xl font-bold text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/30 placeholder:italic"
@@ -75,11 +77,11 @@ export default function AddCourseForm() {
           <div className="space-y-4">
             <label className="flex items-center gap-2 text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] opacity-60 ml-1">
               <FileText className="h-3 w-3" />
-              Mô tả chi tiết / Academic Abstract
+              {t('course_label_desc')}
             </label>
             <textarea 
               name="description" 
-              placeholder="Trình bày mục tiêu đào tạo, đối tượng hướng tới và kết quả đầu ra dự kiến..." 
+              placeholder={t('course_place_desc')} 
               onChange={handleChange} 
               rows="6"
               required
@@ -94,7 +96,7 @@ export default function AddCourseForm() {
               className="px-8 py-5 rounded-2xl bg-[var(--bg-secondary)] text-[var(--text-primary)] text-[10px] font-black uppercase tracking-widest hover:bg-[var(--border-color)] transition-all active:scale-95 flex items-center gap-2 shadow-inner"
             >
               <X className="h-4 w-4" />
-              Huỷ bỏ
+              {t('course_action_cancel')}
             </button>
             <button 
               type="submit" 
@@ -104,12 +106,12 @@ export default function AddCourseForm() {
               {isSubmitting ? (
                 <>
                   <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Đang xử lý...
+                  {t('course_action_saving')}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  Lưu học phần mới
+                  {t('course_action_save')}
                 </>
               )}
             </button>
@@ -119,10 +121,11 @@ export default function AddCourseForm() {
         <div className="mt-12 p-6 rounded-2xl bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/10 flex items-start gap-4">
           <Sparkles className="h-6 w-6 text-[var(--accent-primary)] shrink-0 mt-1 opacity-60" />
           <p className="text-xs font-medium italic text-[var(--text-secondary)] leading-relaxed">
-            <span className="text-[var(--text-primary)] font-bold">Pro Tip:</span> Một mô tả khóa học chi tiết và rõ ràng giúp tăng tỷ lệ học viên tham gia học tập lên tới 40%. Đừng quên cập nhật giáo trình sau khi tạo xong học phần này.
+            <span className="text-[var(--text-primary)] font-bold">{t('course_tip_title')}</span> {t('course_tip_desc')}
           </p>
         </div>
       </div>
     </div>
+
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/axios';
 import { AnnouncementList } from '../../components/dashboard/AnnouncementList';
-import { Home, Search, Filter, Loader2, Plus } from 'lucide-react';
+import { House, Search, Filter, Loader2, Plus } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/userAuthStore';
@@ -47,7 +47,7 @@ const AnnouncementFeedPage = () => {
                         to={isAdmin ? "/admin" : "/teacher"}
                         className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0 hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all duration-300 group/header-icon"
                     >
-                        <Home className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" />
+                        <House className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" />
                     </Link>
                     <div className="relative w-full md:max-w-md group/search">
                         <input 

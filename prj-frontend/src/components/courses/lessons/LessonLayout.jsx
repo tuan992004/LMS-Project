@@ -354,12 +354,7 @@ export const LessonLayout = () => {
           {/* Editor Footer Actions (Static Layout) */}
           {isEditMode && (
             <div className="flex flex-wrap items-center justify-center gap-6 mt-12 p-10 bg-[var(--bg-primary)]/30 rounded-[3rem] border border-[var(--border-color)] backdrop-blur-md">
-              <button 
-                onClick={handleCancel} 
-                className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all active:scale-95"
-              >
-                Cancel Edit
-              </button>
+
               <button 
                 onClick={handleSave} 
                 className="flex items-center gap-3 bg-[var(--text-primary)] text-[var(--bg-primary)] px-12 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all active:scale-95"

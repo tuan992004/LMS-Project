@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/axios';
-import { Users, Mail, BookOpen, Loader2, Search, ExternalLink, Fingerprint, X, Filter } from 'lucide-react';
+import { Users, Mail, BookOpen, Loader2, Search, ExternalLink, Fingerprint, X, Filter, House } from 'lucide-react';
 import { toast } from 'sonner';
 import MobileListItem from '../../components/shared/MobileListItem';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -77,7 +77,7 @@ export const TeacherStudents = () => {
                         to="/teacher"
                         className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0 hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all duration-300 group/header-icon"
                     >
-                        <Users className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
+                        <House className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
                     </Link>
 
                     {/* Search Bar */}

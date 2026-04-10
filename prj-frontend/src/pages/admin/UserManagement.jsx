@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { userSchema } from "../../type/userSchema";
-import { Home, User, Users, Mail, Lock, Shield, Loader2, Edit2, Trash2, UserPlus, BookOpen, X, ChevronRight, Fingerprint, Eye, EyeOff, AlertTriangle, Filter, Search } from "lucide-react";
+import { House, User, Users, Mail, Lock, Shield, Loader2, Edit2, Trash2, UserPlus, BookOpen, X, ChevronRight, Fingerprint, Eye, EyeOff, AlertTriangle, Filter, Search } from "lucide-react";
 import { DataCard } from "../../components/shared/DataCard";
 import { useTranslation } from "../../hooks/useTranslation";
 import MobileListItem from "../../components/shared/MobileListItem";
@@ -186,7 +186,7 @@ export const UserManagement = () => {
                         to="/admin"
                         className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0 hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] transition-all duration-300 group/header-icon"
                     >
-                        <Home className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
+                        <House className="h-5 w-5 opacity-60 group-hover/header-icon:opacity-100 transition-opacity" strokeWidth={1.5} />
                     </Link>
 
                     {/* Search Bar */}

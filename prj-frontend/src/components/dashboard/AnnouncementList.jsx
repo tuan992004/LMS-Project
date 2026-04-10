@@ -51,6 +51,9 @@ export const AnnouncementList = ({ announcements = [], loading = false }) => {
                         key={ann.id} 
                         className={`insta-card p-10 group relative overflow-hidden transition-all hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] border-transparent hover:border-[var(--accent-primary)]/20 animate-fade-in-up stagger-${(idx % 5) + 1}`}
                     >
+                        {/* Broadcast Indicator Line */}
+                        <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[var(--accent-primary)] opacity-40 group-hover:opacity-100 transition-opacity" />
+
                         <div className="flex justify-between items-start mb-8">
                             <div className="flex items-center gap-4">
                                 <div className="h-10 w-10 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] flex items-center justify-center shadow-lg transition-transform group-hover:rotate-12 duration-500">
