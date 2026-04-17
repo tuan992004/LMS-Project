@@ -83,6 +83,7 @@ db.execute(`
     author_id VARCHAR(50) NOT NULL,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
+    file_url VARCHAR(255) DEFAULT NULL,
     status ENUM('pending', 'approved') DEFAULT 'approved',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (author_id) REFERENCES users(userid) ON DELETE CASCADE
@@ -111,5 +112,54 @@ db.execute(`
     console.error("Error updating notifications deleted_at:", err.message);
   }
 });
+
+// --- US-21: Unified Calendar (Categorized Deadlines) ---
+db.execute(`
+  ALTER TABLE assignments 
+  ADD COLUMN type ENUM('homework', 'assignment', 'test') DEFAULT 'assignment'
+`).catch(err => {
+  if (err && err.message && err.message.includes('Duplicate column name')) {
+    // Already exists
+  } else if (err) {
+    console.error("Error updating assignments type:", err.message);
+  }
+});
+
+// --- US-22: Announcement File Uploads ---
+db.execute(`
+  ALTER TABLE announcements 
+  ADD COLUMN file_url VARCHAR(255) DEFAULT NULL
+`).catch(err => {
+  if (err && err.message && err.message.includes('Duplicate column name')) {
+    // Already exists
+  } else if (err) {
+    console.error("Error updating announcements table:", err.message);
+  }
+});
+
+// --- US-23: Lesson Scheduling ---
+db.execute(`
+  ALTER TABLE lessons 
+  ADD COLUMN scheduled_at DATETIME DEFAULT NULL
+`).catch(err => {
+  if (err && err.message && err.message.includes('Duplicate column name')) {
+    // Already exists
+  } else if (err) {
+    console.error("Error updating lessons table with scheduled_at:", err.message);
+  }
+});
+
+// --- US-24: Activity Logging ---
+db.execute(`
+  CREATE TABLE IF NOT EXISTS activity_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    ip_address VARCHAR(45) DEFAULT NULL,
+    details TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(userid) ON DELETE CASCADE
+  )
+`).catch(err => console.error("Error creating activity_logs table:", err));
 
 module.exports = db;

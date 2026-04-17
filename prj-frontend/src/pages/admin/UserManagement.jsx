@@ -499,8 +499,9 @@ export const UserManagement = () => {
                             <button
                                 type="button"
                                 onClick={handleDeleteUser}
-                                className="flex-[2] py-4 rounded-2xl bg-rose-500 text-white font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-rose-500/30 active:scale-95 transition-all hover:bg-rose-600"
+                                className="flex-[2] py-4 rounded-2xl bg-rose-500 text-white font-black text-[10px] uppercase tracking-widest shadow-2xl shadow-rose-500/30 active:scale-95 transition-all hover:bg-rose-600 flex items-center justify-center gap-3"
                             >
+                                <Trash2 className="h-4 w-4" strokeWidth={1.5} />
                                 Delete User
                             </button>
                         </div>

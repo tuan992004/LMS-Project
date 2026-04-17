@@ -54,7 +54,7 @@ const StudentDossierModal = ({ isOpen, onClose, studentId }) => {
                             <User className="h-8 w-8" strokeWidth={1.5} />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-[var(--text-primary)] tracking-tighter italic">Student Dossier</h2>
+                            <h2 className="text-2xl font-black text-[var(--text-primary)] tracking-tighter italic">Student Profile</h2>
                             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-secondary)] opacity-40">Academic Record & Submissions</p>
                         </div>
                     </div>
@@ -101,8 +101,8 @@ const StudentDossierModal = ({ isOpen, onClose, studentId }) => {
                                 <div className="space-y-4">
                                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] opacity-40 italic px-4">Active Enrollments</h3>
                                     <div className="space-y-2">
-                                        {data.courses.map(c => (
-                                            <div key={c.courseid} className="p-4 rounded-2xl border border-[var(--border-color)] bg-white/5 flex items-center gap-4 hover:bg-[var(--accent-primary)]/[0.02] transition-all">
+                                        {data.courses.map((c, idx) => (
+                                            <div key={`${c.courseid}-${idx}`} className="p-4 rounded-2xl border border-[var(--border-color)] bg-white/5 flex items-center gap-4 hover:bg-[var(--accent-primary)]/[0.02] transition-all">
                                                 <div className="h-8 w-8 rounded-lg bg-[var(--text-primary)]/5 flex items-center justify-center">
                                                     <BookOpen className="h-4 w-4 opacity-40" />
                                                 </div>
@@ -128,9 +128,9 @@ const StudentDossierModal = ({ isOpen, onClose, studentId }) => {
                                             <p className="text-sm font-medium text-[var(--text-secondary)] italic opacity-40 uppercase tracking-widest">No assignments found</p>
                                         </div>
                                     ) : (
-                                        data.assignments.map(a => (
+                                        data.assignments.map((a, idx) => (
                                             <div 
-                                                key={a.id} 
+                                                key={`${a.id || a.assignment_id || idx}-${idx}`} 
                                                 className="group p-6 rounded-[2rem] border border-[var(--border-color)] bg-white/5 hover:bg-[var(--accent-primary)]/[0.03] transition-all duration-300 relative overflow-hidden"
                                             >
                                                 <div className="flex flex-col md:flex-row gap-6 justify-between">
@@ -188,7 +188,7 @@ const StudentDossierModal = ({ isOpen, onClose, studentId }) => {
                         onClick={onClose}
                         className="px-10 h-12 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl italic"
                     >
-                        Close Dossier
+                        Close
                     </button>
                 </div>
             </div>

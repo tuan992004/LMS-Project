@@ -5,13 +5,12 @@ import {
     BookOpen, 
     Clock, 
     ArrowUpRight, 
-    PlayCircle, 
     Loader2,
     Layout,
-    ArrowRight,
-    Trophy,
-    Target
+    Target,
+    Megaphone
 } from "lucide-react";
+import SharedCalendar from '../../components/shared/SharedCalendar';
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAuthStore } from "../../stores/userAuthStore";
 import { StatCard } from "../../components/shared/StatCard";
@@ -80,81 +79,83 @@ export const StudentDashboard = () => {
                     </p>
                 </header>
 
-                <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-10 mb-12 md:mb-20">
-                    <StatCard 
-                        label={t('dash_total_courses')} 
-                        value={summary?.data?.courseCount || 0} 
-                        icon={BookOpen}
-                    />
-                    <StatCard 
-                        label={t('dash_progress')} 
-                        value={`${summary?.data?.progress || 0}%`} 
-                        icon={Clock}
-                        color="accent"
-                    />
+                {/* Quick Discovery Navigation Hub */}
+                <section className="mb-12 md:mb-20">
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] opacity-60 mb-6 italic">Quick Discovery</h2>
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
+                        <button onClick={() => navigate('/student/courses')} className="insta-card p-6 flex flex-col items-start text-left group hover:bg-[var(--bg-secondary)] transition-all">
+                            <BookOpen className="h-6 w-6 mb-4 opacity-60 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-wider italic">Courses</span>
+                            <span className="text-[9px] font-medium opacity-40 mt-1 uppercase tracking-widest">Browse Catalog</span>
+                        </button>
+                        <button onClick={() => navigate('/student/assignments')} className="insta-card p-6 flex flex-col items-start text-left group hover:bg-[var(--bg-secondary)] transition-all">
+                            <Target className="h-6 w-6 mb-4 opacity-60 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-wider italic">Assignments</span>
+                            <span className="text-[9px] font-medium opacity-40 mt-1 uppercase tracking-widest">Pending Tasks</span>
+                        </button>
+                        <button onClick={() => navigate('/student/announcements')} className="insta-card p-6 flex flex-col items-start text-left group hover:bg-[var(--bg-secondary)] transition-all">
+                            <Megaphone className="h-6 w-6 mb-4 opacity-60 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-wider italic">Broadcasting</span>
+                            <span className="text-[9px] font-medium opacity-40 mt-1 uppercase tracking-widest">System Alerts</span>
+                        </button>
+                        <button onClick={() => navigate('/student/notifications')} className="insta-card p-6 flex flex-col items-start text-left group hover:bg-[var(--bg-secondary)] transition-all">
+                            <ArrowUpRight className="h-6 w-6 mb-4 opacity-60 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-wider italic">New Updates</span>
+                            <span className="text-[9px] font-medium opacity-40 mt-1 uppercase tracking-widest">Recent Alerts</span>
+                        </button>
+                        <button onClick={() => navigate('/student/settings')} className="insta-card p-6 flex flex-col items-start text-left group hover:bg-[var(--bg-secondary)] transition-all">
+                            <Layout className="h-6 w-6 mb-4 opacity-60 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-wider italic">Settings</span>
+                            <span className="text-[9px] font-medium opacity-40 mt-1 uppercase tracking-widest">Preferences</span>
+                        </button>
+                    </div>
+                </section>
 
-                    {/* Next Class/Deadline Placeholder */}
-                    <div className="animate-fade-in-up stagger-3 sm:col-span-2">
-                        <div className="insta-card p-6 md:p-8 bg-[var(--text-primary)] text-[var(--bg-primary)] overflow-hidden relative group h-full border-none">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 pointer-events-none" />
-                            <h3 className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] opacity-60 mb-6 text-[var(--bg-primary)] relative z-10 flex items-center gap-2">
-                                <Clock className="h-4 w-4" /> {t('dash_next_deadline') || "UPCOMING PROTOCOL"}
-                            </h3>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-8 md:gap-12 relative z-10">
-                                <div className="flex flex-col">
-                                    <span className="text-2xl md:text-3xl font-black tracking-tight italic">
-                                        {summary?.data?.nextDeadline?.title || "NO PENDING TASKS"}
-                                    </span>
-                                    <span className="text-[9px] font-bold uppercase opacity-60 tracking-[0.2em] mt-1">
-                                        {summary?.data?.nextDeadline?.course_title || "System Nominal"}
-                                    </span>
-                                </div>
-                                <div className="hidden sm:block h-10 w-px bg-[var(--bg-primary)]/20" />
-                                <div className="flex items-center gap-3">
-                                     <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                                        <ArrowUpRight className="h-5 w-5" />
-                                     </div>
-                                     <p className="text-[10px] font-black uppercase tracking-widest">{t('dash_view_assignment') || "EXECUTE"}</p>
-                                </div>
-                            </div>
-                        </div>
+                <section className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-10 mb-12 md:mb-20">
+                    <div className="lg:col-span-1 flex flex-col gap-8">
+                        <StatCard 
+                            label={t('dash_enrolled_courses')} 
+                            value={summary?.data?.courseCount || 0} 
+                            icon={BookOpen}
+                        />
+
+                    </div>
+                    {/* Expanded Calendar */}
+                    <div className="animate-fade-in-up stagger-3 lg:col-span-3">
+                        <SharedCalendar events={summary?.data?.calendarEvents || []} variant="mini" />
                     </div>
                 </section>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 md:gap-20">
                     <div className="lg:col-span-2 space-y-12">
-                        <AnnouncementList announcements={announcements} loading={loadingAnnouncements} />
+                        <AnnouncementList announcements={announcements} loading={loadingAnnouncements} limit={3} />
                     </div>
 
                     <aside className="space-y-8">
-                        <div className="insta-card p-8 md:p-10 border-dashed border-2 bg-white/5 flex flex-col items-center text-center group">
-                            <div className="w-16 h-16 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:rotate-12 transition-transform duration-700">
-                                <PlayCircle className="h-8 w-8 text-[var(--text-secondary)] opacity-10" />
-                            </div>
-                            <h4 className="text-sm font-black uppercase tracking-widest mb-2 italic opacity-60">Continue Research</h4>
-                            <p className="text-[10px] font-medium italic opacity-40 mb-8 leading-relaxed">Resume your latest pedagogical session.</p>
-                            <button 
-                                onClick={() => navigate("/student/courses")}
-                                className="w-full py-4 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] font-black text-[9px] uppercase tracking-widest hover:bg-[var(--accent-primary)] hover:text-white transition-all active:scale-95 shadow-xl shadow-[var(--accent-primary)]/5"
-                            >
-                                Enter Simulation
-                            </button>
-                        </div>
-
-                         <div className="insta-card p-10 bg-[var(--text-primary)] text-[var(--bg-primary)] relative overflow-hidden">
+                         {/* Recent Activity Log */}
+                         <div className="insta-card p-8 md:p-10 border-dashed border-2 bg-white/5 flex flex-col group">
                             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-6 flex items-center gap-2">
-                                <Trophy className="h-4 w-4" /> Scholastic Attainment
+                                <Clock className="h-4 w-4" /> Activity Log
                             </h4>
-                            <div className="space-y-6">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl font-black italic">85%</span>
-                                    <span className="text-[9px] font-black uppercase opacity-40">Goal Target</span>
-                                </div>
-                                <div className="h-1 bg-[var(--bg-primary)]/20 rounded-full overflow-hidden">
-                                     <div className="h-full w-[85%] bg-[var(--bg-primary)] rounded-full" />
-                                </div>
-                            </div>
-                         </div>
+                            {(!summary?.data?.recentActivities || summary.data.recentActivities.length === 0) ? (
+                                <p className="text-[10px] font-medium italic opacity-40 text-center py-4">{t('dashboard_no_activity')}</p>
+                            ) : (
+                                <ul className="space-y-4">
+                                    {summary.data.recentActivities.map((act, idx) => (
+                                        <li key={act.id || idx} className="flex flex-col gap-2 border-b border-[var(--border-color)]/50 pb-4 last:border-0">
+                                            <p className="text-xs font-medium italic opacity-80 leading-relaxed text-[var(--text-primary)]">
+                                                {act.action === 'visit_lesson' && `Reviewed lesson: ${act.details?.lessonTitle || 'Unknown'}`}
+                                                {act.action === 'submit_assignment' && `Submitted assignment`}
+                                                {act.action !== 'visit_lesson' && act.action !== 'submit_assignment' && act.action}
+                                            </p>
+                                            <span className="text-[9px] font-black text-[var(--text-secondary)] opacity-40 uppercase tracking-widest">
+                                                {new Date(act.created_at).toLocaleString()}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
                     </aside>
                 </div>
             </main>

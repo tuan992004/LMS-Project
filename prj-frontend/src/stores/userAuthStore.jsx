@@ -22,14 +22,12 @@ export const useAuthStore = create((set, get) => ({
     username = username?.trim(); //Đề phòng có dấu cách ở đầu hoặc cuối username//
     try {
       set({ loading: true })
-      console.log('Đang truy cập')
       const { accessToken } = await authService.logIn(username, password)
 
       get().setAccessToken(accessToken)
 
       const user = await get().fetchMe();
 
-      console.log(user);
       toast.success("Đăng nhập thành công 🎉!")
       return user;
     } catch (error) {
@@ -50,7 +48,6 @@ export const useAuthStore = create((set, get) => ({
       get().clearState();
       authService.logOut();
     } catch (error) {
-      console.log(error);
       toast.error("Lỗi xảy ra khi Đăng xuất, hãy thử lại")
     }
   },
@@ -83,8 +80,10 @@ export const useAuthStore = create((set, get) => ({
         await fetchMe();
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Phiên đăng nhập đã hết hạn")
+      if (error?.response?.status !== 401) {
+        console.error(error);
+        toast.error("Phiên đăng nhập đã hết hạn")
+      }
       get().clearState();
     } finally {
       set({ loading: false })

@@ -36,6 +36,10 @@ export const AssignmentDetail = () => {
 
     const fetchAssignmentData = async () => {
         try {
+            // Fetch Assignment Metadata (Title, Description, etc.)
+            const assignRes = await api.get(`/assignments/${assignment_id}`);
+            setAssignment(assignRes.data);
+
             if (isStudent) {
                 const subRes = await api.get(`/assignments/${assignment_id}/my-submission`);
                 setMySubmission(subRes.data);
@@ -106,6 +110,22 @@ export const AssignmentDetail = () => {
         </div>
     );
 
+    if (!assignment) return (
+        <div className="flex flex-col items-center justify-center min-h-screen px-8 text-center animate-fade-in">
+             <div className="h-24 w-24 rounded-[2.5rem] bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] opacity-10 mb-8">
+                <X className="h-10 w-10" />
+            </div>
+            <h2 className="text-3xl font-black text-[var(--text-primary)] tracking-tight italic mb-4">Assignment Not Found</h2>
+            <p className="text-[var(--text-secondary)] font-medium italic mb-10 opacity-60 max-w-md">This assignment or mission briefing may have been archived or removed by the instructor.</p>
+            <button 
+                onClick={() => navigate(-1)}
+                className="btn-primary !px-12 !py-4 text-[10px] uppercase tracking-[0.2em] flex items-center gap-3 shadow-2xl active:scale-95"
+            >
+                <ArrowLeft className="h-4 w-4" /> Go Back
+            </button>
+        </div>
+    );
+
     return (
         <div className="p-4 md:p-8 max-w-6xl mx-auto min-h-screen animate-fade-in-up pb-32">
             <button
@@ -116,27 +136,61 @@ export const AssignmentDetail = () => {
                 {t('assign_ret_modules')}
             </button>
 
-            <header className="glass-card p-8 md:p-12 mb-8 md:mb-12 relative overflow-hidden group shadow-2xl">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-[var(--accent-primary)] opacity-[0.03] rounded-full -mr-40 -mt-40 transition-transform duration-[2000ms] group-hover:scale-125" />
-                
-                <div className="relative z-10 flex flex-col md:flex-row justify-between items-end md:items-center gap-8">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                            <div className="h-14 w-14 rounded-2xl bg-[var(--accent-primary)] flex items-center justify-center text-[var(--bg-primary)] shadow-xl">
-                                <FileText className="h-6 w-6" strokeWidth={1.5} />
+            <section className="animate-fade-in-up stagger-1 mb-12">
+                <div className="glass-card p-10 md:p-14 relative overflow-hidden group shadow-2xl border-none">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--accent-primary)] opacity-[0.03] rounded-full -mr-48 -mt-48 transition-transform duration-[2000ms] group-hover:scale-125" />
+                    
+                    <div className="relative z-10 space-y-12">
+                        {/* Header Part */}
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 pb-10 border-b border-[var(--border-color)]/30">
+                            <div className="flex items-center gap-6">
+                                <div className="h-16 w-16 rounded-2xl bg-[var(--accent-primary)] flex items-center justify-center text-[var(--bg-primary)] shadow-2xl">
+                                    <FileText className="h-8 w-8" strokeWidth={1.5} />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-primary)] opacity-60 px-1">
+                                        {assignment?.course_title || t('assign_intelligence')}
+                                    </p>
+                                    <h1 className="text-4xl md:text-5xl font-black text-[var(--text-primary)] tracking-tight italic">
+                                        {assignment?.title || t('assign_intelligence')}
+                                    </h1>
+                                </div>
                             </div>
-                            <h1 className="text-4xl font-black text-[var(--text-primary)] tracking-tight italic">
-                                {t('assign_intelligence').split(' ')[0]} <span className="text-[var(--accent-primary)]">{t('assign_intelligence').split(' ')[1]}</span>
-                            </h1>
                         </div>
-                        <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80 leading-relaxed max-w-2xl">
-                            {isStudent 
-                                ? t('assign_student_detail_sub')
-                                : t('assign_teacher_detail_sub')}
-                        </p>
+
+                        {/* Description Part */}
+                        <div className="prose prose-invert max-w-none">
+                            <p className="text-[var(--text-primary)] font-medium text-xl leading-relaxed italic opacity-90 border-l-4 border-[var(--accent-primary)]/30 pl-10">
+                                {assignment?.description || t('assign_no_desc')}
+                            </p>
+                        </div>
+                        
+                        {/* Attachments Part */}
+                        {assignment?.file_url && (
+                            <div className="pt-10 border-t border-[var(--border-color)]/30 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-14 w-14 rounded-2xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--accent-primary)] shadow-inner">
+                                        <File className="h-7 w-7" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] opacity-40">{t('assign_label_ressource') || "Reference Asset"}</p>
+                                        <p className="font-bold text-lg text-[var(--text-primary)]">{t('assign_appendix_provided') || "Standard Documentation Attached"}</p>
+                                    </div>
+                                </div>
+                                <a 
+                                    href={assignment.file_url} 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    className="px-10 py-5 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-primary)] font-black text-[10px] uppercase tracking-widest hover:bg-[var(--accent-primary)] hover:text-white transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-4 group/dl"
+                                >
+                                    <Upload className="h-5 w-5 group-hover/dl:-translate-y-1 transition-transform rotate-180" /> 
+                                    {t('assign_down_appendix')} (DOCX)
+                                </a>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </header>
+            </section>
 
             {isStudent ? (
                 /* STUDENT VIEW */
@@ -240,9 +294,7 @@ export const AssignmentDetail = () => {
                                             className="w-full px-8 py-20 border-2 border-dashed border-[var(--border-color)] bg-[var(--bg-secondary)]/[0.3] hover:bg-[var(--bg-secondary)]/[0.6] transition-all cursor-pointer text-transparent file:hidden"
                                         />
                                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-all duration-500 group-hover:scale-105">
-                                            <div className="h-16 w-16 mb-4 rounded-3xl bg-white/30 backdrop-blur-md flex items-center justify-center text-[var(--accent-primary)] shadow-2xl group-hover:rotate-6 transition-transform">
-                                                <Upload className="h-8 w-8" />
-                                            </div>
+
                                             <span className="text-sm font-black tracking-widest uppercase text-[var(--text-primary)] opacity-60 group-hover:opacity-100">
                                                 {submitFile ? submitFile.name : t('assign_place_portfolio')}
                                             </span>

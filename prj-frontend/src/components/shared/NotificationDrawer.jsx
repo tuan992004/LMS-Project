@@ -57,6 +57,50 @@ export const NotificationDrawer = () => {
     navigate(getNotificationPath());
   };
 
+  const handleNotificationClick = (n) => {
+    if (!n.is_read) {
+        markAsRead(n.id);
+    }
+    
+    // Parse data if it exists
+    let data = n.data;
+    if (typeof data === 'string') {
+        try {
+            data = JSON.parse(data);
+        } catch (e) {
+            console.error("Failed to parse notification data", e);
+            data = null;
+        }
+    }
+
+    // Toggle drawer to close it since it's mobile view
+    toggleNotifications();
+
+    if (!data) return;
+
+    // Navigate based on type
+    if (n.type === 'assignment_graded' || n.type === 'new_assignment') {
+        if (data.assignmentId) {
+            navigate(`/student/assignment/${data.assignmentId}`);
+        }
+    } else if (n.type === 'enrollment_request') {
+        if (data.courseId) {
+            const rolePrefix = user?.role === 'instructor' ? 'teacher' : 'admin';
+            navigate(`/${rolePrefix}/course/${data.courseId}/students`);
+        }
+    } else if (n.type === 'assignment_submitted') {
+         if (data.assignmentId) {
+             if (user?.role === 'admin') {
+                 // Admin route doesn't require course ID context
+                 navigate(`/admin/assignment/${data.assignmentId}`);
+             } else if (data.courseId) {
+                 // Teacher route requires the course context for role-based access
+                 navigate(`/teacher/course/${data.courseId}/assignment/${data.assignmentId}`);
+             }
+         }
+    }
+  };
+
   const getIcon = (type) => {
     switch (type) {
       case 'assignment_graded':
@@ -138,8 +182,9 @@ export const NotificationDrawer = () => {
                   return (
                     <li 
                       key={n.id} 
+                      onClick={() => handleNotificationClick(n)}
                       className={`
-                        group relative px-8 py-8 flex gap-6 transition-all duration-300
+                        group relative px-8 py-8 flex gap-6 transition-all duration-300 cursor-pointer
                         ${n.is_read ? 'opacity-40 grayscale-[0.5]' : 'bg-[var(--bg-secondary)]/30 dark:bg-white/5'}
                       `}
                     >
@@ -159,7 +204,7 @@ export const NotificationDrawer = () => {
                           <div className="flex items-center gap-4">
                             {!n.is_read && (
                               <button 
-                                onClick={() => markAsRead(n.id)}
+                                onClick={(e) => { e.stopPropagation(); markAsRead(n.id); }}
                                 className="h-11 w-11 rounded-xl bg-[var(--text-primary)] text-[var(--bg-primary)] active:scale-90 transition-all flex items-center justify-center shadow-sm"
                               >
                                 <CheckCircle2 size={18} strokeWidth={1.5} />

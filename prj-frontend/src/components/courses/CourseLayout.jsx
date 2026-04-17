@@ -16,7 +16,8 @@ import {
   Layers,
   Info,
   Trash2,
-  Users
+  Users,
+  Search
 } from "lucide-react";
 import { ConfirmModal } from "../shared/ConfirmModal";
 import { courseService } from "../../service/courseService";
@@ -25,6 +26,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "../../stores/userAuthStore";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useFocusTrap } from "../../hooks/useFocusTrap";
+import { showUndoToast } from "../shared/UndoToast";
 
 export const CourseLayout = () => {
   const { courseid } = useParams();
@@ -37,13 +39,15 @@ export const CourseLayout = () => {
   const [students, setStudents] = useState([]);
   const [activeTab, setActiveTab] = useState('lessons'); // 'lessons' | 'assignments' | 'students'
   const [loading, setLoading] = useState(true);
+  const [studentSearch, setStudentSearch] = useState("");
 
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
-  const [newAssignment, setNewAssignment] = useState({ title: '', description: '', due_date: '', file: null });
+  const [newAssignment, setNewAssignment] = useState({ title: '', description: '', due_date: '', type: 'assignment', file: null });
 
   // Delete handling state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null); // { type: 'lesson' | 'assignment', id: string, title: string }
+  const undoTimeoutRef = useRef(null);
 
   const modalRef = useRef(null);
   useFocusTrap(modalRef, isAssignmentModalOpen);
@@ -65,11 +69,13 @@ export const CourseLayout = () => {
       const assignRes = await api.get(`/assignments/course/${courseid}`);
       setAssignments(assignRes.data);
 
-      try {
-        const stdRes = await api.get(`/enrollments/course/${courseid}/students`);
-        setStudents(stdRes.data);
-      } catch (err) {
-        console.error("Failed to load students", err);
+      if (user?.role === 'admin' || user?.role === 'instructor') {
+        try {
+          const stdRes = await api.get(`/enrollments/course/${courseid}/students`);
+          setStudents(stdRes.data);
+        } catch (err) {
+          console.error("Failed to load students", err);
+        }
       }
     } catch (e) {
       toast.error(t('alert_course_data_error'));
@@ -93,6 +99,15 @@ export const CourseLayout = () => {
       return;
     }
 
+    if (newAssignment.due_date) {
+        const selectedDate = new Date(newAssignment.due_date);
+        const now = new Date();
+        if (selectedDate < now) {
+            toast.error("Assignment due date cannot be in the past");
+            return;
+        }
+    }
+
     try {
       const formData = new FormData();
       formData.append('title', newAssignment.title);
@@ -102,6 +117,7 @@ export const CourseLayout = () => {
         const safeMySQLDate = newAssignment.due_date.replace('T', ' ') + ':00';
         formData.append('due_date', safeMySQLDate);
       }
+      formData.append('type', newAssignment.type);
       if (newAssignment.file) formData.append('file', newAssignment.file);
 
       await api.post(`/assignments/course/${courseid}`, formData, {
@@ -110,7 +126,7 @@ export const CourseLayout = () => {
 
       toast.success(t('alert_assign_success'));
       setIsAssignmentModalOpen(false);
-      setNewAssignment({ title: '', description: '', due_date: '', file: null });
+      setNewAssignment({ title: '', description: '', due_date: '', type: 'assignment', file: null });
       fetchData();
     } catch (e) {
       toast.error(t('alert_assign_error'));
@@ -119,19 +135,35 @@ export const CourseLayout = () => {
 
   const performDelete = async () => {
     if (!itemToDelete) return;
+    const target = { ...itemToDelete };
+    setIsDeleteModalOpen(false);
 
-    try {
-      if (itemToDelete.type === 'lesson') {
-        await api.delete(`/courses/lessons/${itemToDelete.id}`);
-        toast.success(t('alert_delete_lesson_success'));
-      } else {
-        await api.delete(`/assignments/${itemToDelete.id}`);
-        toast.success(t('alert_delete_assignment_success'));
-      }
-      fetchData();
-    } catch (e) {
-      toast.error(t('alert_error'));
-    }
+    // Optimistic UI or just show Undo toast
+    const message = target.type === 'lesson' 
+        ? `Lesson "${target.title}" moved to trash` 
+        : `Assignment "${target.title}" moved to trash`;
+
+    showUndoToast(message, () => {
+        if (undoTimeoutRef.current) {
+            clearTimeout(undoTimeoutRef.current);
+            undoTimeoutRef.current = null;
+            toast.info("Deletion cancelled");
+        }
+    }, t);
+
+    undoTimeoutRef.current = setTimeout(async () => {
+        try {
+            if (target.type === 'lesson') {
+                await api.delete(`/courses/lessons/${target.id}`);
+            } else {
+                await api.delete(`/assignments/${target.id}`);
+            }
+            fetchData();
+            undoTimeoutRef.current = null;
+        } catch (e) {
+            toast.error(t('alert_error'));
+        }
+    }, 5000);
   };
 
   const confirmDelete = (e, type, id, title) => {
@@ -271,7 +303,13 @@ export const CourseLayout = () => {
                   lessons.map((lesson, index) => (
                     <article
                       key={lesson.lesson_id}
-                      onClick={() => navigate(`/course/${courseid}/lesson/${lesson.lesson_id}`)}
+                      onClick={() => {
+                        if (user?.role === 'student') {
+                          navigate(`/student/course/${courseid}/lesson/${lesson.lesson_id}`);
+                        } else {
+                          navigate(`/course/${courseid}/lesson/${lesson.lesson_id}`);
+                        }
+                      }}
                       className={`animate-fade-in-up stagger-${(index % 4) + 1}`}
                     >
                         <div className="group insta-card p-8 md:p-10 flex items-center justify-between cursor-pointer border-[var(--border-color)] hover:border-[var(--text-primary)] active:scale-[0.99] transition-all bg-[var(--bg-primary)]">
@@ -308,11 +346,7 @@ export const CourseLayout = () => {
 
           {activeTab === 'assignments' && (
             <div className="space-y-10 md:space-y-16 animate-fade-in-up">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-                <div className="space-y-2">
-                  <h2 className="text-3xl md:text-4xl font-medium text-[var(--text-primary)] italic tracking-tight">{t('course_assignments_title')}</h2>
-                  <p className="text-[var(--text-secondary)] font-medium text-sm md:text-base leading-relaxed break-words">{t('course_assignments_sub')}</p>
-                </div>
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-end gap-8">
                 {isInstructorOrAdmin && (
                   <button 
                     onClick={() => setIsAssignmentModalOpen(true)} 
@@ -348,7 +382,7 @@ export const CourseLayout = () => {
                                     {isInstructorOrAdmin && (
                                         <button 
                                             onClick={(e) => confirmDelete(e, 'assignment', assignment.id, assignment.title)}
-                                            className="h-10 w-10 rounded-xl border border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300 z-10"
+                                            className="h-10 w-10 rounded-xl border border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300 z-10 flex items-center justify-center"
                                             title={t('user_delete')}
                                         >
                                             <Trash2 size={16} strokeWidth={1.5} />
@@ -392,20 +426,45 @@ export const CourseLayout = () => {
                   <h2 className="text-3xl md:text-4xl font-medium text-[var(--text-primary)] italic tracking-tight">{t('nav_students') || 'Scholars Directory'}</h2>
                   <p className="text-[var(--text-secondary)] font-medium text-sm md:text-base leading-relaxed break-words">Manage and view enrolled scholars in this course</p>
                 </div>
-                <div className="px-6 py-3 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] font-medium text-[10px] uppercase tracking-widest">
-                  Total: {students.length}
+                <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
+                  <div className="relative flex-1 md:w-80 group">
+                    <input 
+                      type="text"
+                      placeholder="Search enrolled scholars..."
+                      value={studentSearch}
+                      onChange={(e) => setStudentSearch(e.target.value)}
+                      className="w-full pl-6 pr-6 py-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] font-medium text-xs outline-none focus:border-[var(--accent-primary)] focus:ring-4 focus:ring-[var(--accent-primary)]/5 transition-all placeholder:opacity-20 italic"
+                    />
+                  </div>
+                  <div className="px-6 py-3 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-primary)] font-medium text-[10px] uppercase tracking-widest whitespace-nowrap">
+                    Total: {students.length}
+                  </div>
                 </div>
               </div>
 
               <section aria-label="Students List" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {students.length === 0 ? (
+                {students.filter(s => 
+                  s.fullname?.toLowerCase().includes(studentSearch.toLowerCase()) || 
+                  s.username?.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                  s.email?.toLowerCase().includes(studentSearch.toLowerCase())
+                ).length === 0 ? (
                   <div className="py-24 md:py-40 col-span-full flex flex-col items-center justify-center text-center rounded-[2rem] border-2 border-dashed border-[var(--border-color)]">
                     <Users size={48} strokeWidth={1} className="text-[var(--text-secondary)] opacity-20 mb-8" />
-                    <p className="text-[var(--text-primary)] font-medium uppercase tracking-[0.3em] text-[10px] md:text-xs">No students enrolled</p>
-                    <p className="text-[var(--text-secondary)] text-sm mt-4 font-medium italic opacity-60 max-w-sm px-6 leading-relaxed">Admin must assign students to this course</p>
+                    <p className="text-[var(--text-primary)] font-medium uppercase tracking-[0.3em] text-[10px] md:text-xs">
+                      {studentSearch ? "No scholars matching your query" : "No students enrolled"}
+                    </p>
+                    <p className="text-[var(--text-secondary)] text-sm mt-4 font-medium italic opacity-60 max-w-sm px-6 leading-relaxed">
+                      {studentSearch ? "Try adjusting your search criteria" : "Admin must assign students to this course"}
+                    </p>
                   </div>
                 ) : (
-                  students.map((student, index) => (
+                  students
+                    .filter(s => 
+                      s.fullname?.toLowerCase().includes(studentSearch.toLowerCase()) || 
+                      s.username?.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                      s.email?.toLowerCase().includes(studentSearch.toLowerCase())
+                    )
+                    .map((student, index) => (
                     <article
                       key={student.student_id || student.userid || index}
                       className={`animate-fade-in-up stagger-${(index % 4) + 1} h-full`}
@@ -420,7 +479,10 @@ export const CourseLayout = () => {
                             </div>
                             <div className="space-y-1.5 overflow-hidden flex-1 min-w-0">
                                 <h3 className="text-lg font-medium text-[var(--text-primary)] truncate">{student.fullname || student.username}</h3>
-                                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-medium opacity-60 truncate">{student.email}</p>
+                                <div className="flex flex-col gap-0.5">
+                                    <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest font-medium opacity-60 truncate">{student.email}</p>
+                                    <p className="text-[9px] text-[var(--accent-primary)] font-black tracking-widest uppercase truncate">@{student.username}</p>
+                                </div>
                             </div>
                             <div className="h-8 w-8 rounded-full border border-[var(--border-color)] flex items-center justify-center group-hover:bg-[var(--text-primary)] group-hover:text-[var(--bg-primary)] transition-all">
                                 <ChevronRight size={14} strokeWidth={2} />
@@ -491,6 +553,21 @@ export const CourseLayout = () => {
                     className="w-full px-8 py-6 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/50 focus:bg-[var(--bg-primary)] focus:border-[var(--text-primary)] outline-none transition-all text-[var(--text-primary)] font-medium italic"
                   />
                 </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-[0.3em] ml-1 opacity-60">
+                    Event Classification
+                  </label>
+                  <select
+                    value={newAssignment.type}
+                    onChange={(e) => setNewAssignment({ ...newAssignment, type: e.target.value })}
+                    className="w-full px-8 py-6 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/50 focus:bg-[var(--bg-primary)] focus:border-[var(--text-primary)] outline-none transition-all text-[var(--text-primary)] font-medium italic appearance-none cursor-pointer"
+                  >
+                    <option value="assignment">Assignment</option>
+                    <option value="homework">Homework</option>
+                    <option value="test">Test</option>
+                  </select>
+                </div>
                 
                 <div className="space-y-4">
                   <label className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-[0.3em] ml-1 opacity-60">
@@ -541,6 +618,7 @@ export const CourseLayout = () => {
         title={itemToDelete?.type === 'lesson' ? t('course_academic_module') : t('nav_assignments')}
         message={itemToDelete?.type === 'lesson' ? t('delete_lesson_confirm') : t('delete_assignment_confirm')}
         confirmText={t('user_delete')}
+        icon={Trash2}
         variant="danger"
       />
     </main>

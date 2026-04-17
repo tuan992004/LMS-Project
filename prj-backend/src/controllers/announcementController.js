@@ -13,10 +13,12 @@ const createAnnouncement = async (req, res) => {
   // Teacher: 'pending' (wait for Admin approval)
   const status = role === 'admin' ? 'approved' : 'pending';
 
+  const fileUrl = req.file ? `/uploads/announcements/${req.file.filename}` : null;
+
   try {
     const [result] = await db.execute(
-      "INSERT INTO announcements (author_id, title, content, status) VALUES (?, ?, ?, ?)",
-      [userid, title, content, status]
+      "INSERT INTO announcements (author_id, title, content, file_url, status) VALUES (?, ?, ?, ?, ?)",
+      [userid, title, content, fileUrl, status]
     );
 
     res.status(201).json({

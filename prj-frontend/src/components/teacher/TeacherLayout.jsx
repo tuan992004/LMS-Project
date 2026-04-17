@@ -174,11 +174,14 @@ export const TeacherLayout = () => {
                         {/* Brand / Logo Space (Dynamic width to balance sidebar) */}
                         <Link 
                             to="/teacher"
-                            className={`${isSidebarOpen ? 'w-72' : 'w-20'} transition-all duration-500 flex items-center gap-4`}
+                            className={`${isSidebarOpen ? 'w-auto' : 'w-auto'} transition-all duration-500 flex items-center gap-4`}
                         >
                              <div className="w-10 h-10 shrink-0 bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-xl flex items-center justify-center shadow-lg transition-transform duration-500 hover:rotate-12">
                                 <Shield className="h-5 w-5" strokeWidth={1.5} />
                             </div>
+                            <span className="text-xl font-black italic tracking-tighter text-[var(--text-primary)] hidden sm:block">
+                                The Academic Hood
+                            </span>
                         </Link>
 
                         {/* Right Side Actions */}

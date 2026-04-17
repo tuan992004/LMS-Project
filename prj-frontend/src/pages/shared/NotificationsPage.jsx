@@ -20,12 +20,15 @@ import { api } from '../../lib/axios';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../stores/userAuthStore';
 
+import { useNavigate } from 'react-router-dom';
+
 /**
  * NotificationsPage - Dedicated view for full notification management.
  * Follows strict Monochrome Minimalist guidelines.
  */
 export const NotificationsPage = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const { 
     notifications, 
     loading,
@@ -57,6 +60,47 @@ export const NotificationsPage = () => {
         return { icon: UserPlus, color: 'text-violet-500' };
       default:
         return { icon: Info, color: 'text-[var(--text-primary)]' };
+    }
+  };
+
+  const handleNotificationClick = (n) => {
+    if (!n.is_read) {
+        markAsRead(n.id);
+    }
+    
+    // Parse data if it exists
+    let data = n.data;
+    if (typeof data === 'string') {
+        try {
+            data = JSON.parse(data);
+        } catch (e) {
+            console.error("Failed to parse notification data", e);
+            data = null;
+        }
+    }
+
+    if (!data) return;
+
+    // Navigate based on type
+    if (n.type === 'assignment_graded' || n.type === 'new_assignment') {
+        if (data.assignmentId) {
+            navigate(`/student/assignment/${data.assignmentId}`);
+        }
+    } else if (n.type === 'enrollment_request') {
+        if (data.courseId) {
+            const rolePrefix = user?.role === 'instructor' ? 'teacher' : 'admin';
+            navigate(`/${rolePrefix}/course/${data.courseId}/students`);
+        }
+    } else if (n.type === 'assignment_submitted') {
+         if (data.assignmentId) {
+             if (user?.role === 'admin') {
+                 // Admin route doesn't require course ID context
+                 navigate(`/admin/assignment/${data.assignmentId}`);
+             } else if (data.courseId) {
+                 // Teacher route requires the course context for role-based access
+                 navigate(`/teacher/course/${data.courseId}/assignment/${data.assignmentId}`);
+             }
+         }
     }
   };
 
@@ -150,7 +194,7 @@ export const NotificationsPage = () => {
               return (
                 <article 
                   key={n.id}
-                  onClick={() => !n.is_read && markAsRead(n.id)}
+                  onClick={() => handleNotificationClick(n)}
                   className={`
                     group relative p-6 md:p-8 rounded-3xl border transition-all duration-500 animate-fade-in-up stagger-${(idx % 5) + 1} cursor-pointer
                     ${n.is_read 

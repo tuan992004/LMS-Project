@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../stores/userAuthStore';
 import { api } from '../../lib/axios';
-import { Users, BookOpen, Loader2, Shield, ArrowUpRight, Activity, Zap, Megaphone, Bell } from 'lucide-react';
+import { Users, BookOpen, Loader2, Shield, ArrowUpRight, Activity, History, Megaphone, Bell, User } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { StatCard } from '../../components/shared/StatCard';
 import { MobileDashboard } from '../shared/MobileDashboard';
 import { AnnouncementList } from '../../components/dashboard/AnnouncementList';
 import { useNavigate } from 'react-router-dom';
+import SharedCalendar from '../../components/shared/SharedCalendar';
 
 export const AdminDashboard = () => {
     const user = useAuthStore((s) => s.user);
@@ -18,15 +19,17 @@ export const AdminDashboard = () => {
         pendingAnnouncements: 0
     });
     const [announcements, setAnnouncements] = useState([]);
+    const [summary, setSummary] = useState(null);
     const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         try {
-            const [usersRes, coursesRes, pendingRes] = await Promise.all([
+            const [usersRes, coursesRes, pendingRes, summaryRes] = await Promise.all([
                 api.get("/users"),
                 api.get("/courses"),
-                api.get("/announcements/pending")
+                api.get("/announcements/pending"),
+                api.get("/dashboard/summary")
             ]);
 
             setStats({
@@ -34,6 +37,7 @@ export const AdminDashboard = () => {
                 totalCourses: coursesRes.data.length,
                 pendingAnnouncements: pendingRes.data.length
             });
+            setSummary(summaryRes.data);
         } catch (error) {
             console.error("Failed to fetch stats", error);
         } finally {
@@ -69,14 +73,14 @@ export const AdminDashboard = () => {
 
 
     return (
-        <div className="max-w-7xl mx-auto p-4 md:p-8 lg:p-12">
-            {/* Mobile-First View (< md) */}
-            <div className="md:hidden">
+        <div className="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto">
+             {/* Mobile View */}
+             <div className="md:hidden">
                 <MobileDashboard />
             </div>
 
-            {/* Desktop View (>= md) */}
-            <main className="hidden md:block space-y-12 md:space-y-20 animate-fade-in-up" role="main" aria-labelledby="admin-dash-title">
+            {/* Desktop View */}
+            <main className="hidden md:block animate-fade-in-up" role="main" aria-labelledby="admin-dash-title">
                 <header className="flex items-center justify-between gap-6 mb-12 md:mb-16">
                     <div className="flex items-center gap-6">
                         <div className="h-12 w-12 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-color)] shadow-sm shrink-0">
@@ -98,76 +102,114 @@ export const AdminDashboard = () => {
                     )}
                 </header>
 
-                {/* Metrics Overview */}
-                <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 lg:gap-12" aria-label="Administrative Metrics">
-                    <StatCard
-                        label={t('dash_total_users')}
-                        value={loading ? "..." : stats.totalUsers}
-                        icon={Users}
-                    />
-                    <StatCard
-                        label={t('dash_total_courses')}
-                        value={loading ? "..." : stats.totalCourses}
-                        icon={BookOpen}
-                        color="accent"
-                    />
-
-                    {/* Status Placeholders */}
-                    <div className="animate-fade-in-up stagger-3 col-span-1 md:col-span-2">
-                        <div className="insta-card p-6 md:p-10 bg-[var(--text-primary)] text-[var(--bg-primary)] overflow-hidden relative group h-full border-none shadow-[0_40px_80px_-20px_rgba(0,0,0,0.3)]">
-                            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10 pointer-events-none" />
-                            <h3 className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] opacity-60 mb-6 text-[var(--bg-primary)] relative z-10 flex items-center gap-2">
-                                <Zap className="h-4 w-4" /> {t('dash_infra_load') || "INFRASTRUCTURE LOAD"}
-                            </h3>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-8 md:gap-12 relative z-10">
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-4xl md:text-6xl font-black tracking-tighter italic">12%</span>
-                                    <span className="text-[10px] font-bold uppercase opacity-60 tracking-widest">{t('dash_load_low') || "NOMINAL"}</span>
-                                </div>
-                                <div className="hidden sm:block h-14 w-px bg-[var(--bg-primary)]/20" />
-                                <p className="text-sm md:text-base font-medium italic opacity-80 max-w-sm leading-relaxed">
-                                    {t('dash_infra_desc') || "Heuristic clusters are operating well within safety parameters."}
-                                </p>
-                            </div>
-                        </div>
+                {/* Quick Discovery Navigation Hub */}
+                <section className="mb-12 md:mb-20">
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] opacity-60 mb-6 italic">Quick Discovery</h2>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                        <button onClick={() => navigate('/admin/users')} className="insta-card p-6 flex flex-col items-start text-left group hover:bg-[var(--bg-secondary)] transition-all">
+                            <Users className="h-6 w-6 mb-4 opacity-60 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-wider italic">Users Management</span>
+                            <span className="text-[9px] font-medium opacity-40 mt-1 uppercase tracking-widest">Manage Users</span>
+                        </button>
+                        <button onClick={() => navigate('/admin/courses')} className="insta-card p-6 flex flex-col items-start text-left group hover:bg-[var(--bg-secondary)] transition-all">
+                            <BookOpen className="h-6 w-6 mb-4 opacity-60 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-wider italic">Course Management</span>
+                            <span className="text-[9px] font-medium opacity-40 mt-1 uppercase tracking-widest">Manage Courses</span>
+                        </button>
+                        <button onClick={() => navigate('/admin/announcements')} className="insta-card p-6 flex flex-col items-start text-left group hover:bg-[var(--bg-secondary)] transition-all">
+                            <Megaphone className="h-6 w-6 mb-4 opacity-60 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-wider italic">Broadcasting</span>
+                            <span className="text-[9px] font-medium opacity-40 mt-1 uppercase tracking-widest">System Alerts</span>
+                        </button>
+                        <button onClick={() => navigate('/admin/settings')} className="insta-card p-6 flex flex-col items-start text-left group hover:bg-[var(--bg-secondary)] transition-all">
+                            <Shield className="h-6 w-6 mb-4 opacity-60 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-black uppercase tracking-wider italic">Setting</span>
+                            <span className="text-[9px] font-medium opacity-40 mt-1 uppercase tracking-widest">System Params</span>
+                        </button>
                     </div>
                 </section>
 
-                {/* Strategic Insights Placeholders */}
-                <section className="mt-12 md:mt-24 grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12 pb-32" aria-label="Strategic Insights">
+                <section className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-10 mb-12 md:mb-20">
+                    <div className="lg:col-span-1 flex flex-col gap-8">
+                        <StatCard
+                            label={t('dash_total_users')}
+                            value={loading ? "..." : stats.totalUsers}
+                            icon={Users}
+                        />
+                        <StatCard
+                            label={t('dash_total_courses')}
+                            value={loading ? "..." : stats.totalCourses}
+                            icon={BookOpen}
+                            color="accent"
+                        />
+                    </div>
+                    {/* Expanded Calendar */}
+                    <div className="animate-fade-in-up stagger-3 lg:col-span-3">
+                        <SharedCalendar events={summary?.data?.calendarEvents || []} variant="mini" />
+                    </div>
+                </section>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 md:gap-20 pb-32">
                     <div className="lg:col-span-2 space-y-12">
-                        <AnnouncementList announcements={announcements} loading={loadingAnnouncements} />
+                        <AnnouncementList announcements={announcements} loading={loadingAnnouncements} limit={3} />
                     </div>
 
-                    <div className="space-y-8">
-                        <div className="insta-card p-12 md:p-14 flex flex-col items-center justify-center border-dashed border-2 bg-white/5 border-[var(--border-color)] group min-h-[300px]">
-                            <div className="w-20 h-20 bg-[var(--bg-secondary)] rounded-3xl flex items-center justify-center mb-8 shadow-inner group-hover:rotate-12 transition-transform duration-700">
-                                <Zap className="h-8 w-8 text-[var(--text-secondary)] opacity-10" />
+                    <aside className="space-y-8">
+                        <div className="insta-card p-8 md:p-10 border-dashed border-2 bg-white/5 border-[var(--border-color)] flex flex-col group min-h-[400px]">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-8 w-8 rounded-lg bg-[var(--text-secondary)]/10 text-[var(--text-secondary)] flex items-center justify-center">
+                                        <History className="h-4 w-4" />
+                                    </div>
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 italic">System Activity Log</h4>
+                                </div>
+                                <span className="text-[9px] font-black uppercase opacity-20 px-2 py-1 border border-[var(--border-color)] rounded-md">Live Feed</span>
                             </div>
-                            <p className="text-[var(--text-secondary)] font-black italic opacity-20 uppercase tracking-tighter text-2xl md:text-3xl select-none text-center">
-                                {t('dash_quick_actions')}
-                            </p>
-                            <div className="w-12 h-1 bg-[var(--border-color)] mt-6 opacity-20" />
+
+                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 max-h-[400px]">
+                                {(!summary?.data?.globalActivities || summary.data.globalActivities.length === 0) ? (
+                                    <div className="h-full flex flex-col items-center justify-center opacity-20 py-12">
+                                        <Activity className="h-10 w-10 mb-4 animate-pulse" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">{t('dashboard_no_activity')}</p>
+                                    </div>
+                                ) : (
+                                    summary.data.globalActivities.map((act, idx) => (
+                                        <div key={act.id || idx} className="group/item flex items-start gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-[var(--border-color)]/30">
+                                            <div className="h-8 w-8 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
+                                                <User className="h-3.5 w-3.5 opacity-40" />
+                                            </div>
+                                            <div className="space-y-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] truncate max-w-[120px]">
+                                                        {act.fullname || 'Unknown User'}
+                                                    </span>
+                                                    <span className="text-[8px] font-black bg-[var(--text-secondary)]/10 text-[var(--text-secondary)] px-1.5 py-0.5 rounded uppercase">
+                                                        {act.role}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] font-medium italic opacity-60 leading-tight">
+                                                    {act.action.replace(/_/g, ' ')} {act.details?.lessonTitle || act.details?.courseTitle || ''}
+                                                </p>
+                                                <div className="flex items-center gap-2 opacity-30">
+                                                    <span className="text-[8px] font-black uppercase tracking-tighter">
+                                                        {new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                    <span className="text-[8px]">•</span>
+                                                    <span className="text-[8px] font-black uppercase tracking-tighter truncate">
+                                                        {act.ip_address}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
 
-                        <div className="insta-card p-10 bg-gradient-to-br from-[var(--bg-secondary)] to-transparent border-none">
-                             <div className="flex items-center gap-4 mb-6">
-                                <div className="h-10 w-10 rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center">
-                                    <Activity className="h-5 w-5" />
-                                </div>
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 italic">System Efficiency</h4>
-                             </div>
-                             <div className="space-y-4">
-                                <div className="h-2 bg-[var(--bg-primary)] rounded-full overflow-hidden">
-                                    <div className="h-full w-[94%] bg-[var(--accent-primary)] rounded-full" />
-                                </div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-right opacity-30 italic">94% Neural Resonance</p>
-                             </div>
-                        </div>
-                    </div>
-                </section>
+
+                    </aside>
+                </div>
             </main>
         </div>
     );
 };
-

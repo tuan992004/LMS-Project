@@ -12,6 +12,9 @@ router.post('/course/:course_id', upload.single('file'), assignmentController.cr
 // Get all assignments for a course (Can be accessed by Students too)
 router.get('/course/:course_id', assignmentController.getAssignments);
 
+// Get a single assignment by ID
+router.get('/:id', assignmentController.getAssignmentById);
+
 // Get all assignments for the currently logged-in instructor (across all their courses)
 router.get('/instructor/all', assignmentController.getInstructorAssignments);
 

@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "../../../stores/userAuthStore";
 import { useTranslation } from "../../../hooks/useTranslation";
 import { ConfirmModal } from "../../shared/ConfirmModal";
+import { showUndoToast } from "../../shared/UndoToast";
 
 export const LessonLayout = () => {
   const { t } = useTranslation();
@@ -28,12 +29,16 @@ export const LessonLayout = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [isEditMode, setIsEditMode] = useState(false);
-  const [title, setTitle] = useState("Untitled Lesson");
+  const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [blocks, setBlocks] = useState([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const undoTimeoutRef = React.useRef(null);
 
-  const listPath = user?.role === 'admin' ? `/admin/lessons/${courseid}` : `/teacher/lessons/${courseid}`;
+  const listPath = 
+    user?.role === 'admin' ? `/admin/lessons/${courseid}` :
+    user?.role === 'student' ? `/student/course/${courseid}` :
+    `/teacher/lessons/${courseid}`;
 
   const goBack = () => navigate(listPath, { replace: true });
 
@@ -108,6 +113,11 @@ export const LessonLayout = () => {
 
     formData.append("content", JSON.stringify(contentStructure));
 
+    if (!title.trim()) {
+      toast.error("Lesson title is required");
+      return;
+    }
+
     try {
       const response = await courseService.upsertLesson(formData);
       toast.success(response.message);
@@ -129,13 +139,25 @@ export const LessonLayout = () => {
   };
 
   const handleDelete = async () => {
-    try {
-      await api.delete(`/courses/lessons/${lessonid}`);
-      toast.success(t('alert_delete_lesson_success'));
-      navigate(listPath, { replace: true });
-    } catch (e) {
-      toast.error(t('alert_error'));
-    }
+    setIsDeleteModalOpen(false);
+    const lessonTitle = title;
+    
+    showUndoToast(`Lesson "${lessonTitle}" moved to trash`, () => {
+        if (undoTimeoutRef.current) {
+            clearTimeout(undoTimeoutRef.current);
+            undoTimeoutRef.current = null;
+            toast.info("Deletion cancelled");
+        }
+    }, t);
+
+    undoTimeoutRef.current = setTimeout(async () => {
+        try {
+            await api.delete(`/courses/lessons/${lessonid}`);
+            navigate(listPath, { replace: true });
+        } catch (e) {
+            toast.error(t('alert_error'));
+        }
+    }, 5000);
   };
 
   if (loading) return (
@@ -356,6 +378,15 @@ export const LessonLayout = () => {
             <div className="flex flex-wrap items-center justify-center gap-6 mt-12 p-10 bg-[var(--bg-primary)]/30 rounded-[3rem] border border-[var(--border-color)] backdrop-blur-md">
 
               <button 
+                type="button"
+                onClick={handleCancel}
+                className="flex items-center gap-3 bg-[var(--bg-secondary)] text-[var(--text-primary)] px-12 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[var(--border-color)] transition-all active:scale-95 shadow-inner"
+              >
+                <X className="h-5 w-5" />
+                Cancel Changes
+              </button>
+
+              <button 
                 onClick={handleSave} 
                 className="flex items-center gap-3 bg-[var(--text-primary)] text-[var(--bg-primary)] px-12 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition-all active:scale-95"
               >
@@ -375,6 +406,7 @@ export const LessonLayout = () => {
         title={t('course_academic_module')}
         message={t('delete_lesson_confirm')}
         confirmText={t('user_delete')}
+        icon={Trash2}
         variant="danger"
       />
     </article>

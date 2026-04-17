@@ -169,7 +169,7 @@ export const Settings = () => {
                                 <h2 className="text-xl font-medium text-zinc-900 dark:text-zinc-300 italic">{t('settings_security')}</h2>
                             </div>
 
-                            <div className="p-6 md:p-10 rounded-[2.5rem] bg-zinc-100/30 dark:bg-zinc-900/20 border border-zinc-200 dark:border-zinc-800 space-y-10">
+                            <div className="p-6 md:p-10 rounded-[2.5rem] bg-[var(--bg-secondary)] border border-zinc-200 dark:border-zinc-800 space-y-10">
                                 <p className="text-xs text-zinc-500 font-medium italic leading-relaxed max-w-lg">
                                     Update your access credentials regularly. Leave fields blank to retain your current identity tokens.
                                 </p>

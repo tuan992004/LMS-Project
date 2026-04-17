@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/axios';
-import { Megaphone, Calendar, User, ChevronLeft, Loader2, Bookmark, Share2 } from 'lucide-react';
+import { Megaphone, Calendar, User, ChevronLeft, Loader2, Bookmark, Share2, FileDown } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useAuthStore } from '../../stores/userAuthStore';
 
@@ -123,6 +123,29 @@ const AnnouncementDetailPage = () => {
                                 {announcement.content}
                             </p>
                         </div>
+
+                        {announcement.file_url && (
+                            <div className="pt-12 border-t border-[var(--border-color)]/20">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40 mb-8 italic">Attached Protocol Documentation</h4>
+                                <a 
+                                    href={`http://localhost:5001${announcement.file_url}`} 
+                                    download
+                                    className="inline-flex items-center gap-6 p-8 rounded-3xl bg-[var(--text-primary)]/5 border border-[var(--border-color)] group/dl hover:border-[var(--accent-primary)] transition-all"
+                                >
+                                    <div className="h-16 w-16 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center text-[var(--accent-primary)] group-hover/dl:bg-[var(--accent-primary)] group-hover/dl:text-[var(--bg-primary)] transition-all">
+                                        <FileDown className="h-8 w-8" />
+                                    </div>
+                                    <div className="flex flex-col items-start text-left">
+                                        <span className="text-xl font-black italic text-[var(--text-primary)] truncate max-w-[200px] md:max-w-md">
+                                            {announcement.file_url.split('-').length > 2 ? announcement.file_url.split('-').slice(2).join('-') : announcement.file_url.split('/').pop()}
+                                        </span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest opacity-30 group-hover/dl:opacity-60 transition-opacity">
+                                            Verified Secure Protocol Hash
+                                        </span>
+                                    </div>
+                                </a>
+                            </div>
+                        )}
                     </div>
                 </article>
 

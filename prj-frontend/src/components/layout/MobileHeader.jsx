@@ -32,8 +32,8 @@ export const MobileHeader = () => {
         <span className="text-[8px] font-medium uppercase tracking-[0.4em] text-[var(--text-secondary)] leading-relaxed mb-1">
           {t('portal_identity')}
         </span>
-        <span className="text-sm font-medium tracking-tight text-[var(--text-primary)] italic leading-relaxed">
-          LMS
+        <span className="text-sm font-black tracking-tighter text-[var(--text-primary)] italic leading-relaxed uppercase">
+          The Academic Hood
         </span>
       </div>
 

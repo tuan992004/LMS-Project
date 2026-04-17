@@ -11,9 +11,11 @@ const {
 // All routes require auth (applied in server.js)
 
 
+const upload = require("../middlewares/uploadMiddleware");
+
 // Public announcements for everyone
 router.get("/", getAnnouncements);
-router.post("/", createAnnouncement);
+router.post("/", upload.single('file'), createAnnouncement);
 
 // Get pending (Admin only)
 router.get("/pending", getPendingAnnouncements);

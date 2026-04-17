@@ -7,11 +7,15 @@ const createCourse = async (req, res) => {
         const courseid = 'CRS-' + Date.now(); 
         const status = req.user.role === 'admin' ? 'approved' : 'pending';
 
+        const instructor_id = req.user.role === 'admin' && req.body.instructor_id 
+            ? req.body.instructor_id 
+            : req.user.userid;
+
         await Course.create({
             courseid,
             title,
             description,
-            instructor_id: req.user.userid,
+            instructor_id,
             status
         });
 
@@ -61,7 +65,7 @@ const approveCourse = async (req, res) => {
 
 const upsertLesson = async (req, res) => {
     try {
-        const { course_id, lesson_id, title, content } = req.body;
+        const { course_id, lesson_id, title, content, scheduled_at } = req.body;
         
         // Kiểm tra an toàn cho content
         let contentArray = [];
@@ -89,13 +93,22 @@ const upsertLesson = async (req, res) => {
             title,
             content: JSON.stringify(processedContent),
             video_url: null,
-            attachments: null
+            attachments: null,
+            scheduled_at: scheduled_at || null
         };
 
         // --- LOGIC UPSERT ---
         if (lesson_id && lesson_id !== 'new') {
             const existing = await Course.getLessonByLessonId(lesson_id);
             if (existing) {
+                // Verify ownership for instructors
+                if (req.user.role === 'instructor') {
+                    const course = await Course.findById(existing.course_id);
+                    if (course.instructor_id !== req.user.userid) {
+                        return res.status(403).json({ message: "Bạn không có quyền chỉnh sửa bài giảng này" });
+                    }
+                }
+                
                 await Course.updateLesson(lesson_id, data);
                 return res.status(200).json({ 
                     message: "Cập nhật bài giảng thành công", 
@@ -104,11 +117,16 @@ const upsertLesson = async (req, res) => {
             }
         }
 
+        // Verify ownership for instructors when adding new lesson
+        const parentCourse = await Course.findById(course_id);
+        if (req.user.role === 'instructor' && parentCourse.instructor_id !== req.user.userid) {
+            return res.status(403).json({ message: "Bạn không có quyền thêm bài giảng cho khóa học này" });
+        }
+
         // Tạo mới bài giảng
         await Course.addLesson(data);
         
-        // Lấy lesson_id vừa được tạo (vì lesson_id sinh ra bằng hàm generateLessonId bên trong Model)
-        // Chúng ta lấy bản ghi mới nhất của khóa học này
+        // Lấy lesson_id vừa được tạo
         const [rows] = await db.execute(
             "SELECT lesson_id FROM lessons WHERE course_id = ? ORDER BY id DESC LIMIT 1",
             [course_id]
@@ -135,20 +153,49 @@ const getLessonDetail = async (req, res) => {
         
         if (!lesson) return res.status(404).json({ message: "Không tìm thấy bài học" });
         
+        // Verify ownership for instructors
+        if (req.user.role === 'instructor') {
+            const course = await Course.findById(lesson.course_id);
+            if (course.instructor_id !== req.user.userid) {
+                return res.status(403).json({ message: "Bạn không có quyền truy cập bài giảng này" });
+            }
+        }
+
         // Parse content từ String thành JSON trước khi gửi về Client
         if (typeof lesson.content === 'string') {
             lesson.content = JSON.parse(lesson.content);
         }
+
+        // --- ACTIVITY LOG: Log lesson visit ---
+        if (req.user && req.user.role === 'student') {
+            const ActivityLog = require('../modules/ActivityLog');
+            await ActivityLog.create({
+                userId: req.user.userid,
+                action: 'visit_lesson',
+                ip: req.ip || '127.0.0.1',
+                details: {
+                    lessonId: lesson.lesson_id,
+                    lessonTitle: lesson.title,
+                    courseId: lesson.course_id
+                }
+            });
+        }
         
         res.json(lesson);
     } catch (error) {
+        console.error("Get Lesson Detail Error:", error);
         res.status(500).json({ message: "Lỗi lấy chi tiết bài học" });
     }
 };
 
 const getAllCourses = async (req, res) => {
     try {
-        const courses = await Course.getAllForAdmin();
+        let courses;
+        if (req.user.role === 'admin') {
+            courses = await Course.getAllForAdmin();
+        } else {
+            courses = await Course.getByInstructorId(req.user.userid);
+        }
         res.json(courses);
     } catch (error) {
         res.status(500).json({ message: "Lỗi lấy danh sách khóa học" });
@@ -158,10 +205,32 @@ const getAllCourses = async (req, res) => {
 const getCourseContent = async (req, res) => {
     try {
         const { courseid } = req.params;
+        
+        // Verify ownership for instructors
+        if (req.user.role === 'instructor') {
+            const course = await Course.findById(courseid);
+            if (!course || course.instructor_id !== req.user.userid) {
+                return res.status(403).json({ message: "Bạn không có quyền truy cập khóa học này" });
+            }
+        }
+
         const lessons = await Course.getLessonsByCourse(courseid);
         res.json(lessons);
     } catch (error) {
         res.status(500).json({ message: "Lỗi lấy nội dung bài học" });
+    }
+};
+
+const getCourseDetail = async (req, res) => {
+    try {
+        const { courseid } = req.params;
+        const course = await Course.findById(courseid);
+        if (!course) {
+            return res.status(404).json({ message: "Không tìm thấy khóa học" });
+        }
+        res.json(course);
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi lấy chi tiết khóa học" });
     }
 };
 
@@ -191,6 +260,18 @@ const getMyEnrolledCourses = async (req, res) => {
 const deleteLesson = async (req, res) => {
     try {
         const { lesson_id } = req.params;
+        
+        // Verify ownership for instructors
+        if (req.user.role === 'instructor') {
+            const lesson = await Course.getLessonByLessonId(lesson_id);
+            if (lesson) {
+                const course = await Course.findById(lesson.course_id);
+                if (course.instructor_id !== req.user.userid) {
+                    return res.status(403).json({ message: "Bạn không có quyền xóa bài giảng này" });
+                }
+            }
+        }
+
         await Course.deleteLesson(lesson_id);
         res.json({ message: "Xóa bài giảng thành công" });
     } catch (error) {
@@ -201,11 +282,52 @@ const deleteLesson = async (req, res) => {
 const deleteCourse = async (req, res) => {
     try {
         const { courseid } = req.params;
-        // Giả sử bạn có method delete trong Model Course
+        
+        // Verify ownership for instructors
+        if (req.user.role === 'instructor') {
+            const course = await Course.findById(courseid);
+            if (!course || course.instructor_id !== req.user.userid) {
+                return res.status(403).json({ message: "Bạn không có quyền xóa khóa học này" });
+            }
+        }
+
         await Course.delete(courseid); 
         res.json({ message: "Xóa khóa học thành công" });
     } catch (error) {
         res.status(500).json({ message: "Lỗi khi xóa khóa học", error: error.message });
+    }
+};
+
+const assignInstructor = async (req, res) => {
+    try {
+        const { courseid } = req.params;
+        const { instructor_id } = req.body;
+
+        if (!instructor_id) {
+            return res.status(400).json({ message: "Thiếu ID giảng viên" });
+        }
+
+        // Update course
+        await Course.updateInstructor(courseid, instructor_id);
+
+        // Fetch course and instructor details for notification
+        const course = await Course.findById(courseid);
+        const User = require('../modules/User');
+        const Notification = require('../modules/Notification');
+        const instructor = await User.findById(instructor_id);
+
+        if (instructor) {
+            await Notification.insert(
+                instructor_id,
+                'COURSE_ASSIGNED',
+                `Bạn đã được chỉ định là giảng viên cho khóa học: "${course.title}".`
+            );
+        }
+
+        res.json({ message: "Chỉ định giảng viên thành công" });
+    } catch (error) {
+        console.error("Assign Instructor Error:", error);
+        res.status(500).json({ message: "Lỗi khi chỉ định giảng viên" });
     }
 };
 
@@ -218,5 +340,7 @@ module.exports = {
     deleteCourse,
     getLessonDetail,
     getMyEnrolledCourses,
-    deleteLesson
+    deleteLesson,
+    assignInstructor,
+    getCourseDetail
 };

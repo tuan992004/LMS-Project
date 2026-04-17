@@ -9,7 +9,6 @@ import { useTranslation } from "../../hooks/useTranslation";
 
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
-import { UserPlus } from "lucide-react";
 
 export default function AddUserForm() {
   const { t } = useTranslation();
@@ -54,17 +53,8 @@ export default function AddUserForm() {
 
         <header className="mb-12">
             <div className="flex items-center gap-3 mb-6">
-                <div className="h-10 w-10 rounded-xl bg-[var(--accent-primary)] flex items-center justify-center text-white shadow-lg">
-                    <UserPlus className="h-6 w-6" />
-                </div>
                 <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent-primary)]">{t('user_provisioning')}</h3>
             </div>
-          <h1 className="text-3xl md:text-4xl font-black text-[var(--text-primary)] tracking-tight italic leading-tight">
-            {t('user_new_record').split(' ').slice(0, -1).join(' ')} <span className="text-[var(--accent-primary)]">{t('user_new_record').split(' ').slice(-1)}</span>
-          </h1>
-          <p className="text-[var(--text-secondary)] mt-4 font-semibold italic opacity-80 leading-relaxed max-w-md">
-            {t('user_add_subtitle')}
-          </p>
         </header>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

@@ -2,12 +2,12 @@ const db = require("../libs/db");
 
 const Assignment = {
     // 1. Instructor creates an assignment for their course
-    create: async (course_id, title, description, due_date, file_url) => {
+    create: async (course_id, title, description, due_date, file_url, type) => {
         const query = `
-            INSERT INTO assignments (course_id, title, description, due_date, file_url)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO assignments (course_id, title, description, due_date, file_url, type)
+            VALUES (?, ?, ?, ?, ?, ?)
         `;
-        const [result] = await db.execute(query, [course_id, title, description, due_date || null, file_url || null]);
+        const [result] = await db.execute(query, [course_id, title, description, due_date || null, file_url || null, type || 'assignment']);
         return result.insertId;
     },
 
@@ -20,6 +20,18 @@ const Assignment = {
         `;
         const [rows] = await db.execute(query, [course_id]);
         return rows;
+    },
+
+    // 2.0 Fetch a specific assignment by ID
+    findById: async (id) => {
+        const query = `
+            SELECT a.*, c.title as course_title, c.instructor_id 
+            FROM assignments a
+            LEFT JOIN courses c ON a.course_id = c.courseid
+            WHERE a.id = ?
+        `;
+        const [rows] = await db.execute(query, [id]);
+        return rows[0];
     },
 
     // 2.1 Fetch all assignments for courses taught by an instructor
@@ -117,9 +129,9 @@ const Assignment = {
     // 8. Helpers for Notifications
     getInstructorForAssignment: async (assignment_id) => {
         const query = `
-            SELECT c.instructor_id, c.title as course_title, a.title as assignment_title
+            SELECT c.instructor_id, c.title as course_title, a.title as assignment_title, c.courseid, a.id as assignment_id
             FROM assignments a
-            JOIN courses c ON a.course_id = c.courseid
+            LEFT JOIN courses c ON a.course_id = c.courseid
             WHERE a.id = ?
         `;
         const [rows] = await db.execute(query, [assignment_id]);
@@ -128,10 +140,10 @@ const Assignment = {
 
     getSubmissionDetails: async (submission_id) => {
         const query = `
-            SELECT sub.student_id, a.title as assignment_title, c.courseid, c.title as course_title
+            SELECT sub.student_id, a.title as assignment_title, c.courseid, c.title as course_title, a.id as assignment_id
             FROM assignment_submissions sub
-            JOIN assignments a ON sub.assignment_id = a.id
-            JOIN courses c ON a.course_id = c.courseid
+            LEFT JOIN assignments a ON sub.assignment_id = a.id
+            LEFT JOIN courses c ON a.course_id = c.courseid
             WHERE sub.id = ?
         `;
         const [rows] = await db.execute(query, [submission_id]);
@@ -151,6 +163,18 @@ const Assignment = {
               AND sub.id IS NULL
         `;
         const [rows] = await db.execute(query, [hours]);
+        return rows;
+    },
+    
+    // 10. Fetch ALL assignments across the platform (Admin only)
+    getGlobalAssignments: async () => {
+        const query = `
+            SELECT a.*, c.title as course_title 
+            FROM assignments a
+            JOIN courses c ON a.course_id = c.courseid
+            ORDER BY a.due_date ASC
+        `;
+        const [rows] = await db.execute(query);
         return rows;
     }
 };

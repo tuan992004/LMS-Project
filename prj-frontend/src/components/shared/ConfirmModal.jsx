@@ -13,6 +13,7 @@ export const ConfirmModal = ({
     message, 
     confirmText, 
     cancelText,
+    icon: IconComponent,
     variant = "danger" // "danger" | "primary"
 }) => {
     if (!isOpen) return null;
@@ -66,12 +67,13 @@ export const ConfirmModal = ({
                                 onClose();
                             }} 
                             className={`
-                                flex-1 py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all active:scale-95 shadow-xl italic
+                                flex-1 py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all active:scale-95 shadow-xl italic flex items-center justify-center gap-3
                                 ${isDanger 
                                     ? 'bg-rose-500 text-white hover:bg-rose-600' 
                                     : 'bg-[var(--text-primary)] text-[var(--bg-primary)] hover:opacity-90'}
                             `}
                         >
+                            {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                             {confirmText || "Execute Process"}
                         </button>
                     </footer>

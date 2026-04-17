@@ -12,8 +12,24 @@ const ActivityLog = {
         }
     },
 
-    getLogs: async () => {
-        const [rows] = await db.query("SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 100");
+
+
+    getByUserId: async (userId, limit = 5) => {
+        const [rows] = await db.query(
+            "SELECT * FROM activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT ?",
+            [userId, limit]
+        );
+        return rows;
+    },
+
+    getLogs: async (limit = 50) => {
+        const [rows] = await db.query(`
+            SELECT al.*, u.fullname, u.role
+            FROM activity_logs al
+            JOIN users u ON al.user_id = u.userid
+            ORDER BY al.created_at DESC
+            LIMIT ?
+        `, [limit]);
         return rows;
     }
 };

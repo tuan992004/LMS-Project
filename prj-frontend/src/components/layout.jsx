@@ -43,7 +43,7 @@ export const Layout = ({ children, user, onLogout, currentPage, onNavigate }) =>
           <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
             <i className="fa-solid fa-lightbulb text-white text-sm"></i>
           </div>
-          <span className="text-xl font-bold tracking-tight">Lumina LMS</span>
+          <span className="text-xl font-bold tracking-tight">The Academic Hood</span>
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
@@ -98,7 +98,7 @@ export const Layout = ({ children, user, onLogout, currentPage, onNavigate }) =>
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
               <i className="fa-solid fa-lightbulb text-white text-sm"></i>
             </div>
-            <span className="text-lg font-bold text-gray-900">Lumina</span>
+            <span className="text-lg font-bold text-gray-900">Academic Hood</span>
           </div>
 
           <button onClick={onLogout} className="text-gray-500 hover:text-gray-900">

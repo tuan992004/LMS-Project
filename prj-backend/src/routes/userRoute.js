@@ -29,6 +29,17 @@ router.get('/students', authorize(['admin', 'instructor']), async (req, res) => 
   }
 });
 
+router.get('/instructors', authorize(['admin']), async (req, res) => {
+  try {
+    const User = require('../modules/User');
+    const all = await User.findAll();
+    return res.status(200).json(all.filter(u => u.role === 'instructor'));
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: 'Lỗi hệ thống' });
+  }
+});
+
 // ADMIN + TEACHER
 router.get('/test', authorize(['admin', 'instructor']), test);
 

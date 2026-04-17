@@ -52,6 +52,47 @@ export const NotificationDropdown = () => {
     navigate(getNotificationPath());
   };
 
+  const handleNotificationClick = (n) => {
+    if (!n.is_read) {
+        markAsRead(n.id);
+    }
+    
+    // Parse data if it exists
+    let data = n.data;
+    if (typeof data === 'string') {
+        try {
+            data = JSON.parse(data);
+        } catch (e) {
+            console.error("Failed to parse notification data", e);
+            data = null;
+        }
+    }
+
+    if (!data) return;
+
+    // Navigate based on type
+    if (n.type === 'assignment_graded' || n.type === 'new_assignment') {
+        if (data.assignmentId) {
+            navigate(`/student/assignment/${data.assignmentId}`);
+        }
+    } else if (n.type === 'enrollment_request') {
+        if (data.courseId) {
+            const rolePrefix = user?.role === 'instructor' ? 'teacher' : 'admin';
+            navigate(`/${rolePrefix}/course/${data.courseId}/students`);
+        }
+    } else if (n.type === 'assignment_submitted') {
+         if (data.assignmentId) {
+             if (user?.role === 'admin') {
+                 // Admin route doesn't require course ID context
+                 navigate(`/admin/assignment/${data.assignmentId}`);
+             } else if (data.courseId) {
+                 // Teacher route requires the course context for role-based access
+                 navigate(`/teacher/course/${data.courseId}/assignment/${data.assignmentId}`);
+             }
+         }
+    }
+  };
+
   // --- US-18: Admin Approval Action ---
   const handleApprovalAction = async (notif, action) => {
     try {
@@ -83,7 +124,7 @@ export const NotificationDropdown = () => {
       case 'security':
         return { icon: AlertTriangle, color: 'text-[var(--text-primary)]' };
       case 'enrollment_request':
-        return { icon: UserPlus, color: 'text-violet-500' };
+        return { icon: UserPlus, color: 'text-[var(--text-primary)]' };
       default:
         return { icon: Info, color: 'text-[var(--text-primary)]' };
     }
@@ -118,10 +159,11 @@ export const NotificationDropdown = () => {
               return (
                 <li 
                    key={n.id} 
+                   onClick={() => handleNotificationClick(n)}
                    className={`
-                    group relative px-6 py-5 flex flex-col gap-3 transition-all duration-300
-                    ${n.is_read ? 'opacity-50 grayscale-[0.5]' : 'bg-[var(--bg-secondary)]/50 dark:bg-white/5'}
-                  `}
+                     group relative px-6 py-5 flex flex-col gap-3 transition-all duration-300 cursor-pointer
+                     ${n.is_read ? 'bg-[var(--bg-secondary)]/20 dark:bg-white/5' : 'bg-[var(--bg-secondary)]/50 dark:bg-white/5'}
+                   `}
                 >
                   <div className="flex gap-4">
                     <div className={`mt-1 h-8 w-8 shrink-0 rounded-lg flex items-center justify-center bg-[var(--bg-secondary)] dark:bg-white/10 ${color}`}>

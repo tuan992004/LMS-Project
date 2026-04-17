@@ -54,9 +54,7 @@ export default function AddCourseForm() {
               {t('course_add_title')}
             </h2>
           </div>
-          <p className="text-[var(--text-secondary)] font-medium text-lg italic opacity-80 leading-relaxed">
-            {t('course_add_subtitle')}
-          </p>
+
         </header>
         
         <form onSubmit={handleSubmit} className="relative z-10 space-y-10">
@@ -101,7 +99,7 @@ export default function AddCourseForm() {
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="btn-primary !px-12 !py-5 text-[10px] uppercase tracking-widest flex items-center gap-3 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed group"
+              className="btn-primary !px-12 !py-5 text-[10px] uppercase tracking-widest flex items-center gap-3 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 group"
             >
               {isSubmitting ? (
                 <>

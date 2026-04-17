@@ -24,7 +24,7 @@ import AddUserPage from "./pages/admin/AddUserPage";
 import { CourseManagement } from "./pages/admin/CourseManagement";
 import { UserManagement } from "./pages/admin/UserManagement";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
-import { TeacherDashboard } from "./pages/teacher/TeacherDashboard";
+import { TeacherDashboard } from "./pages/teacher/teacherDashboard";
 import { StudentDashboard } from "./pages/student/StudentDashboard";
 import { StudentAssignments } from "./pages/student/StudentAssignments";
 import { AssignmentDetail } from "./pages/shared/AssignmentDetail";
@@ -38,6 +38,8 @@ import { AnnouncementApproval } from "./pages/admin/AnnouncementApproval";
 import CreateAnnouncementPage from "./pages/shared/CreateAnnouncementPage";
 import AnnouncementFeedPage from "./pages/admin/AnnouncementFeedPage";
 import AnnouncementDetailPage from "./pages/shared/AnnouncementDetailPage";
+import ManageStudentsPage from "./pages/admin/ManageStudentsPage";
+import { CalendarPage } from "./pages/shared/CalendarPage";
 
 function App() {
   const { refresh, loading } = useAuthStore();
@@ -84,6 +86,8 @@ function App() {
               <Route path="/admin/announcements" element={<AnnouncementFeedPage />} />
               <Route path="/admin/announcements/:id" element={<AnnouncementDetailPage />} />
               <Route path="/adduser" element={<AddUserPage />} />
+              <Route path="/admin/course/:courseid/students" element={<ManageStudentsPage />} />
+              <Route path="/admin/calendar" element={<CalendarPage />} />
 
               {/* 1. Trang quản lý danh sách bài giảng của 1 khóa học */}
               <Route path="admin/lessons/:courseid" element={<CourseLayout />} />
@@ -110,6 +114,8 @@ function App() {
               <Route path="/teacher/announcements/new" element={<CreateAnnouncementPage />} />
               <Route path="/teacher/announcements" element={<AnnouncementFeedPage />} />
               <Route path="/teacher/announcements/:id" element={<AnnouncementDetailPage />} />
+              <Route path="/teacher/course/:courseid/students" element={<ManageStudentsPage />} />
+              <Route path="/teacher/calendar" element={<CalendarPage />} />
             </Route>
           </Route>
 
@@ -126,11 +132,13 @@ function App() {
               <Route path="/student/courses" element={<StudentCourses />} />
               <Route path="/student/assignments" element={<StudentAssignments />} />
               <Route path="/student/course/:courseid" element={<CourseLayout />} />
+              <Route path="/student/course/:courseid/lesson/:lessonid" element={<LessonLayout />} />
               <Route path="/student/assignment/:assignment_id" element={<AssignmentDetail />} />
               <Route path="/student/settings" element={<Settings />} />
               <Route path="/student/notifications" element={<NotificationsPage />} />
               <Route path="/student/announcements" element={<AnnouncementFeedPage />} />
               <Route path="/student/announcements/:id" element={<AnnouncementDetailPage />} />
+              <Route path="/student/calendar" element={<CalendarPage />} />
             </Route>
           </Route>
 

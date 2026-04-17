@@ -18,12 +18,18 @@ router.delete('/lessons/:lesson_id', authorize(['admin', 'instructor']), courseC
 // Lấy tất cả khóa học (Cho trang Dashboard/Management)
 router.get('/', authorize(['admin', 'instructor']), courseCtrl.getAllCourses);
 
+// Lấy chi tiết một khóa học
+router.get('/detail/:courseid', authorize(['admin', 'instructor', 'student']), courseCtrl.getCourseDetail);
+
 // Instructor tạo đề xuất khóa học mới
 router.post('/create', authorize(['admin', 'instructor']), courseCtrl.createCourse);
 router.delete('/:courseid', authorize(['admin','instructor']), courseCtrl.deleteCourse);
 
 // Admin duyệt/thay đổi trạng thái khóa học
 router.patch('/approve/:courseid', authorize(['admin']), courseCtrl.approveCourse);
+
+// Admin chỉ định giảng viên cho khóa học
+router.patch('/assign-instructor/:courseid', authorize(['admin']), courseCtrl.assignInstructor);
 
 
 // --- DÀNH CHO HỌC SINH (STUDENTS) ---

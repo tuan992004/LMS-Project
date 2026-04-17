@@ -18,9 +18,6 @@ export const CourseManagement = () => {
     const [expandedCourseId, setExpandedCourseId] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // --- US-18: Student Management Modal State ---
-    const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
-    const [selectedCourse, setSelectedCourse] = useState(null);
     const [enrolledStudents, setEnrolledStudents] = useState([]);
     const [studentsLoading, setStudentsLoading] = useState(false);
     const [studentSearch, setStudentSearch] = useState('');
@@ -29,6 +26,13 @@ export const CourseManagement = () => {
     const [addStudentSearch, setAddStudentSearch] = useState('');
     const [enrollingId, setEnrollingId] = useState(null);
     const [removingId, setRemovingId] = useState(null);
+
+    // --- US-ASSIGN: Instructor Assignment State ---
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [allInstructors, setAllInstructors] = useState([]);
+    const [instructorsLoading, setInstructorsLoading] = useState(false);
+    const [assignSearch, setAssignSearch] = useState('');
+    const [assigningInstructorId, setAssigningInstructorId] = useState(null);
 
     // --- US-18: Student Dossier State ---
     const [isDossierOpen, setIsDossierOpen] = useState(false);
@@ -56,64 +60,43 @@ export const CourseManagement = () => {
         fetchCourses();
     }, []);
 
-    // --- US-18: Open the student management modal for a course ---
-    const handleManageStudents = async (course) => {
-        setSelectedCourse(course);
-        setStudentSearch('');
-        setAddStudentSearch('');
-        setIsStudentModalOpen(true);
-        setStudentsLoading(true);
-        setAllStudentsLoading(true);
+    // --- US-18: Navigate to student management page ---
+    const handleManageStudents = (course) => {
+        const portalPrefix = user?.role === 'admin' ? '/admin' : '/teacher';
+        navigate(`${portalPrefix}/course/${course.courseid}/students`);
+    };
 
+    // --- US-ASSIGN: Fetch Instructors and Open Modal ---
+    const handleOpenAssignModal = async (course) => {
+        setSelectedCourse(course);
+        setIsAssignModalOpen(true);
+        setInstructorsLoading(true);
+        setAssignSearch('');
         try {
-            const [studentsRes, allRes] = await Promise.all([
-                api.get(`/enrollments/course/${course.courseid}/students`),
-                api.get('/users/students')
-            ]);
-            setEnrolledStudents(studentsRes.data);
-            // Endpoint already returns only students
-            setAllStudents(allRes.data);
+            const res = await api.get('/users/instructors');
+            setAllInstructors(res.data);
         } catch (error) {
             console.error(error);
-            toast.error('Failed to load student data');
+            toast.error('Failed to load instructor list');
         } finally {
-            setStudentsLoading(false);
-            setAllStudentsLoading(false);
+            setInstructorsLoading(false);
         }
     };
 
-    // --- US-18: Enroll a student ---
-    const handleEnrollStudent = async (student) => {
-        setEnrollingId(student.userid);
+    const handleAssignInstructor = async (instructorId) => {
+        setAssigningInstructorId(instructorId);
         try {
-            const res = await api.post(`/enrollments/course/${selectedCourse.courseid}/enroll`, { studentId: student.userid });
-            const newRecord = { 
-                ...student, 
-                enrolled_at: new Date().toISOString(),
-                status: res.data.status // Use status from server (e.g., 'pending')
-            };
-            setEnrolledStudents(prev => [...prev, newRecord]);
-            toast.success(res.data.message || `${student.fullname} enrolled successfully`);
+            await api.patch(`/courses/assign-instructor/${selectedCourse.courseid}`, { instructor_id: instructorId });
+            toast.success('Instructor assigned successfully');
+            fetchCourses(); // Refresh to show new instructor ID
+            setIsAssignModalOpen(false);
         } catch (error) {
-            toast.error(error?.response?.data?.message || 'Failed to enroll student');
+            toast.error(error?.response?.data?.message || 'Failed to assign instructor');
         } finally {
-            setEnrollingId(null);
+            setAssigningInstructorId(null);
         }
     };
 
-    // --- US-18: Unenroll a student ---
-    const handleUnenrollStudent = async (studentId, fullname) => {
-        setRemovingId(studentId);
-        try {
-            await api.delete(`/enrollments/course/${selectedCourse.courseid}/student/${studentId}`);
-            setEnrolledStudents(prev => prev.filter(s => s.userid !== studentId));
-            toast.success(`${fullname} removed from course`);
-        } catch (error) {
-            toast.error(error?.response?.data?.message || 'Failed to remove student');
-        } finally {
-            setRemovingId(null);
-        }
-    };
 
     // Delete Course (Optimistic with Undo)
     const handleDeleteCourse = (courseId) => {
@@ -176,6 +159,12 @@ export const CourseManagement = () => {
             String(c.instructor_id).toLowerCase().includes(s)
         );
     });
+
+    const filteredInstructors = allInstructors.filter(i => 
+        i.fullname?.toLowerCase().includes(assignSearch.toLowerCase()) ||
+        i.email?.toLowerCase().includes(assignSearch.toLowerCase()) ||
+        i.username?.toLowerCase().includes(assignSearch.toLowerCase())
+    );
 
     return (
         <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen animate-fade-in-up pb-32">
@@ -307,6 +296,20 @@ export const CourseManagement = () => {
                                                         <Users className="h-4 w-4" />
                                                         Students
                                                     </button>
+
+                                                    {user?.role === 'admin' && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleOpenAssignModal(c);
+                                                            }}
+                                                            className="h-10 px-4 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-sky-500 hover:bg-sky-500/10 border border-transparent hover:border-sky-500/20 transition-all active:scale-95"
+                                                            title="Assign Instructor"
+                                                        >
+                                                            <UserPlus className="h-4 w-4" />
+                                                            Assign Intructor
+                                                        </button>
+                                                    )}
                                                     
                                                     {user?.role === 'admin' && (
                                                         <>
@@ -322,16 +325,16 @@ export const CourseManagement = () => {
                                                                     {t('course_approve_btn')}
                                                                 </button>
                                                             )}
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleDeleteCourse(c.courseid);
-                                                                }}
-                                                                className="h-10 w-10 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all active:scale-95"
-                                                                title="Delete Permanently"
-                                                            >
-                                                                <Trash2 className="h-4.5 w-4.5" />
-                                                            </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDeleteCourse(c.courseid);
+                                                                    }}
+                                                                    className="h-10 w-10 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all active:scale-95"
+                                                                    title="Delete Permanently"
+                                                                >
+                                                                    <Trash2 size={18} strokeWidth={1.5} />
+                                                                </button>
                                                         </>
                                                     )}
                                                 </div>
@@ -359,6 +362,12 @@ export const CourseManagement = () => {
                                             onClick: () => handleManageStudents(c),
                                             variant: 'primary'
                                         },
+                                        ...(user?.role === 'admin' ? [{
+                                            label: 'Assign Teacher',
+                                            icon: UserPlus,
+                                            onClick: () => handleOpenAssignModal(c),
+                                            variant: 'primary'
+                                        }] : []),
                                         {
                                             label: t('course_curriculum_btn') || 'View Course',
                                             icon: BookOpen,
@@ -417,180 +426,105 @@ export const CourseManagement = () => {
                 </div>
             )}
 
-            {/* ===== US-18: Manage Students Modal ===== */}
-            {isStudentModalOpen && selectedCourse && (
+            {/* ===== US-ASSIGN: Instructor Assignment Modal ===== */}
+            {isAssignModalOpen && selectedCourse && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[150] flex items-start justify-center p-0 md:p-6 animate-fade-in overflow-y-auto">
-                    <div className="glass-card w-full max-w-4xl relative animate-fade-in-up shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border-none my-0 md:my-6 rounded-none md:rounded-3xl min-h-screen md:min-h-0">
-                        
+                    <div className="glass-card w-full max-w-2xl relative animate-fade-in-up shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border-none my-0 md:my-6 rounded-none md:rounded-3xl min-h-screen md:min-h-0">
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-6 md:p-8 border-b border-[var(--border-color)]">
                             <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-violet-500/10 flex items-center justify-center shrink-0">
-                                    <Users className="h-6 w-6 text-violet-500" />
+                                <div className="h-12 w-12 rounded-2xl bg-sky-500/10 flex items-center justify-center shrink-0">
+                                    <UserPlus className="h-6 w-6 text-sky-500" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-[var(--text-primary)] leading-tight">Manage Students</h2>
+                                    <h2 className="text-xl font-black text-[var(--text-primary)] leading-tight">Assign Instructor</h2>
                                     <p className="text-sm text-[var(--text-secondary)] opacity-60 font-medium truncate max-w-xs">{selectedCourse.title}</p>
                                 </div>
                             </div>
                             <button
-                                onClick={() => setIsStudentModalOpen(false)}
+                                onClick={() => setIsAssignModalOpen(false)}
                                 className="h-10 w-10 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center hover:bg-[var(--border-color)] transition-all active:scale-95"
                             >
                                 <X className="h-5 w-5" />
                             </button>
                         </div>
 
-                        <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                            {/* LEFT PANEL: Enrolled Students */}
-                            <div className="flex flex-col gap-4">
-                                <div>
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] opacity-60 mb-3">
-                                        Enrolled Students
-                                        <span className="ml-2 bg-violet-500/10 text-violet-500 px-2 py-0.5 rounded-full text-[9px]">
-                                            {enrolledStudents.length}
-                                        </span>
-                                    </h3>
-                                    {/* Search enrolled */}
-                                    <div className="flex items-center gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-3 rounded-xl focus-within:border-violet-500/50 transition-all">
-                                        <Search className="h-4 w-4 text-[var(--text-secondary)] opacity-40 shrink-0" />
-                                        <input
-                                            type="text"
-                                            placeholder="Search enrolled students..."
-                                            value={studentSearch}
-                                            onChange={e => setStudentSearch(e.target.value)}
-                                            className="bg-transparent border-none outline-none w-full text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/40 font-medium"
-                                        />
-                                    </div>
-                                </div>
-
-                                {studentsLoading ? (
-                                    <div className="flex items-center justify-center py-12">
-                                        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
-                                    </div>
-                                ) : filteredEnrolled.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-12 text-center opacity-40">
-                                        <Users className="h-10 w-10 mb-3" />
-                                        <p className="text-sm font-black uppercase tracking-widest">
-                                            {studentSearch ? 'No results' : 'No students enrolled'}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1">
-                                        {filteredEnrolled.map(s => (
-                                            <div key={s.userid} className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-violet-500/20 transition-all group">
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="h-10 w-10 rounded-xl bg-violet-500/10 text-violet-500 flex items-center justify-center font-black text-base shrink-0">
-                                                        {s.fullname?.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="flex items-center gap-2 mb-0.5">
-                                                            <p className="font-bold text-sm text-[var(--text-primary)] truncate">{s.fullname}</p>
-                                                            {s.status === 'pending' && (
-                                                                <span className="bg-amber-500/10 text-amber-500 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-amber-500/20">
-                                                                    Pending
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <p className="text-[10px] text-[var(--text-secondary)] opacity-50 flex items-center gap-1 truncate">
-                                                            <Mail className="h-2.5 w-2.5 shrink-0" />
-                                                            {s.email}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => handleViewDossier(s.userid)}
-                                                        className="h-8 w-8 rounded-xl bg-violet-500/0 text-violet-500/50 hover:bg-violet-500/10 hover:text-violet-500 border border-transparent hover:border-violet-500/20 flex items-center justify-center transition-all active:scale-95 shrink-0"
-                                                        title={`View ${s.fullname}'s Dossier`}
-                                                    >
-                                                        <ExternalLink className="h-3.5 w-3.5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleUnenrollStudent(s.userid, s.fullname)}
-                                                        disabled={removingId === s.userid}
-                                                        className="h-8 w-8 rounded-xl bg-rose-500/0 text-rose-500/50 hover:bg-rose-500/10 hover:text-rose-500 border border-transparent hover:border-rose-500/20 flex items-center justify-center transition-all active:scale-95 shrink-0 disabled:opacity-40"
-                                                        title={`Remove ${s.fullname}`}
-                                                    >
-                                                        {removingId === s.userid
-                                                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                            : <UserMinus className="h-3.5 w-3.5" />
-                                                        }
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                        <div className="p-6 md:p-8 space-y-6">
+                            {/* Search bar */}
+                            <div className="flex items-center gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-3 rounded-xl focus-within:border-sky-500/50 transition-all">
+                                <Search className="h-4 w-4 text-[var(--text-secondary)] opacity-40 shrink-0" />
+                                <input
+                                    type="text"
+                                    placeholder="Search instructors by name or email…"
+                                    value={assignSearch}
+                                    onChange={e => setAssignSearch(e.target.value)}
+                                    className="bg-transparent border-none outline-none w-full text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/40 font-medium"
+                                />
                             </div>
 
-                            {/* RIGHT PANEL: Add Students */}
-                            <div className="flex flex-col gap-4">
-                                <div>
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] opacity-60 mb-3">
-                                        Add Students
-                                    </h3>
-                                    {/* Search all students */}
-                                    <div className="flex items-center gap-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] px-4 py-3 rounded-xl focus-within:border-violet-500/50 transition-all">
-                                        <Search className="h-4 w-4 text-[var(--text-secondary)] opacity-40 shrink-0" />
-                                        <input
-                                            type="text"
-                                            placeholder="Search by name, email, or username…"
-                                            value={addStudentSearch}
-                                            onChange={e => setAddStudentSearch(e.target.value)}
-                                            className="bg-transparent border-none outline-none w-full text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/40 font-medium"
-                                        />
-                                    </div>
+                            {/* List instructors */}
+                            {instructorsLoading ? (
+                                <div className="flex flex-col items-center justify-center py-20">
+                                    <Loader2 className="h-10 w-10 animate-spin text-sky-500 mb-4" />
+                                    <p className="text-xs font-black uppercase tracking-widest text-[var(--text-secondary)] opacity-40">Searching Roster...</p>
                                 </div>
-
-                                {allStudentsLoading ? (
-                                    <div className="flex items-center justify-center py-12">
-                                        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
-                                    </div>
-                                ) : filteredAvailable.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-12 text-center opacity-40">
-                                        <UserPlus className="h-10 w-10 mb-3" />
-                                        <p className="text-sm font-black uppercase tracking-widest">
-                                            {addStudentSearch ? 'No results' : 'All students enrolled'}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1">
-                                        {filteredAvailable.map(s => (
-                                            <div key={s.userid} className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-violet-500/20 transition-all group">
-                                                <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="h-10 w-10 rounded-xl bg-[var(--border-color)] text-[var(--text-secondary)] flex items-center justify-center font-black text-base shrink-0">
-                                                        {s.fullname?.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="font-bold text-sm text-[var(--text-primary)] truncate">{s.fullname}</p>
-                                                        <p className="text-[10px] text-[var(--text-secondary)] opacity-50 flex items-center gap-1 truncate">
-                                                            <Fingerprint className="h-2.5 w-2.5 shrink-0" />
-                                                            @{s.username}
-                                                        </p>
-                                                    </div>
+                            ) : filteredInstructors.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+                                    <Users className="h-12 w-12 mb-4" />
+                                    <p className="text-sm font-black uppercase tracking-widest">No instructors identified</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
+                                    {filteredInstructors.map(i => (
+                                        <div 
+                                            key={i.userid} 
+                                            className={`
+                                                flex items-center justify-between p-5 rounded-2xl border transition-all cursor-pointer group
+                                                ${selectedCourse.instructor_id === i.userid 
+                                                    ? 'bg-sky-500/5 border-sky-500/30' 
+                                                    : 'bg-[var(--bg-secondary)] border-[var(--border-color)] hover:border-sky-500/20'}
+                                            `}
+                                            onClick={() => handleAssignInstructor(i.userid)}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-12 w-12 rounded-xl bg-[var(--bg-primary)] flex items-center justify-center font-black text-lg text-[var(--text-primary)] shadow-sm">
+                                                    {i.fullname?.charAt(0).toUpperCase()}
                                                 </div>
-                                                <button
-                                                    onClick={() => handleEnrollStudent(s)}
-                                                    disabled={enrollingId === s.userid}
-                                                    className="h-8 w-8 rounded-xl bg-violet-500/0 text-violet-500/50 hover:bg-violet-500/10 hover:text-violet-500 border border-transparent hover:border-violet-500/20 flex items-center justify-center transition-all active:scale-95 shrink-0 disabled:opacity-40"
-                                                    title={`Enroll ${s.fullname}`}
-                                                >
-                                                    {enrollingId === s.userid
-                                                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                        : <UserPlus className="h-3.5 w-3.5" />
-                                                    }
-                                                </button>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-[var(--text-primary)]">{i.fullname}</span>
+                                                        {selectedCourse.instructor_id === i.userid && (
+                                                            <span className="bg-sky-500/10 text-sky-500 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded">Current</span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-[var(--text-secondary)] opacity-50 italic">{i.email}</p>
+                                                </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                                            <button 
+                                                className={`
+                                                    h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                                                    ${selectedCourse.instructor_id === i.userid
+                                                        ? 'bg-sky-500 text-white'
+                                                        : 'bg-white/5 text-[var(--text-secondary)] group-hover:bg-sky-500 group-hover:text-white'}
+                                                `}
+                                            >
+                                                {assigningInstructorId === i.userid ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : selectedCourse.instructor_id === i.userid ? (
+                                                    'Selected'
+                                                ) : (
+                                                    'Select Faculty'
+                                                )}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
+
             <StudentDossierModal 
                                 isOpen={isDossierOpen} 
                                 onClose={() => setIsDossierOpen(false)} 

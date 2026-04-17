@@ -177,9 +177,14 @@ export const TeacherStudents = () => {
                                             <h3 className="text-xl font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
                                                 {student.fullname}
                                             </h3>
-                                            <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest flex items-center gap-2">
-                                                <Mail className="h-3 w-3 opacity-40" />
-                                                {student.email}
+                                            <p className="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest flex flex-col gap-1">
+                                                <span className="flex items-center gap-2">
+                                                    <Mail className="h-3 w-3 opacity-40" />
+                                                    {student.email}
+                                                </span>
+                                                <span className="text-[var(--accent-primary)] group-hover:opacity-100 opacity-60 transition-opacity">
+                                                    @{student.username}
+                                                </span>
                                             </p>
                                         </div>
                                     </div>

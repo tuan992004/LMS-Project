@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/axios';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Loader2, ArrowRight } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const StudentCourses = () => {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     useEffect(() => {
         api.get("/courses/my-enrolled")
@@ -80,7 +82,7 @@ export const StudentCourses = () => {
                                     </div>
                                     <div className="flex justify-end pt-3">
                                         <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-primary)] flex items-center gap-2 transform translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
-                                            Manage Course <ArrowRight className="h-3.5 w-3.5" />
+                                            {t('dash_continue_learning')} <ArrowRight className="h-3.5 w-3.5" />
                                         </span>
                                     </div>
                                 </div>

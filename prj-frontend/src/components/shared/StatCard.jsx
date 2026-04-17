@@ -17,7 +17,7 @@ export const StatCard = ({
 }) => {
   const CardContent = (
     <div className={`
-      insta-card p-6 md:p-10 flex items-center justify-between group h-full transition-all duration-500
+      insta-card p-6 md:p-10 flex items-center justify-between group transition-all duration-500
       border-transparent hover:border-[var(--accent-primary)]/20 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)]
       active:scale-[0.98] relative overflow-hidden
       ${to ? 'cursor-pointer' : 'cursor-default'}
@@ -63,8 +63,8 @@ export const StatCard = ({
   );
 
   return (
-    <div className={`animate-fade-in-up ${delayClass} h-full`}>
-      {to ? <Link to={to} className="block h-full no-underline">{CardContent}</Link> : CardContent}
+    <div className={`animate-fade-in-up ${delayClass}`}>
+      {to ? <Link to={to} className="block no-underline">{CardContent}</Link> : CardContent}
     </div>
   );
 };
